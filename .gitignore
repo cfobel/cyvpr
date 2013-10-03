@@ -1,0 +1,75 @@
+vpr
+*.py[cod]
+
+# C extensions
+*.so
+*.o
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# IPython notebook log
+libpeerconnection.log
+
+# Latex (IPython notebook export output)
+*.aux
+*.glo
+*.idx
+*.log
+*.toc
+*.ist
+*.acn
+*.acr
+*.alg
+*.bbl
+*.blg
+*.dvi
+*.glg
+*.gls
+*.ilg
+*.ind
+*.lof
+*.lot
+*.maf
+*.mtc
+*.mtc1
+*.out
+*.synctex.gz
+
+# IPython notebook export output
+notebooks/export/*.pdf
+
+# Cython-generated C++ source files
+cy*/*.cpp
+cy*/*.c
+
+# VPR output
+*.echo
