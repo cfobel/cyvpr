@@ -362,8 +362,8 @@ void init_draw_coords (float clb_width_val) {
 
  clb_width = clb_width_val;
  pin_size = clb_width / (4. * pins_per_clb);
- pin_size = min (pin_size, clb_width / (4. * io_rat));
- pin_size = min (pin_size, 0.3);
+ pin_size = my_min(pin_size, clb_width / (4. * io_rat));
+ pin_size = my_min(pin_size, 0.3);
 
  x_clb_left[0] = 0.;
  for (i=1;i<=nx+1;i++)

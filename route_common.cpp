@@ -257,6 +257,11 @@ boolean try_route (int width_fac, struct s_router_opts router_opts, struct
                 clb_opins_used_locally);
 
  free_rr_node_route_structs ();
+ if(success) {
+     g_route_result.success_channel_widths.push_back(width_fac);
+ } else {
+     g_route_result.failure_channel_widths.push_back(width_fac);
+ }
  return (success);
 }
 
@@ -829,10 +834,10 @@ static void load_route_bb (int bb_factor) {
    /* Expand the net bounding box by bb_factor, then clip to the physical *
     * chip area.                                                          */
 
-    route_bb[inet].xmin = max (xmin - bb_factor, 0);
-    route_bb[inet].xmax = min (xmax + bb_factor, nx+1);
-    route_bb[inet].ymin = max (ymin - bb_factor, 0);
-    route_bb[inet].ymax = min (ymax + bb_factor, ny+1);
+    route_bb[inet].xmin = my_max(xmin - bb_factor, 0);
+    route_bb[inet].xmax = my_min(xmax + bb_factor, nx+1);
+    route_bb[inet].ymin = my_max(ymin - bb_factor, 0);
+    route_bb[inet].ymax = my_min(ymax + bb_factor, ny+1);
  }
 }
 

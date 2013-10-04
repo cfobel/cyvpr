@@ -55,7 +55,7 @@
  * graphics are zoomed in.  Rewrote PostScript engine to shrink the output  *
  * and make it easier to read.  Made drawscreen a callback function passed  *
  * in rather than a global.  Graphics attribute calls are more efficient -- *
- * they check if they have to change anything before doing it.              * 
+ * they check if they have to change anything before doing it.              *
  *                                                                          *
  * October 27, 1995:  Added the message area, a callback function for       *
  * interacting with user button clicks, and implemented a workaround for a  *
@@ -81,8 +81,8 @@
 #define XTOWORLD(x) (((float) x)/xmult + xleft)
 #define YTOWORLD(y) (((float) y)/ymult + ytop)
 
-#define max(a,b) (((a) > (b))? (a) : (b))
-#define min(a,b) ((a) > (b)? (b) : (a))
+#define my_max(a,b) (((a) > (b))? (a) : (b))
+#define my_min(a,b) ((a) > (b)? (b) : (a))
 
 #define MWIDTH 104    /* width of menu window */
 #define T_AREA_HEIGHT 24  /* Height of text window */
@@ -93,7 +93,7 @@
 
 typedef struct {int width; int height; int xleft; int ytop;
             void (*fcn) (void (*drawscreen) (void));
-            Window win; int istext; char text[BUTTON_TEXT_LEN]; int ispoly; 
+            Window win; int istext; char text[BUTTON_TEXT_LEN]; int ispoly;
             int poly[3][2]; int ispressed;} t_button;
 
 
@@ -117,7 +117,7 @@ static unsigned int top_width, top_height;      /* window size */
 static Window toplevel, menu, textarea;  /* various windows */
 static float xleft, xright, ytop, ybot;         /* world coordinates */
 /* Initial world coordinates */
-static float saved_xleft, saved_xright, saved_ytop, saved_ybot; 
+static float saved_xleft, saved_xright, saved_ytop, saved_ybot;
 
 static float ps_left, ps_right, ps_top, ps_bot; /* Figure boundaries for *
                         * PostScript output, in PostScript coordinates.  */
@@ -142,30 +142,30 @@ static  FILE *ps;
 /* MAXPIXEL and MINPIXEL are set to prevent what appears to be *
  * overflow with very large pixel values on the Sun X Server.  */
 
-#define MAXPIXEL 15000   
-#define MINPIXEL -15000 
+#define MAXPIXEL 15000
+#define MINPIXEL -15000
 
 
 /********************** Subroutines local to this module ********************/
 
 /* Function declarations for button responses */
 
-static void translate_up (void (*drawscreen) (void)); 
-static void translate_left (void (*drawscreen) (void)); 
-static void translate_right (void (*drawscreen) (void)); 
-static void translate_down (void (*drawscreen) (void)); 
+static void translate_up (void (*drawscreen) (void));
+static void translate_left (void (*drawscreen) (void));
+static void translate_right (void (*drawscreen) (void));
+static void translate_down (void (*drawscreen) (void));
 static void zoom_in (void (*drawscreen) (void));
 static void zoom_out (void (*drawscreen) (void));
 static void zoom_fit (void (*drawscreen) (void));
-static void adjustwin (void (*drawscreen) (void)); 
+static void adjustwin (void (*drawscreen) (void));
 static void postscript (void (*drawscreen) (void));
 static void proceed (void (*drawscreen) (void));
-static void quit (void (*drawscreen) (void)); 
+static void quit (void (*drawscreen) (void));
 
-static Bool test_if_exposed (Display *disp, XEvent *event_ptr, 
+static Bool test_if_exposed (Display *disp, XEvent *event_ptr,
           XPointer dummy);
-static void map_button (int bnum); 
-static void unmap_button (int bnum); 
+static void map_button (int bnum);
+static void unmap_button (int bnum);
 
 
 
@@ -179,7 +179,7 @@ static int xcoord (float worldx) {
  int winx;
 
  winx = (int) ((worldx-xleft)*xmult + 0.5);
- 
+
 /* Avoid overflow in the X Window routines.  This will allow horizontal  *
  * and vertical lines to be drawn correctly regardless of zooming, but   *
  * will cause diagonal lines that go way off screen to change their      *
@@ -187,11 +187,11 @@ static int xcoord (float worldx) {
  * this problem is to do all the clipping in advance in floating point,  *
  * then convert to integers and call X Windows.  This is a lot of extra  *
  * coding, and means that coordinates will be clipped twice, even though *
- * this "Super Zoom" problem won't occur unless users zoom way in on     * 
- * the graphics.                                                         */ 
+ * this "Super Zoom" problem won't occur unless users zoom way in on     *
+ * the graphics.                                                         */
 
- winx = max (winx, MINPIXEL);
- winx = min (winx, MAXPIXEL);
+ winx = my_max(winx, MINPIXEL);
+ winx = my_min(winx, MAXPIXEL);
 
  return (winx);
 }
@@ -204,10 +204,10 @@ static int ycoord (float worldy) {
  int winy;
 
  winy = (int) ((worldy-ytop)*ymult + 0.5);
- 
+
 /* Avoid overflow in the X Window routines. */
- winy = max (winy, MINPIXEL);
- winy = min (winy, MAXPIXEL);
+ winy = my_max(winy, MINPIXEL);
+ winy = my_min(winy, MAXPIXEL);
 
  return (winy);
 }
@@ -222,7 +222,7 @@ static void load_font(int pointsize) {
  char fontname[44];
 
  sprintf(fontname,"-*-helvetica-medium-r-*--*-%d0-*-*-*-*-*-*",
-       pointsize); 
+       pointsize);
 
 #ifdef VERBOSE
  printf ("Loading font: point size: %d, fontname: %s\n",pointsize, fontname);
@@ -242,7 +242,7 @@ static void force_setcolor (int cindex) {
  static char *ps_cnames[NUM_COLOR] = {"white", "black", "grey55", "grey75",
         "blue", "green", "yellow", "cyan", "red", "darkgreen", "magenta"};
 
- currentcolor = cindex; 
+ currentcolor = cindex;
 
  if (disp_type == SCREEN) {
     XSetForeground (display, gc,colors[cindex]);
@@ -255,7 +255,7 @@ static void force_setcolor (int cindex) {
 
 void setcolor (int cindex) {
 
- if (currentcolor != cindex) 
+ if (currentcolor != cindex)
     force_setcolor (cindex);
 }
 
@@ -266,7 +266,7 @@ static void force_setlinestyle (int linestyle) {
 
 /* PostScript and X commands needed, respectively. */
 
- static char *ps_text[2] = {"linesolid", "linedashed"};  
+ static char *ps_text[2] = {"linesolid", "linedashed"};
  static int x_vals[2] = {LineSolid, LineOnOffDash};
 
  currentlinestyle = linestyle;
@@ -282,8 +282,8 @@ static void force_setlinestyle (int linestyle) {
 
 
 void setlinestyle (int linestyle) {
- 
- if (linestyle != currentlinestyle) 
+
+ if (linestyle != currentlinestyle)
     force_setlinestyle (linestyle);
 }
 
@@ -296,7 +296,7 @@ static void force_setlinewidth (int linewidth) {
  static int x_vals[2] = {LineSolid, LineOnOffDash};
 
  currentlinewidth = linewidth;
- 
+
  if (disp_type == SCREEN) {
     XSetLineAttributes (display, gc, linewidth, x_vals[currentlinestyle],
         CapButt, JoinMiter);
@@ -308,7 +308,7 @@ static void force_setlinewidth (int linewidth) {
 
 
 void setlinewidth (int linewidth) {
- 
+
  if (linewidth != currentlinewidth)
     force_setlinewidth (linewidth);
 }
@@ -318,9 +318,9 @@ static void force_setfontsize (int pointsize) {
 
 /* Valid point sizes are between 1 and MAX_FONT_SIZE */
 
- if (pointsize < 1) 
+ if (pointsize < 1)
     pointsize = 1;
- else if (pointsize > MAX_FONT_SIZE) 
+ else if (pointsize > MAX_FONT_SIZE)
     pointsize = MAX_FONT_SIZE;
 
  currentfontsize = pointsize;
@@ -331,14 +331,14 @@ static void force_setfontsize (int pointsize) {
        load_font (pointsize);
        font_is_loaded[pointsize] = 1;
     }
-    XSetFont(display, gc, font_info[pointsize]->fid); 
+    XSetFont(display, gc, font_info[pointsize]->fid);
  }
- 
+
  else {
    /* PostScript:  set up font and centering function */
 
     fprintf(ps,"%d setfontsize\n",pointsize);
- } 
+ }
 }
 
 
@@ -348,7 +348,7 @@ void setfontsize (int pointsize) {
  * to have font info set, call force_setfontsize (this is necessary *
  * in initialization and X11 / Postscript switches).                */
 
- if (pointsize != currentfontsize) 
+ if (pointsize != currentfontsize)
     force_setfontsize (pointsize);
 }
 
@@ -362,12 +362,12 @@ static void build_textarea (void) {
 
  textarea = XCreateSimpleWindow(display,toplevel,
             0, top_height-T_AREA_HEIGHT, display_width, T_AREA_HEIGHT-4, 2,
-            colors[BLACK], colors[LIGHTGREY]); 
+            colors[BLACK], colors[LIGHTGREY]);
  menu_attributes.event_mask = ExposureMask;
    /* ButtonPresses in this area are ignored. */
  menu_attributes.do_not_propagate_mask = ButtonPressMask;
    /* Keep text area on bottom left */
- menu_attributes.win_gravity = SouthWestGravity; 
+ menu_attributes.win_gravity = SouthWestGravity;
  valuemask = CWWinGravity | CWEventMask | CWDontPropagate;
  XChangeWindowAttributes(display, textarea, valuemask, &menu_attributes);
  XMapWindow (display, textarea);
@@ -401,12 +401,12 @@ static void build_default_menu (void) {
 
  menu = XCreateSimpleWindow(display,toplevel,
           top_width-MWIDTH, 0, MWIDTH-4, display_height, 2,
-          colors[BLACK], colors[LIGHTGREY]); 
+          colors[BLACK], colors[LIGHTGREY]);
  menu_attributes.event_mask = ExposureMask;
    /* Ignore button presses on the menu background. */
  menu_attributes.do_not_propagate_mask = ButtonPressMask;
    /* Keep menu on top right */
- menu_attributes.win_gravity = NorthEastGravity; 
+ menu_attributes.win_gravity = NorthEastGravity;
  valuemask = CWWinGravity | CWEventMask | CWDontPropagate;
  XChangeWindowAttributes(display, menu, valuemask, &menu_attributes);
  XMapWindow (display, menu);
@@ -419,7 +419,7 @@ static void build_default_menu (void) {
  space = 3;
  y1 = 10;
  xcen = 51;
- x1 = xcen - bwid/2; 
+ x1 = xcen - bwid/2;
  button[0].xleft = x1;
  button[0].ytop = y1;
  setpoly (0, bwid/2, bwid/2, bwid/3, -PI/2.); /* Up */
@@ -448,8 +448,8 @@ static void build_default_menu (void) {
  for (i=0;i<4;i++) {
     button[i].width = bwid;
     button[i].height = bwid;
- } 
- 
+ }
+
 /* Rectangular buttons */
 
  y1 += bwid + space + 6;
@@ -474,7 +474,7 @@ static void build_default_menu (void) {
  strcpy (button[8].text,"PostScript");
  strcpy (button[9].text,"Proceed");
  strcpy (button[10].text,"Exit");
- 
+
  button[4].fcn = zoom_in;
  button[5].fcn = zoom_out;
  button[6].fcn = zoom_fit;
@@ -483,7 +483,7 @@ static void build_default_menu (void) {
  button[9].fcn = proceed;
  button[10].fcn = quit;
 
- for (i=0;i<num_buttons;i++) 
+ for (i=0;i<num_buttons;i++)
     map_button (i);
 }
 
@@ -493,8 +493,8 @@ static void map_button (int bnum) {
 /* Maps a button onto the screen and set it up for input, etc.        */
 
  button[bnum].win = XCreateSimpleWindow(display,menu,
-          button[bnum].xleft, button[bnum].ytop, button[bnum].width, 
-          button[bnum].height, 0, colors[WHITE], colors[LIGHTGREY]); 
+          button[bnum].xleft, button[bnum].ytop, button[bnum].width,
+          button[bnum].height, 0, colors[WHITE], colors[LIGHTGREY]);
  XMapWindow (display, button[bnum].win);
  XSelectInput (display, button[bnum].win, ButtonPressMask);
  button[bnum].ispressed = 1;
@@ -509,7 +509,7 @@ static void unmap_button (int bnum) {
 }
 
 
-void create_button (char *prev_button_text , char *button_text, 
+void create_button (char *prev_button_text , char *button_text,
        void (*button_func) (void (*drawscreen) (void))) {
 
 /* Creates a new button below the button containing prev_button_text.       *
@@ -524,7 +524,7 @@ void create_button (char *prev_button_text , char *button_text,
 
  bnum = -1;
  for (i=4;i<num_buttons;i++) {
-    if (button[i].istext == 1 && 
+    if (button[i].istext == 1 &&
             strcmp (button[i].text, prev_button_text) == 0) {
        bnum = i + 1;
        break;
@@ -544,7 +544,7 @@ void create_button (char *prev_button_text , char *button_text,
  * guarantees that button[num_buttons-2] exists and is a text button.       */
 
  button[num_buttons-1].xleft = button[num_buttons-2].xleft;
- button[num_buttons-1].ytop = button[num_buttons-2].ytop + 
+ button[num_buttons-1].ytop = button[num_buttons-2].ytop +
                                button[num_buttons-2].height + space;
  button[num_buttons-1].height = button[num_buttons-2].height;
  button[num_buttons-1].width = button[num_buttons-2].width;
@@ -578,7 +578,7 @@ void destroy_button (char *button_text) {
 
  bnum = -1;
  for (i=4;i<num_buttons;i++) {
-    if (button[i].istext == 1 && 
+    if (button[i].istext == 1 &&
             strcmp (button[i].text, button_text) == 0) {
        bnum = i;
        break;
@@ -620,7 +620,7 @@ void init_graphics (char *window_name) {
  XTextProperty windowName;
 
 /* X Windows' names for my colours. */
- char *cnames[NUM_COLOR] = {"white", "black", "grey55", "grey75", "blue", 
+ char *cnames[NUM_COLOR] = {"white", "black", "grey55", "grey75", "blue",
         "green", "yellow", "cyan", "red", "RGBi:0.0/0.5/0.0", "magenta" };
 
  XColor exact_def;
@@ -633,7 +633,7 @@ void init_graphics (char *window_name) {
 
  disp_type = SCREEN;         /* Graphics go to screen, not ps */
 
- for (i=0;i<=MAX_FONT_SIZE;i++) 
+ for (i=0;i<=MAX_FONT_SIZE;i++)
     font_is_loaded[i] = 0;     /* No fonts loaded yet. */
 
  /* connect to X server */
@@ -651,10 +651,10 @@ void init_graphics (char *window_name) {
  display_height = DisplayHeight(display, screen_num);
 
  x = y = 0;
-        
+
  top_width = 2*display_width/3;
  top_height = 4*display_height/5;
- 
+
  cmap = DefaultColormap(display, screen_num);
  private_cmap = None;
 
@@ -664,7 +664,7 @@ void init_graphics (char *window_name) {
        exit(-1);
     }
     if (!XAllocColor(display, cmap, &exact_def)) {
-       fprintf(stderr, "Couldn't allocate color %s.\n",cnames[i]); 
+       fprintf(stderr, "Couldn't allocate color %s.\n",cnames[i]);
 
        if (private_cmap == None) {
           fprintf(stderr, "Will try to allocate a private colourmap.\n");
@@ -672,7 +672,7 @@ void init_graphics (char *window_name) {
                           "cursor is in the graphics window.\n"
                           "Exit other colour applications and rerun this "
                           "program if you don't like that.\n\n");
-                    
+
           private_cmap = XCopyColormapAndFree (display, cmap);
           cmap = private_cmap;
           if (!XAllocColor (display, cmap, &exact_def)) {
@@ -693,27 +693,27 @@ void init_graphics (char *window_name) {
 
  toplevel = XCreateSimpleWindow(display,RootWindow(display,screen_num),
           x, y, top_width, top_height, border_width, colors[BLACK],
-          colors[WHITE]);  
+          colors[WHITE]);
 
- if (private_cmap != None) 
+ if (private_cmap != None)
      XSetWindowColormap (display, toplevel, private_cmap);
 
  /* hints stuff deleted. */
 
  XSelectInput (display, toplevel, ExposureMask | StructureNotifyMask |
        ButtonPressMask);
- 
+
 
  /* Create default Graphics Contexts.  valuemask = 0 -> use defaults. */
  gc = XCreateGC(display, toplevel, valuemask, &values);
  gc_menus = XCreateGC(display, toplevel, valuemask, &values);
 
  /* Create XOR graphics context for Rubber Banding */
- values.function = GXxor;   
+ values.function = GXxor;
  values.foreground = colors[BLACK];
  gcxor = XCreateGC(display, toplevel, (GCFunction | GCForeground),
        &values);
- 
+
  /* specify font for menus.  */
  load_font(menu_font_size);
  font_is_loaded[menu_font_size] = 1;
@@ -725,7 +725,7 @@ void init_graphics (char *window_name) {
  force_setcolor (currentcolor);
  force_setlinestyle (currentlinestyle);
  force_setlinewidth (currentlinewidth);
- 
+
  XStringListToTextProperty(&window_name, 1, &windowName);
  XSetWMName (display, toplevel, &windowName);
 /* XSetWMIconName (display, toplevel, &windowName); */
@@ -733,12 +733,12 @@ void init_graphics (char *window_name) {
 /* XStringListToTextProperty copies the window_name string into            *
  * windowName.value.  Free this memory now.                                */
 
- free (windowName.value);  
+ free (windowName.value);
 
  XMapWindow (display, toplevel);
  build_textarea ();
  build_default_menu ();
- 
+
 /* The following is completely unnecessary if the user is using the       *
  * interactive (event_loop) graphics.  It waits for the first Expose      *
  * event before returning so that I can tell the window manager has got   *
@@ -746,11 +746,11 @@ void init_graphics (char *window_name) {
  * into this window immediately, and there's no danger of the window not  *
  * being ready and output being lost.                                     */
 
- XPeekIfEvent (display, &event, test_if_exposed, NULL); 
+ XPeekIfEvent (display, &event, test_if_exposed, NULL);
 }
 
 
-static Bool test_if_exposed (Display *disp, XEvent *event_ptr, 
+static Bool test_if_exposed (Display *disp, XEvent *event_ptr,
           XPointer dummy) {
 
 /* Returns True if the event passed in is an exposure event.   Note that *
@@ -768,11 +768,11 @@ static void menutext(Window win, int xc, int yc, char *text) {
 
 /* draws text center at xc, yc -- used only by menu drawing stuff */
 
- int len, width; 
- 
+ int len, width;
+
  len = strlen(text);
  width = XTextWidth(font_info[menu_font_size], text, len);
- XDrawString(display, win, gc_menus, xc-width/2, yc + 
+ XDrawString(display, win, gc_menus, xc-width/2, yc +
      (font_info[menu_font_size]->ascent - font_info[menu_font_size]->descent)/2,
      text, len);
 }
@@ -784,7 +784,7 @@ static void drawbut (int bnum) {
 
  int width, height, thick, i, ispressed;
  XPoint mypoly[6];
- 
+
  ispressed = button[bnum].ispressed;
  thick = 2;
  width = button[bnum].width;
@@ -821,7 +821,7 @@ static void drawbut (int bnum) {
  }
  else {
     XSetForeground(display, gc_menus,colors[BLACK]);
- } 
+ }
  mypoly[0].x = 0;
  mypoly[0].y = height;
  mypoly[1].x = width;
@@ -848,7 +848,7 @@ static void drawbut (int bnum) {
 /* Give x,y of top corner and width and height */
  XFillRectangle (display,button[bnum].win,gc_menus,thick,thick,
      width-2*thick, height-2*thick);
- 
+
 /* Draw polygon, if there is one */
  if (button[bnum].ispoly) {
     for (i=0;i<3;i++) {
@@ -859,7 +859,7 @@ static void drawbut (int bnum) {
     XFillPolygon(display,button[bnum].win,gc_menus,mypoly,3,Convex,
           CoordModeOrigin);
  }
- 
+
 /* Draw text, if there is any */
  if (button[bnum].istext) {
     XSetForeground(display, gc_menus,colors[BLACK]);
@@ -945,13 +945,13 @@ static void update_ps_transform (void) {
 
  ps_width = 540.;    /* 72 * 7.5 */
  ps_height = 720.;   /* 72 * 10  */
- 
+
  ps_xmult = ps_width / (xright - xleft);
  ps_ymult = ps_height / (ytop - ybot);
 /* Need to use same scaling factor to preserve aspect ratio.   *
  * I show exactly as much on paper as the screen window shows, *
  * or the user specifies.                                      */
- if (fabs(ps_xmult) <= fabs(ps_ymult)) {  
+ if (fabs(ps_xmult) <= fabs(ps_ymult)) {
     ps_left = 36.;
     ps_right = 36. + ps_width;
     ps_bot = 396. - fabs(ps_xmult * (ytop - ybot))/2.;
@@ -959,7 +959,7 @@ static void update_ps_transform (void) {
 /* Maintain aspect ratio but watch signs */
     ps_ymult = (ps_xmult*ps_ymult < 0) ? -ps_xmult : ps_xmult;
  }
- else {  
+ else {
     ps_bot = 36.;
     ps_top = 36. + ps_height;
     ps_left = 306. - fabs(ps_ymult * (xright - xleft))/2.;
@@ -970,7 +970,7 @@ static void update_ps_transform (void) {
 }
 
 
-void event_loop (void (*act_on_button) (float x, float y), 
+void event_loop (void (*act_on_button) (float x, float y),
     void (*drawscreen) (void)) {
 
 /* The program's main event loop.  Must be passed a user routine        *
@@ -988,9 +988,9 @@ void event_loop (void (*act_on_button) (float x, float y),
  turn_on_off (ON);
  while (1) {
     XNextEvent (display, &report);
-    switch (report.type) {  
+    switch (report.type) {
     case Expose:
-#ifdef VERBOSE 
+#ifdef VERBOSE
        printf("Got an expose event.\n");
        printf("Count is: %d.\n",report.xexpose.count);
        printf("Window ID is: %d.\n",report.xexpose.window);
@@ -998,7 +998,7 @@ void event_loop (void (*act_on_button) (float x, float y),
        if (report.xexpose.count != 0)
            break;
        if (report.xexpose.window == menu)
-          drawmenu(); 
+          drawmenu();
        else if (report.xexpose.window == toplevel)
           drawscreen();
        else if (report.xexpose.window == textarea)
@@ -1008,24 +1008,24 @@ void event_loop (void (*act_on_button) (float x, float y),
        top_width = report.xconfigure.width;
        top_height = report.xconfigure.height;
        update_transform();
-#ifdef VERBOSE 
+#ifdef VERBOSE
        printf("Got a ConfigureNotify.\n");
        printf("New width: %d  New height: %d.\n",top_width,top_height);
 #endif
-       break; 
+       break;
     case ButtonPress:
-#ifdef VERBOSE 
+#ifdef VERBOSE
        printf("Got a buttonpress.\n");
        printf("Window ID is: %d.\n",report.xbutton.window);
 #endif
        if (report.xbutton.window == toplevel) {
           x = XTOWORLD(report.xbutton.x);
-          y = YTOWORLD(report.xbutton.y); 
+          y = YTOWORLD(report.xbutton.y);
           act_on_button (x, y);
-       } 
+       }
        else {  /* A menu button was pressed. */
           bnum = which_button(report.xbutton.window);
-#ifdef VERBOSE 
+#ifdef VERBOSE
        printf("Button number is %d\n",bnum);
 #endif
           button[bnum].ispressed = 1;
@@ -1076,26 +1076,26 @@ static int rect_off_screen (float x1, float y1, float x2, float y2) {
 
  float xmin, xmax, ymin, ymax;
 
- xmin = min (xleft, xright);
- if (x1 < xmin && x2 < xmin) 
+ xmin = my_min(xleft, xright);
+ if (x1 < xmin && x2 < xmin)
     return (1);
 
- xmax = max (xleft, xright);
+ xmax = my_max(xleft, xright);
  if (x1 > xmax && x2 > xmax)
     return (1);
 
- ymin = min (ytop, ybot);
+ ymin = my_min(ytop, ybot);
  if (y1 < ymin && y2 < ymin)
     return (1);
 
- ymax = max (ytop, ybot);
+ ymax = my_max(ytop, ybot);
  if (y1 > ymax && y2 > ymax)
     return (1);
 
  return (0);
 }
 
- 
+
 void drawline (float x1, float y1, float x2, float y2) {
 
 /* Draw a line from (x1,y1) to (x2,y2) in the user-drawable area. *
@@ -1105,8 +1105,8 @@ void drawline (float x1, float y1, float x2, float y2) {
     return;
 
  if (disp_type == SCREEN) {
-    /* Xlib.h prototype has x2 and y1 mixed up. */ 
-    XDrawLine(display, toplevel, gc, xcoord(x1), ycoord(y1), 
+    /* Xlib.h prototype has x2 and y1 mixed up. */
+    XDrawLine(display, toplevel, gc, xcoord(x1), ycoord(y1),
        xcoord(x2), ycoord(y2));
  }
  else {
@@ -1125,14 +1125,14 @@ void drawrect (float x1, float y1, float x2, float y2) {
  if (rect_off_screen(x1,y1,x2,y2))
     return;
 
- if (disp_type == SCREEN) { 
+ if (disp_type == SCREEN) {
 /* translate to X Windows calling convention. */
     xw1 = xcoord(x1);
     xw2 = xcoord(x2);
     yw1 = ycoord(y1);
-    yw2 = ycoord(y2); 
-    xl = min(xw1,xw2);
-    yt = min(yw1,yw2);
+    yw2 = ycoord(y2);
+    xl = my_min(xw1,xw2);
+    yt = my_min(yw1,yw2);
     width = abs (xw1-xw2);
     height = abs (yw1-yw2);
     XDrawRectangle(display, toplevel, gc, xl, yt, width, height);
@@ -1159,9 +1159,9 @@ void fillrect (float x1, float y1, float x2, float y2) {
     xw1 = xcoord(x1);
     xw2 = xcoord(x2);
     yw1 = ycoord(y1);
-    yw2 = ycoord(y2); 
-    xl = min(xw1,xw2);
-    yt = min(yw1,yw2);
+    yw2 = ycoord(y2);
+    xl = my_min(xw1,xw2);
+    yt = my_min(yw1,yw2);
     width = abs (xw1-xw2);
     height = abs (yw1-yw2);
     XFillRectangle(display, toplevel, gc, xl, yt, width, height);
@@ -1189,7 +1189,7 @@ static float angnorm (float ang) {
 }
 
 
-void drawarc (float xc, float yc, float rad, float startang, 
+void drawarc (float xc, float yc, float rad, float startang,
       float angextent) {
 
 /* Draws a circular arc.  X11 can do elliptical arcs quite simply, and *
@@ -1209,11 +1209,11 @@ void drawarc (float xc, float yc, float rad, float startang,
 
 /* X Windows has trouble with very large angles. (Over 360).    *
  * Do following to prevent its inaccurate (overflow?) problems. */
- if (fabs(angextent) > 360.) 
+ if (fabs(angextent) > 360.)
      angextent = 360.;
 
  startang = angnorm (startang);
- 
+
  if (disp_type == SCREEN) {
     xl = (int) (xcoord(xc) - fabs(xmult*rad));
     yt = (int) (ycoord(yc) - fabs(ymult*rad));
@@ -1223,14 +1223,14 @@ void drawarc (float xc, float yc, float rad, float startang,
       (int) (startang*64), (int) (angextent*64));
  }
  else {
-    fprintf(ps,"%.2f %.2f %.2f %.2f %.2f %s stroke\n", XPOST(xc), 
-       YPOST(yc), fabs(rad*ps_xmult), startang, startang+angextent, 
+    fprintf(ps,"%.2f %.2f %.2f %.2f %.2f %s stroke\n", XPOST(xc),
+       YPOST(yc), fabs(rad*ps_xmult), startang, startang+angextent,
        (angextent < 0) ? "drawarcn" : "drawarc") ;
  }
 }
 
 
-void fillarc (float xc, float yc, float rad, float startang, 
+void fillarc (float xc, float yc, float rad, float startang,
       float angextent) {
 
 /* Fills a circular arc.  Startang is relative to the Window's positive x   *
@@ -1248,7 +1248,7 @@ void fillarc (float xc, float yc, float rad, float startang,
 /* X Windows has trouble with very large angles. (Over 360).    *
  * Do following to prevent its inaccurate (overflow?) problems. */
 
- if (fabs(angextent) > 360.) 
+ if (fabs(angextent) > 360.)
     angextent = 360.;
 
  startang = angnorm (startang);
@@ -1262,7 +1262,7 @@ void fillarc (float xc, float yc, float rad, float startang,
       (int) (startang*64), (int) (angextent*64));
  }
  else {
-    fprintf(ps,"%.2f %.2f %.2f %.2f %.2f %s\n", fabs(rad*ps_xmult), 
+    fprintf(ps,"%.2f %.2f %.2f %.2f %.2f %s\n", fabs(rad*ps_xmult),
        startang, startang+angextent, XPOST(xc), YPOST(yc),
        (angextent < 0) ? "fillarcn" : "fillarc") ;
  }
@@ -1289,10 +1289,10 @@ void fillpoly (t_point *points, int npoints) {
   ymin = ymax = points[0].y;
 
   for (i=1;i<npoints;i++) {
-     xmin = min (xmin,points[i].x);
-     xmax = max (xmax,points[i].x);
-     ymin = min (ymin,points[i].y);
-     ymax = max (ymax,points[i].y);
+     xmin = my_min(xmin,points[i].x);
+     xmax = my_max(xmax,points[i].x);
+     ymin = my_min(ymin,points[i].y);
+     ymax = my_max(ymax,points[i].y);
   }
 
   if (rect_off_screen(xmin,ymin,xmax,ymax))
@@ -1309,9 +1309,9 @@ void fillpoly (t_point *points, int npoints) {
  else {
     fprintf(ps,"\n");
 
-    for (i=npoints-1;i>=0;i--) 
+    for (i=npoints-1;i>=0;i--)
        fprintf (ps, "%.2f %.2f\n", XPOST(points[i].x), YPOST(points[i].y));
-    
+
     fprintf (ps, "%d fillpoly\n", npoints);
  }
 }
@@ -1320,8 +1320,8 @@ void drawtext (float xc, float yc, char *text, float boundx) {
 
 /* Draws text centered on xc,yc if it fits in boundx */
 
- int len, width, xw_off, yw_off; 
- 
+ int len, width, xw_off, yw_off;
+
  len = strlen(text);
  width = XTextWidth(font_info[currentfontsize], text, len);
  if (width > fabs(boundx*xmult)) return; /* Don't draw if it won't fit */
@@ -1329,8 +1329,8 @@ void drawtext (float xc, float yc, char *text, float boundx) {
  xw_off = width/(2.*xmult);      /* NB:  sign doesn't matter. */
 
 /* NB:  2 * descent makes this slightly conservative but simplifies code. */
- yw_off = (font_info[currentfontsize]->ascent + 
-     2 * font_info[currentfontsize]->descent)/(2.*ymult); 
+ yw_off = (font_info[currentfontsize]->ascent +
+     2 * font_info[currentfontsize]->descent)/(2.*ymult);
 
 /* Note:  text can be clipped when a little bit of it would be visible *
  * right now.  Perhaps X doesn't return extremely accurate width and   *
@@ -1341,7 +1341,7 @@ void drawtext (float xc, float yc, char *text, float boundx) {
     return;
 
  if (disp_type == SCREEN) {
-    XDrawString(display, toplevel, gc, xcoord(xc)-width/2, ycoord(yc) + 
+    XDrawString(display, toplevel, gc, xcoord(xc)-width/2, ycoord(yc) +
         (font_info[currentfontsize]->ascent - font_info[currentfontsize]->descent)/2,
         text, len);
  }
@@ -1393,9 +1393,9 @@ void draw_message (void) {
     width = XTextWidth(font_info[menu_font_size], message, len);
 
     XSetForeground(display, gc_menus,colors[BLACK]);
-    XDrawString(display, textarea, gc_menus, 
-       (top_width - MWIDTH - width)/2, 
-       (T_AREA_HEIGHT - 4)/2 + (font_info[menu_font_size]->ascent - 
+    XDrawString(display, textarea, gc_menus,
+       (top_width - MWIDTH - width)/2,
+       (T_AREA_HEIGHT - 4)/2 + (font_info[menu_font_size]->ascent -
         font_info[menu_font_size]->descent)/2, message, len);
  }
 
@@ -1407,7 +1407,7 @@ void draw_message (void) {
     setcolor (BLACK);
     savefontsize = currentfontsize;
     setfontsize (menu_font_size - 2);  /* Smaller OK on paper */
-    ylow = ps_bot - 8.; 
+    ylow = ps_bot - 8.;
     fprintf(ps,"(%s) %.2f %.2f censhow\n",message,(ps_left+ps_right)/2.,
         ylow);
     setcolor (savecolor);
@@ -1431,7 +1431,7 @@ static void zoom_in (void (*drawscreen) (void)) {
 
  float xdiff, ydiff;
 
- xdiff = xright - xleft; 
+ xdiff = xright - xleft;
  ydiff = ybot - ytop;
  xleft += xdiff/5.;
  xright -= xdiff/5.;
@@ -1449,7 +1449,7 @@ static void zoom_out (void (*drawscreen) (void)) {
 
  float xdiff, ydiff;
 
- xdiff = xright - xleft; 
+ xdiff = xright - xleft;
  ydiff = ybot - ytop;
  xleft -= xdiff/3.;
  xright += xdiff/3.;
@@ -1485,7 +1485,7 @@ static void translate_up (void (*drawscreen) (void)) {
  ystep = (ybot - ytop)/2.;
  ytop -= ystep;
  ybot -= ystep;
- update_transform();         
+ update_transform();
  drawscreen();
 }
 
@@ -1499,7 +1499,7 @@ static void translate_down (void (*drawscreen) (void)) {
  ystep = (ybot - ytop)/2.;
  ytop += ystep;
  ybot += ystep;
- update_transform();         
+ update_transform();
  drawscreen();
 }
 
@@ -1512,8 +1512,8 @@ static void translate_left (void (*drawscreen) (void)) {
 
  xstep = (xright - xleft)/2.;
  xleft -= xstep;
- xright -= xstep; 
- update_transform();         
+ xright -= xstep;
+ update_transform();
  drawscreen();
 }
 
@@ -1526,28 +1526,28 @@ static void translate_right (void (*drawscreen) (void)) {
 
  xstep = (xright - xleft)/2.;
  xleft += xstep;
- xright += xstep; 
- update_transform();         
+ xright += xstep;
+ update_transform();
  drawscreen();
 }
 
 
 static void update_win (int x[2], int y[2], void (*drawscreen)(void)) {
  float x1, x2, y1, y2;
- 
- x[0] = min(x[0],top_width-MWIDTH);  /* Can't go under menu */
- x[1] = min(x[1],top_width-MWIDTH);
- y[0] = min(y[0],top_height-T_AREA_HEIGHT); /* Can't go under text area */
- y[1] = min(y[1],top_height-T_AREA_HEIGHT);
+
+ x[0] = my_min(x[0],top_width-MWIDTH);  /* Can't go under menu */
+ x[1] = my_min(x[1],top_width-MWIDTH);
+ y[0] = my_min(y[0],top_height-T_AREA_HEIGHT); /* Can't go under text area */
+ y[1] = my_min(y[1],top_height-T_AREA_HEIGHT);
 
  if ((x[0] == x[1]) || (y[0] == y[1])) {
     printf("Illegal (zero area) window.  Window unchanged.\n");
     return;
  }
- x1 = XTOWORLD(min(x[0],x[1]));
- x2 = XTOWORLD(max(x[0],x[1]));
- y1 = YTOWORLD(min(y[0],y[1]));
- y2 = YTOWORLD(max(y[0],y[1]));
+ x1 = XTOWORLD(my_min(x[0],x[1]));
+ x2 = XTOWORLD(my_max(x[0],x[1]));
+ y1 = YTOWORLD(my_min(y[0],y[1]));
+ y2 = YTOWORLD(my_max(y[0],y[1]));
  xleft = x1;
  xright = x2;
  ytop = y1;
@@ -1557,7 +1557,7 @@ static void update_win (int x[2], int y[2], void (*drawscreen)(void)) {
 }
 
 
-static void adjustwin (void (*drawscreen) (void)) {  
+static void adjustwin (void (*drawscreen) (void)) {
 /* The window button was pressed.  Let the user click on the two *
  * diagonally opposed corners, and zoom in on this area.         */
 
@@ -1567,12 +1567,12 @@ static void adjustwin (void (*drawscreen) (void)) {
  corner = 0;
  xold = -1;
  yold = -1;    /* Don't need to init yold, but stops compiler warning. */
- 
+
  while (corner<2) {
     XNextEvent (display, &report);
     switch (report.type) {
     case Expose:
-#ifdef VERBOSE 
+#ifdef VERBOSE
        printf("Got an expose event.\n");
        printf("Count is: %d.\n",report.xexpose.count);
        printf("Window ID is: %d.\n",report.xexpose.window);
@@ -1580,7 +1580,7 @@ static void adjustwin (void (*drawscreen) (void)) {
        if (report.xexpose.count != 0)
            break;
        if (report.xexpose.window == menu)
-          drawmenu(); 
+          drawmenu();
        else if (report.xexpose.window == toplevel) {
           drawscreen();
           xold = -1;   /* No rubber band on screen */
@@ -1592,13 +1592,13 @@ static void adjustwin (void (*drawscreen) (void)) {
        top_width = report.xconfigure.width;
        top_height = report.xconfigure.height;
        update_transform();
-#ifdef VERBOSE 
+#ifdef VERBOSE
        printf("Got a ConfigureNotify.\n");
        printf("New width: %d  New height: %d.\n",top_width,top_height);
 #endif
        break;
     case ButtonPress:
-#ifdef VERBOSE 
+#ifdef VERBOSE
        printf("Got a buttonpress.\n");
        printf("Window ID is: %d.\n",report.xbutton.window);
        printf("Location (%d, %d).\n", report.xbutton.x,
@@ -1606,9 +1606,9 @@ static void adjustwin (void (*drawscreen) (void)) {
 #endif
        if (report.xbutton.window != toplevel) break;
        x[corner] = report.xbutton.x;
-       y[corner] = report.xbutton.y; 
+       y[corner] = report.xbutton.y;
        if (corner == 0) {
-       XSelectInput (display, toplevel, ExposureMask | 
+       XSelectInput (display, toplevel, ExposureMask |
          StructureNotifyMask | ButtonPressMask | PointerMotionMask);
        }
        else {
@@ -1617,24 +1617,24 @@ static void adjustwin (void (*drawscreen) (void)) {
        corner++;
        break;
     case MotionNotify:
-#ifdef VERBOSE 
+#ifdef VERBOSE
        printf("Got a MotionNotify Event.\n");
        printf("x: %d    y: %d\n",report.xmotion.x,report.xmotion.y);
 #endif
        if (xold >= 0) {  /* xold set -ve before we draw first box */
-          XDrawRectangle(display,toplevel,gcxor,min(x[0],xold),
-             min(y[0],yold),abs(x[0]-xold),abs(y[0]-yold));
+          XDrawRectangle(display,toplevel,gcxor,my_min(x[0],xold),
+             my_min(y[0],yold),abs(x[0]-xold),abs(y[0]-yold));
        }
        /* Don't allow user to window under menu region */
-       xold = min(report.xmotion.x,top_width-1-MWIDTH); 
+       xold = my_min(report.xmotion.x,top_width-1-MWIDTH);
        yold = report.xmotion.y;
-       XDrawRectangle(display,toplevel,gcxor,min(x[0],xold),
-          min(y[0],yold),abs(x[0]-xold),abs(y[0]-yold));
+       XDrawRectangle(display,toplevel,gcxor,my_min(x[0],xold),
+          my_min(y[0],yold),abs(x[0]-xold),abs(y[0]-yold));
        break;
     }
  }
  XSelectInput (display, toplevel, ExposureMask | StructureNotifyMask
-                | ButtonPressMask); 
+                | ButtonPressMask);
 }
 
 
@@ -1650,7 +1650,7 @@ static void postscript (void (*drawscreen) (void)) {
  sprintf(fname,"pic%d.ps",piccount);
  success = init_postscript (fname);
 
- if (success == 0) 
+ if (success == 0)
     return;  /* Couldn't open file, abort. */
 
  drawscreen();
@@ -1688,7 +1688,7 @@ void close_graphics (void) {
  XFreeGC(display,gcxor);
  XFreeGC(display,gc_menus);
 
- if (private_cmap != None) 
+ if (private_cmap != None)
     XFreeColormap (display, private_cmap);
 
  XCloseDisplay(display);
@@ -1717,7 +1717,7 @@ int init_postscript (char *fname) {
  update_ps_transform();
 /* Bottom margin is at ps_bot - 15. to leave room for the on-screen message. */
  fprintf(ps,"%%%%BoundingBox: %.2f %.2f %.2f %.2f\n",
-      ps_left, ps_bot - 15., ps_right, ps_top); 
+      ps_left, ps_bot - 15., ps_right, ps_top);
  fprintf(ps,"%%%%EndComments\n");
 
  fprintf(ps,"/censhow   %%draw a centered string\n");
@@ -1725,7 +1725,7 @@ int init_postscript (char *fname) {
  fprintf(ps,"   dup stringwidth pop  %% get x length of string\n");
  fprintf(ps,"   -2 div               %% Proper left start\n");
  fprintf(ps,"   yoff rmoveto         %% Move left that much and down half font height\n");
- fprintf(ps,"   show newpath } def   %% show the string\n\n"); 
+ fprintf(ps,"   show newpath } def   %% show the string\n\n");
 
  fprintf(ps,"/setfontsize     %% set font to desired size and compute "
                 "centering yoff\n");
@@ -1774,7 +1774,7 @@ int init_postscript (char *fname) {
  fprintf (ps,"/fillpoly { 3 1 roll moveto         %% move to first point\n"
            "   2 exch 1 exch {pop lineto} for   %% line to all other points\n"
            "   closepath fill } def\n\n");
- 
+
 
  fprintf(ps,"%%Color Definitions:\n");
  fprintf(ps,"/white { 1 setgray } def\n");
@@ -1800,7 +1800,7 @@ int init_postscript (char *fname) {
  force_setcolor (currentcolor);
  force_setlinestyle (currentlinestyle);
  force_setlinewidth (currentlinewidth);
- force_setfontsize (currentfontsize); 
+ force_setfontsize (currentfontsize);
 
 /* Draw this in the bottom margin -- must do before the clippath is set */
  draw_message ();
@@ -1830,7 +1830,7 @@ void close_postscript (void) {
  force_setcolor (currentcolor);
  force_setlinestyle (currentlinestyle);
  force_setlinewidth (currentlinewidth);
- force_setfontsize (currentfontsize); 
+ force_setfontsize (currentfontsize);
 }
 
 #else   /* NO_GRAPHICS build -- rip out graphics */
@@ -1866,7 +1866,7 @@ void create_button (char *prev_button_text , char *button_text,
 
 void destroy_button (char *button_text) { }
 
-int init_postscript (char *fname) { 
+int init_postscript (char *fname) {
      return (1);
 }
 

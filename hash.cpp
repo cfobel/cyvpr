@@ -12,10 +12,10 @@ static int hash_value (char *name);
 struct s_hash **alloc_hash_table (void) {
 
 /* Creates a hash table with HASHSIZE different locations (hash values).   */
- 
+
  struct s_hash **hash_table;
 
- hash_table = (struct s_hash **) my_calloc (sizeof(struct s_hash *), 
+ hash_table = (struct s_hash **) my_calloc (sizeof(struct s_hash *),
               HASHSIZE);
  return (hash_table);
 }
@@ -55,7 +55,7 @@ struct s_hash_iterator start_hash_table_iterator (void) {
 }
 
 
-struct s_hash *get_next_hash (struct s_hash **hash_table, struct 
+struct s_hash *get_next_hash (struct s_hash **hash_table, struct
           s_hash_iterator *hash_iterator) {
 
 /* Returns the next occupied hash entry, and moves the iterator structure    *
@@ -69,7 +69,7 @@ struct s_hash *get_next_hash (struct s_hash **hash_table, struct
 
  while (h_ptr == NULL) {
     i++;
-    if (i >= HASHSIZE) 
+    if (i >= HASHSIZE)
        return (NULL);   /* End of table */
 
     h_ptr = hash_table[i];
@@ -90,24 +90,24 @@ struct s_hash *insert_in_hash_table (struct s_hash **hash_table, char *name,
  * hash entry with a count of zero and an index of next_free_index is       *
  * created.                                                                 */
 
- int i;  
- struct s_hash *h_ptr, *prev_ptr; 
- 
- i = hash_value (name);  
+ int i;
+ struct s_hash *h_ptr, *prev_ptr;
+
+ i = hash_value (name);
  prev_ptr = NULL;
  h_ptr = hash_table[i];
- 
- while (h_ptr != NULL) { 
+
+ while (h_ptr != NULL) {
     if (strcmp (h_ptr->name, name) == 0) {
        h_ptr->count++;
        return (h_ptr);
     }
- 
-    prev_ptr = h_ptr;
-    h_ptr = h_ptr->next; 
- } 
 
-/* Name string wasn't in the hash table.  Add it. */ 
+    prev_ptr = h_ptr;
+    h_ptr = h_ptr->next;
+ }
+
+/* Name string wasn't in the hash table.  Add it. */
 
  h_ptr = (struct s_hash *) my_malloc (sizeof(struct s_hash));
  if (prev_ptr == NULL) {
@@ -137,7 +137,7 @@ struct s_hash *get_hash_entry (struct s_hash **hash_table, char *name) {
  h_ptr = hash_table[i];
 
  while (h_ptr != NULL) {
-    if (strcmp (h_ptr->name, name) == 0) 
+    if (strcmp (h_ptr->name, name) == 0)
        return (h_ptr);
 
     h_ptr = h_ptr->next;
@@ -156,7 +156,7 @@ static int hash_value (char *name) {
  int val=0, mult=1;
 
  i = strlen(name);
- k = max (i-8,0);
+ k = my_max(i-8,0);
  for (i=strlen(name)-1;i>=k;i--) {
     val += mult*((int) name[i]);
     mult *= 7;

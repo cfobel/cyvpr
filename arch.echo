@@ -1,4 +1,4 @@
-Input netlist file: 4lut_sanitized.arch
+Input netlist file: /var/benchmarks/4lut_sanitized.arch
 
 io_rat: 2.
 chan_width_io: 1  pins_per_clb (pins per clb): 6

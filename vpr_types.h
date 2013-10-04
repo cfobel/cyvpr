@@ -1,3 +1,8 @@
+#ifndef ___VPR_TYPES_H___
+#define ___VPR_TYPES_H___
+
+#include "util.h"
+
 #ifndef SPEC
 #define DEBUG 1     /* Echoes input & checks error conditions */
                     /* Only causes about a 1% speed degradation in V 3.10 */
@@ -45,7 +50,7 @@ enum pic_type {NO_PICTURE, PLACEMENT, ROUTING};  /* What's on screen? */
 
 enum place_c_types {LINEAR_CONG, NONLINEAR_CONG};
 
-enum e_operation {PLACE_AND_ROUTE, PLACE_ONLY, ROUTE_ONLY, 
+enum e_operation {PLACE_AND_ROUTE, PLACE_ONLY, ROUTE_ONLY,
                   TIMING_ANALYSIS_ONLY};
 
 enum pfreq {PLACE_NEVER, PLACE_ONCE, PLACE_ALWAYS};
@@ -54,7 +59,7 @@ enum pfreq {PLACE_NEVER, PLACE_ONCE, PLACE_ALWAYS};
  * locked in user-specified positions?                                 */
 
 enum e_pad_loc_type {FREE, RANDOM, USER};
-                                
+
 
 struct s_net {char *name; int num_pins; int *blocks; int *blk_pin; };
 
@@ -69,16 +74,16 @@ struct s_net {char *name; int num_pins; int *blocks; int *blk_pin; };
 
 
 struct s_block {char *name; enum e_block_types type; int *nets; int x;
-        int y;}; 
+        int y;};
 
 /* name:  Taken from the net which it drives.                        *
  * type:  CLB, INPAD or OUTPAD                                       *
  * nets[]:  List of nets connected to this block.  If nets[i] = OPEN *
             no net is connected to pin i.                            *
- * x,y:  physical location of the placed block.                      */ 
+ * x,y:  physical location of the placed block.                      */
 
 
-struct s_clb {enum e_block_types type; int occ; union { int block; 
+struct s_clb {enum e_block_types type; int occ; union { int block;
           int *io_blocks;} u;};
 
 /* type: CLB, IO or ILLEGAL.                                         *
@@ -112,7 +117,7 @@ typedef struct {float chan_width_io; t_chan chan_x_dist; t_chan chan_y_dist; }
  * chan_y_dist: Describes the y-directed channel width distribution.         */
 
 
-struct s_class {enum e_pin_type type; int num_pins; int *pinlist;};   
+struct s_class {enum e_pin_type type; int num_pins; int *pinlist;};
 
 /* type:  DRIVER or RECEIVER (what is this pinclass?)              *
  * num_pins:  The number of logically equivalent pins forming this *
@@ -145,7 +150,7 @@ typedef struct {char *name; int output; int clock; int *inputs;} t_subblock;
 
 typedef struct {t_subblock **subblock_inf; int *num_subblocks_per_block;
         int max_subblocks_per_block; int subblock_lut_size; int num_ff;
-        int num_const_gen; struct s_linked_vptr *chunk_head_ptr;} 
+        int num_const_gen; struct s_linked_vptr *chunk_head_ptr;}
         t_subblock_data;
 
 /* This structure contains all the information relevant to subblocks (what's *
@@ -180,7 +185,7 @@ struct s_placer_opts {enum e_place_algorithm place_algorithm;
        float timing_tradeoff;
        int block_dist;
        enum place_c_types place_cost_type; float place_cost_exp;
-       int place_chan_width; enum e_pad_loc_type pad_loc_type; 
+       int place_chan_width; enum e_pad_loc_type pad_loc_type;
        char *pad_loc_file; enum pfreq place_freq; int num_regions;
        int recompute_crit_iter;
        boolean enable_timing_computations;
@@ -221,15 +226,15 @@ struct s_placer_opts {enum e_place_algorithm place_algorithm;
 
 enum e_route_type {GLOBAL, DETAILED};
 enum e_router_algorithm {BREADTH_FIRST, TIMING_DRIVEN};
-enum e_base_cost_type {INTRINSIC_DELAY, DELAY_NORMALIZED, DEMAND_ONLY}; 
+enum e_base_cost_type {INTRINSIC_DELAY, DELAY_NORMALIZED, DEMAND_ONLY};
 #define NO_FIXED_CHANNEL_WIDTH -1
 
 struct s_router_opts {float first_iter_pres_fac; float initial_pres_fac;
    float pres_fac_mult; float acc_fac; float bend_cost;
    int max_router_iterations; int bb_factor; enum e_route_type route_type;
    int fixed_channel_width; enum e_router_algorithm router_algorithm;
-   enum e_base_cost_type base_cost_type; float astar_fac; 
-   float max_criticality; float criticality_exp;}; 
+   enum e_base_cost_type base_cost_type; float astar_fac;
+   float max_criticality; float criticality_exp;};
 
 /* All the parameters controlling the router's operation are in this        *
  * structure.                                                               *
@@ -270,14 +275,14 @@ struct s_router_opts {float first_iter_pres_fac; float initial_pres_fac;
  *                  will ever have (i.e. clip criticality to this number).  *
  * criticality_exp: Set criticality to (path_length(sink) / longest_path) ^ *
  *                  criticality_exp (then clip to max_criticality).         */
- 
+
 
 enum e_switch_block_type {SUBSET, WILTON, UNIVERSAL};
 enum e_Fc_type {ABSOLUTE, FRACTIONAL};
 
-struct s_det_routing_arch {enum e_Fc_type Fc_type; float Fc_output; 
+struct s_det_routing_arch {enum e_Fc_type Fc_type; float Fc_output;
    float Fc_input; float Fc_pad; enum e_switch_block_type switch_block_type;
-   int num_segment; short num_switch; short delayless_switch; short 
+   int num_segment; short num_switch; short delayless_switch; short
    wire_to_ipin_switch; float R_minW_nmos; float R_minW_pmos;};
 
 /* Defines the detailed routing architecture of the FPGA.  Only important   *
@@ -307,8 +312,8 @@ struct s_det_routing_arch {enum e_Fc_type Fc_type; float Fc_output;
  * R_minW_pmos:  Resistance (in Ohms) of a minimum width pmos transistor.   */
 
 
-typedef struct {float frequency; int length; short wire_switch; 
-        short opin_switch; float frac_cb; float frac_sb; boolean longline; 
+typedef struct {float frequency; int length; short wire_switch;
+        short opin_switch; float frac_cb; float frac_sb; boolean longline;
         float Rmetal; float Cmetal;} t_segment_inf;
 
 /* Lists all the important information about a certain segment type.  Only   *
@@ -341,8 +346,8 @@ struct s_switch_inf {boolean buffered; float R; float Cin; float Cout; float
  *        Tdel + R * Cout.                                                   */
 
 
-typedef struct {int length; int start; boolean longline; boolean *sb; 
-          boolean *cb; short wire_switch; short opin_switch; float Rmetal; 
+typedef struct {int length; int start; boolean longline; boolean *sb;
+          boolean *cb; short wire_switch; short opin_switch; float Rmetal;
           float Cmetal; int index;} t_seg_details;
 
 /* Lists detailed information about segmentation.  [0 .. W-1].              *
@@ -376,9 +381,9 @@ typedef struct {float T_comb; float T_seq_in; float T_seq_out;} t_T_subblock;
  *            any combinational path (muxes, etc.) on the output.          */
 
 
-typedef struct {boolean timing_analysis_enabled; float C_ipin_cblock; 
-          float T_ipin_cblock; float T_sblk_opin_to_sblk_ipin; float 
-          T_clb_ipin_to_sblk_ipin; float T_sblk_opin_to_clb_opin; 
+typedef struct {boolean timing_analysis_enabled; float C_ipin_cblock;
+          float T_ipin_cblock; float T_sblk_opin_to_sblk_ipin; float
+          T_clb_ipin_to_sblk_ipin; float T_sblk_opin_to_clb_opin;
           float T_ipad; float T_opad; t_T_subblock *T_subblock;} t_timing_inf;
 
 /* C_ipin_cblock: Capacitance added to a routing track by the isolation     *
@@ -433,8 +438,8 @@ struct s_trace {int index; short iswitch; struct s_trace *next;};
 
 #define NO_PREVIOUS -1
 
-typedef struct {short xlow; short xhigh; short ylow; short yhigh; 
-     short ptc_num; short cost_index; short occ; short capacity; 
+typedef struct {short xlow; short xhigh; short ylow; short yhigh;
+     short ptc_num; short cost_index; short occ; short capacity;
      short num_edges; t_rr_type type; int *edges; short *switches; float R;
      float C; } t_rr_node;
 
@@ -476,8 +481,8 @@ typedef struct {short xlow; short xhigh; short ylow; short yhigh;
  *     box buffer capacitances hanging off it.                               */
 
 
-typedef struct {float base_cost; float saved_base_cost; int ortho_cost_index; 
-                int seg_index; float inv_length; float T_linear; 
+typedef struct {float base_cost; float saved_base_cost; int ortho_cost_index;
+                int seg_index; float inv_length; float T_linear;
                 float T_quadratic; float C_load; } t_rr_indexed_data;
 
 /* Data that is pointed to by the .cost_index member of t_rr_node.  It's     *
@@ -508,3 +513,5 @@ enum e_cost_indices {SOURCE_COST_INDEX = 0, SINK_COST_INDEX, OPIN_COST_INDEX,
 
 /* Gives the index of the SOURCE, SINK, OPIN, IPIN, etc. member of           *
  * rr_indexed_data.                                                          */
+
+#endif // ___VPR_TYPES_H___

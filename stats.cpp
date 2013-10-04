@@ -12,10 +12,10 @@
 
 /********************** Subroutines local to this module *********************/
 
-static void load_channel_occupancies (int **chanx_occ, int **chany_occ); 
+static void load_channel_occupancies (int **chanx_occ, int **chany_occ);
 
-static void get_num_bends_and_length (int inet, int *bends, int *length, int 
-            *segments); 
+static void get_num_bends_and_length (int inet, int *bends, int *length, int
+            *segments);
 
 static void get_length_and_bends_stats (void);
 
@@ -26,7 +26,7 @@ static void get_channel_occupancy_stats (void);
 /************************* Subroutine definitions ****************************/
 
 
-void routing_stats (boolean full_stats, enum e_route_type route_type, 
+void routing_stats (boolean full_stats, enum e_route_type route_type,
          int num_switch, t_segment_inf *segment_inf, int num_segment,
          float R_minW_nmos, float R_minW_pmos, boolean timing_analysis_enabled,
          float **net_slack, float **net_delay) {
@@ -45,15 +45,15 @@ void routing_stats (boolean full_stats, enum e_route_type route_type,
     get_segment_usage_stats (num_segment, segment_inf);
 
     if (timing_analysis_enabled) {
-       load_net_delay_from_routing (net_delay);   
+       load_net_delay_from_routing (net_delay);
 
 #ifdef PRINT_NET_DELAYS
-       print_net_delay (net_delay, "net_delay.echo"); 
+       print_net_delay (net_delay, "net_delay.echo");
 #endif
        load_timing_graph_net_delays (net_delay);
        T_crit = load_net_slack (net_slack, 0);
 #ifdef PRINT_TIMING_GRAPH
-       print_timing_graph ("timing_graph.echo"); 
+       print_timing_graph ("timing_graph.echo");
 #endif
 #ifdef PRINT_NET_SLACKS
        print_net_slack ("net_slack.echo", net_slack);
@@ -64,7 +64,7 @@ void routing_stats (boolean full_stats, enum e_route_type route_type,
     }
  }
 
- if (full_stats == TRUE) 
+ if (full_stats == TRUE)
     print_wirelen_prob_dist ();
 }
 
@@ -92,26 +92,26 @@ static void get_length_and_bends_stats (void) {
        get_num_bends_and_length (inet, &bends, &length, &segments);
 
        total_bends += bends;
-       max_bends = max (bends, max_bends);
+       max_bends = my_max(bends, max_bends);
 
        total_length += length;
-       max_length = max (length, max_length);
+       max_length = my_max(length, max_length);
 
        total_segments += segments;
-       max_segments = max (segments, max_segments);
+       max_segments = my_max(segments, max_segments);
     }
- }     
- 
+ }
+
  av_bends = (float) total_bends / (float) (num_nets - num_globals);
  printf ("\nAverage number of bends per net: %#g  Maximum # of bends: %d\n\n",
     av_bends, max_bends);
-       
+
  av_length = (float) total_length / (float) (num_nets - num_globals);
  printf ("Wirelength results (all in units of 1 clb segments):\n");
  printf ("\tTotal wirelength: %d   Average net length: %#g\n", total_length,
        av_length);
  printf ("\tMaximum net length: %d\n\n", max_length);
- 
+
  av_segments = (float) total_segments / (float) (num_nets - num_globals);
  printf ("Wirelength results in terms of physical segments:\n");
  printf ("\tTotal wiring segments used: %d   Av. wire segments per net: "
@@ -133,47 +133,47 @@ static void get_channel_occupancy_stats (void) {
  chanx_occ = (int **) alloc_matrix (1, nx, 0, ny, sizeof(int));
  chany_occ = (int **) alloc_matrix (0, nx, 1, ny, sizeof(int));
  load_channel_occupancies (chanx_occ, chany_occ);
- 
+
  printf("\nX - Directed channels:\n\n");
  printf("j\tmax occ\tav_occ\t\tcapacity\n");
- 
+
  total_x = 0;
- 
+
  for (j=0;j<=ny;j++) {
     total_x += chan_width_x[j];
     av_occ = 0.;
     max_occ = -1;
-       
+
     for (i=1;i<=nx;i++) {
-       max_occ = max (chanx_occ[i][j], max_occ);
+       max_occ = my_max(chanx_occ[i][j], max_occ);
        av_occ += chanx_occ[i][j];
     }
     av_occ /= nx;
     printf("%d\t%d\t%-#9g\t%d\n", j, max_occ, av_occ, chan_width_x[j]);
- }     
- 
- 
+ }
+
+
  printf("\nY - Directed channels:\n\n");
  printf("i\tmax occ\tav_occ\t\tcapacity\n");
- 
+
  total_y = 0;
- 
+
  for (i=0;i<=nx;i++) {
     total_y += chan_width_y[i];
     av_occ = 0.;
     max_occ = -1;
-       
+
     for (j=1;j<=ny;j++) {
-       max_occ = max (chany_occ[i][j], max_occ);
+       max_occ = my_max(chany_occ[i][j], max_occ);
        av_occ += chany_occ[i][j];
     }
     av_occ /= ny;
     printf("%d\t%d\t%-#9g\t%d\n", i, max_occ, av_occ, chan_width_y[i]);
- }     
- 
+ }
+
  printf("\nTotal Tracks in X-direction: %d  in Y-direction: %d\n\n",
       total_x, total_y);
-       
+
  free_matrix (chanx_occ, 1, nx, 0, sizeof(int));
  free_matrix (chany_occ, 0, nx, 1, sizeof(int));
 }
@@ -201,10 +201,10 @@ static void load_channel_occupancies (int **chanx_occ, int **chany_occ) {
 /* Now go through each net and count the tracks and pins used everywhere */
 
  for (inet=0;inet<num_nets;inet++) {
-   
+
     if (is_global[inet])            /* Skip global nets. */
        continue;
- 
+
     tptr = trace_head[inet];
     while (tptr != NULL) {
        inode = tptr->index;
@@ -218,18 +218,18 @@ static void load_channel_occupancies (int **chanx_occ, int **chany_occ) {
 
        else if (rr_type == CHANX) {
           j = rr_node[inode].ylow;
-          for (i=rr_node[inode].xlow;i<=rr_node[inode].xhigh;i++) 
+          for (i=rr_node[inode].xlow;i<=rr_node[inode].xhigh;i++)
              chanx_occ[i][j]++;
-       }    
+       }
 
        else if (rr_type == CHANY) {
           i = rr_node[inode].xlow;
           for (j=rr_node[inode].ylow;j<=rr_node[inode].yhigh;j++)
              chany_occ[i][j]++;
-       }    
+       }
 
        tptr = tptr->next;
-    }   
+    }
  }
 }
 
@@ -266,18 +266,18 @@ static void get_num_bends_and_length (int inet, int *bends_ptr, int *len_ptr,
 
     if (curr_type == SINK) {  /* Starting a new segment */
        tptr = tptr->next;      /* Link to existing path - don't add to len. */
-       if (tptr == NULL) 
+       if (tptr == NULL)
           break;
 
        curr_type = rr_node[tptr->index].type;
     }
-    
+
     else if (curr_type == CHANX || curr_type == CHANY) {
        segments++;
-       length += 1 + rr_node[inode].xhigh - rr_node[inode].xlow + 
+       length += 1 + rr_node[inode].xhigh - rr_node[inode].xlow +
                 rr_node[inode].yhigh - rr_node[inode].ylow;
-       
-       if (curr_type != prev_type && (prev_type == CHANX || prev_type == 
+
+       if (curr_type != prev_type && (prev_type == CHANX || prev_type ==
                       CHANY))
           bends++;
     }
@@ -293,19 +293,19 @@ static void get_num_bends_and_length (int inet, int *bends_ptr, int *len_ptr,
 
 
 void print_wirelen_prob_dist (void) {
- 
+
 /* Prints out the probability distribution of the wirelength / number   *
  * input pins on a net -- i.e. simulates 2-point net length probability *
  * distribution.                                                        */
- 
+
  float *prob_dist;
  float norm_fac, two_point_length;
  int inet, bends, length, segments, index;
  float av_length;
- 
+
  prob_dist = (float *) my_calloc (nx + ny + 3, sizeof (float));
  norm_fac = 0.;
- 
+
  for (inet=0;inet<num_nets;inet++) {
     if (is_global[inet] == FALSE) {
        get_num_bends_and_length (inet, &bends, &length, &segments);
@@ -317,21 +317,21 @@ void print_wirelen_prob_dist (void) {
        two_point_length = (float) length / (float) (net[inet].num_pins - 1);
        index = (int) two_point_length;
        prob_dist[index] += (net[inet].num_pins - 1.) * (1 - two_point_length
-                                 + index); 
+                                 + index);
 
        index++;
-       prob_dist[index] += (net[inet].num_pins - 1.) * (1 - index + 
+       prob_dist[index] += (net[inet].num_pins - 1.) * (1 - index +
            two_point_length);
-       
+
        norm_fac += net[inet].num_pins - 1.;
     }
  }
- 
+
 /* Normalize so total probability is 1 and print out. */
- 
+
  printf ("\nProbability distribution of 2-pin net lengths:\n\n");
  printf ("Length    p(Lenth)\n");
- 
+
  av_length = 0;
 
  for (index=0;index<nx+ny+3;index++) {
@@ -342,7 +342,7 @@ void print_wirelen_prob_dist (void) {
 
  printf("\nExpected value of 2-pin net length (R) is: %g\n",
        av_length);
- 
+
  free ((void *) prob_dist);
 }
 
@@ -352,12 +352,12 @@ void print_lambda (void) {
 /* Finds the average number of input pins used per clb.  Does not   *
  * count inputs which are hooked to global nets (i.e. the clock     *
  * when it is marked global).                                       */
- 
+
  int bnum, ipin;
  int num_inputs_used = 0;
  int iclass, inet;
  float lambda;
- 
+
  for (bnum=0;bnum<num_blocks;bnum++) {
     if (block[bnum].type == CLB) {
        for (ipin=0;ipin<pins_per_clb;ipin++) {

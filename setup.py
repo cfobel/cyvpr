@@ -6,11 +6,12 @@ from distutils.core import setup, Extension
 from Cython.Build import cythonize
 from path import path
 
-#include_dirs = cyplace.get_includes()
-#sys.path += include_dirs
+include_dirs = [path('.').abspath(), ]
+sys.path += include_dirs
 
 #cy_config = dict(include_dirs=include_dirs, language='c++',
-cy_config = dict(language='c++', extra_compile_args=['-O3', '-Wfatal-errors'],
+cy_config = dict(include_dirs=include_dirs, language='c++',
+                 extra_compile_args=['-O3', '-Wfatal-errors'],
                  libraries=['X11', 'm'])
 c_files = map(str, path('.').abspath().files('*.c'))
 cpp_files = map(str, path('.').abspath().files('*.cpp'))

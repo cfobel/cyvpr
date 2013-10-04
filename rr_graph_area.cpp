@@ -11,19 +11,19 @@
 
 static float get_cblock_trans (int *num_inputs_to_cblock, int
            max_inputs_to_cblock, float trans_cblock_to_lblock_buf,
-           float trans_sram_bit); 
+           float trans_sram_bit);
 
 static float *alloc_and_load_unsharable_switch_trans (int num_switch,
-         float trans_sram_bit, float R_minW_nmos); 
+         float trans_sram_bit, float R_minW_nmos);
 
 static float *alloc_and_load_sharable_switch_trans (int num_switch,
          float trans_sram_bit, float R_minW_nmos, float R_minW_pmos);
 
-static float trans_per_buf (float Rbuf, float R_minW_nmos, float R_minW_pmos); 
+static float trans_per_buf (float Rbuf, float R_minW_nmos, float R_minW_pmos);
 
-static float trans_per_mux (int num_inputs, float trans_sram_bit); 
+static float trans_per_mux (int num_inputs, float trans_sram_bit);
 
-static float trans_per_R (float Rtrans, float R_minW_trans); 
+static float trans_per_R (float Rtrans, float R_minW_trans);
 
 
 /*************************** Subroutine definitions **************************/
@@ -93,7 +93,7 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
  * cblock outputs to the logic block, respectively.  Assume minimum size n  *
  * transistors, and ptransistors sized to make the pull-up R = pull-down R. */
 
- float trans_track_to_cblock_buf; 
+ float trans_track_to_cblock_buf;
  float trans_cblock_to_lblock_buf;
 
 
@@ -102,10 +102,10 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
  max_inputs_to_cblock = 0;
 
 /* Assume the two buffers below are 4x minimum drive strength (enough to *
- * drive a fanout of up to 16 pretty nicely -- should cover a reasonable * 
+ * drive a fanout of up to 16 pretty nicely -- should cover a reasonable *
  * wiring C plus the fanout.                                             */
 
- trans_track_to_cblock_buf = trans_per_buf (R_minW_nmos/4., R_minW_nmos, 
+ trans_track_to_cblock_buf = trans_per_buf (R_minW_nmos/4., R_minW_nmos,
                                             R_minW_pmos);
 
  trans_cblock_to_lblock_buf = trans_per_buf (R_minW_nmos/4., R_minW_nmos,
@@ -113,10 +113,10 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
 
 /* trans_track_to_cblock_buf = 1. + trans_per_R (R_minW_nmos, R_minW_pmos);
  trans_cblock_to_lblock_buf = 1. + trans_per_R (R_minW_nmos, R_minW_pmos); */
- 
+
  num_inputs_to_cblock = (int *) my_calloc (num_rr_nodes, sizeof (int));
 
- maxlen = max (nx, ny) + 1;
+ maxlen = my_max(nx, ny) + 1;
  cblock_counted = (boolean *) my_calloc (maxlen, sizeof (boolean));
  shared_buffer_trans = (float *) my_calloc (maxlen, sizeof (float));
 
@@ -129,32 +129,32 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
  for (from_node=0;from_node<num_rr_nodes;from_node++) {
 
     from_rr_type = rr_node[from_node].type;
-    
+
     switch (from_rr_type) {
 
     case CHANX: case CHANY:
        num_edges = rr_node[from_node].num_edges;
 
        for (iedge=0;iedge<num_edges;iedge++) {
-        
+
           to_node = rr_node[from_node].edges[iedge];
           to_rr_type = rr_node[to_node].type;
-          
+
           switch (to_rr_type) {
-  
+
           case CHANX: case CHANY:
              iswitch = rr_node[from_node].switches[iedge];
 
              if (switch_inf[iswitch].buffered) {
                 iseg = seg_index_of_sblock (from_node, to_node);
-                shared_buffer_trans[iseg] = max (shared_buffer_trans[iseg],
+                shared_buffer_trans[iseg] = my_max(shared_buffer_trans[iseg],
                                          sharable_switch_trans[iswitch]);
 
                 ntrans_no_sharing += unsharable_switch_trans[iswitch] +
                                      sharable_switch_trans[iswitch];
                 ntrans_sharing += unsharable_switch_trans[iswitch];
              }
-             else if (from_node < to_node) {  
+             else if (from_node < to_node) {
 
              /* Pass transistor shared by two edges -- only count once.  *
               * Also, no part of a pass transistor is sharable.          */
@@ -166,7 +166,7 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
 
           case IPIN:
              num_inputs_to_cblock[to_node]++;
-             max_inputs_to_cblock = max (max_inputs_to_cblock, 
+             max_inputs_to_cblock = my_max(max_inputs_to_cblock,
                                          num_inputs_to_cblock[to_node]);
 
              iseg = seg_index_of_cblock (from_rr_type, to_node);
@@ -186,7 +186,7 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
              break;
 
           }   /* End switch on to_rr_type. */
-          
+
        }   /* End for each edge. */
 
       /* Now add in the shared buffer transistors, and reset some flags. */
@@ -197,7 +197,7 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
              shared_buffer_trans[i] = 0.;
           }
 
-          for (i=rr_node[from_node].xlow;i<=rr_node[from_node].xhigh;i++) 
+          for (i=rr_node[from_node].xlow;i<=rr_node[from_node].xhigh;i++)
              cblock_counted[i] = FALSE;
 
        }
@@ -207,7 +207,7 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
              shared_buffer_trans[j] = 0.;
           }
 
-          for (j=rr_node[from_node].ylow;j<=rr_node[from_node].yhigh;j++) 
+          for (j=rr_node[from_node].ylow;j<=rr_node[from_node].yhigh;j++)
              cblock_counted[j] = FALSE;
 
        }
@@ -219,17 +219,17 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
 
        for (iedge=0;iedge<num_edges;iedge++) {
           iswitch = rr_node[from_node].switches[iedge];
-          ntrans_no_sharing += unsharable_switch_trans[iswitch] + 
+          ntrans_no_sharing += unsharable_switch_trans[iswitch] +
                                sharable_switch_trans[iswitch];
-          ntrans_sharing += unsharable_switch_trans[iswitch]; 
+          ntrans_sharing += unsharable_switch_trans[iswitch];
 
-          shared_opin_buffer_trans = max (shared_opin_buffer_trans, 
+          shared_opin_buffer_trans = my_max(shared_opin_buffer_trans,
                                          sharable_switch_trans[iswitch]);
        }
 
        ntrans_sharing += shared_opin_buffer_trans;
        break;
- 
+
     default:
        break;
 
@@ -243,7 +243,7 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
 
 /* Now add in the input connection block transistors. */
 
- input_cblock_trans = get_cblock_trans (num_inputs_to_cblock, 
+ input_cblock_trans = get_cblock_trans (num_inputs_to_cblock,
              max_inputs_to_cblock, trans_cblock_to_lblock_buf, trans_sram_bit);
 
  free (num_inputs_to_cblock);
@@ -259,8 +259,8 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
 }
 
 
-static float get_cblock_trans (int *num_inputs_to_cblock, int 
-           max_inputs_to_cblock, float trans_cblock_to_lblock_buf, 
+static float get_cblock_trans (int *num_inputs_to_cblock, int
+           max_inputs_to_cblock, float trans_cblock_to_lblock_buf,
            float trans_sram_bit) {
 
 /* Computes the transistors in the input connection block multiplexers and   *
@@ -272,7 +272,7 @@ static float get_cblock_trans (int *num_inputs_to_cblock, int
  float trans_count;
  int i, num_inputs;
 
- trans_per_cblock = (float *) my_malloc ((max_inputs_to_cblock + 1) * 
+ trans_per_cblock = (float *) my_malloc ((max_inputs_to_cblock + 1) *
                          sizeof(float));
 
  trans_per_cblock[0] = 0.;   /* i.e., not an IPIN or no inputs */
@@ -281,8 +281,8 @@ static float get_cblock_trans (int *num_inputs_to_cblock, int
  * buffer even when the number of inputs = 1 (i.e. no mux) because I assume  *
  * I need the drivability just for metal capacitance.                        */
 
- for (i=1;i<=max_inputs_to_cblock;i++) 
-    trans_per_cblock[i] = trans_per_mux (i, trans_sram_bit) + 
+ for (i=1;i<=max_inputs_to_cblock;i++)
+    trans_per_cblock[i] = trans_per_mux (i, trans_sram_bit) +
                           trans_cblock_to_lblock_buf;
 
  trans_count = 0.;
@@ -297,7 +297,7 @@ static float get_cblock_trans (int *num_inputs_to_cblock, int
 }
 
 
-static float *alloc_and_load_unsharable_switch_trans (int num_switch, 
+static float *alloc_and_load_unsharable_switch_trans (int num_switch,
          float trans_sram_bit, float R_minW_nmos) {
 
 /* Loads up an array that says how many transistors are needed to implement  *
@@ -318,7 +318,7 @@ static float *alloc_and_load_unsharable_switch_trans (int num_switch,
     else {   /* Buffer.  Set Rpass = Rbuf = 1/2 Rtotal. */
        Rpass = switch_inf[i].R / 2.;
     }
-    
+
     unsharable_switch_trans[i] = trans_per_R (Rpass, R_minW_nmos) +
                                  trans_sram_bit;
  }
@@ -335,27 +335,27 @@ static float *alloc_and_load_sharable_switch_trans (int num_switch,
  * the pass transistor (forming either the entire switch or the output part  *
  * of a tri-state buffer) are both unsharable.  Only the buffer part of a    *
  * buffer switch is sharable.                                                */
- 
+
  float *sharable_switch_trans, Rbuf;
  int i;
- 
+
  sharable_switch_trans = (float *) my_malloc (num_switch * sizeof (float));
- 
+
  for (i=0;i<num_switch;i++) {
- 
+
     if (switch_inf[i].buffered == FALSE) {
        sharable_switch_trans[i] = 0.;
     }
     else {   /* Buffer.  Set Rbuf = Rpass = 1/2 Rtotal. */
        Rbuf = switch_inf[i].R / 2.;
-       sharable_switch_trans[i] = trans_per_buf (Rbuf, R_minW_nmos, 
+       sharable_switch_trans[i] = trans_per_buf (Rbuf, R_minW_nmos,
                                   R_minW_pmos);
     }
  }
- 
+
  return (sharable_switch_trans);
 }
- 
+
 
 static float trans_per_buf (float Rbuf, float R_minW_nmos, float R_minW_pmos) {
 
@@ -367,7 +367,7 @@ static float trans_per_buf (float Rbuf, float R_minW_nmos, float R_minW_pmos) {
  float trans_count, stage_ratio, Rstage;
 
  if (Rbuf > 0.6 * R_minW_nmos || Rbuf <= 0.) { /* Use a single-stage buffer */
-    trans_count = trans_per_R (Rbuf, R_minW_nmos) + trans_per_R (Rbuf, 
+    trans_count = trans_per_R (Rbuf, R_minW_nmos) + trans_per_R (Rbuf,
                                   R_minW_pmos);
  }
  else {   /* Use a multi-stage buffer */
@@ -376,7 +376,7 @@ static float trans_per_buf (float Rbuf, float R_minW_nmos, float R_minW_pmos) {
   * ones.                                                                  */
 
     num_stage = nint (log10 (R_minW_nmos / Rbuf) / log10 (4.));
-    num_stage = max (num_stage, 1);
+    num_stage = my_max(num_stage, 1);
     stage_ratio = pow (R_minW_nmos / Rbuf, 1. / (float) num_stage);
 
     Rstage = R_minW_nmos;
@@ -421,12 +421,12 @@ static float trans_per_R (float Rtrans, float R_minW_trans) {
  * to make a transistor with Rtrans, given that the resistance of a minimum  *
  * width transistor of this type is R_minW_trans.                            */
 
- float trans_area; 
+ float trans_area;
 
  if (Rtrans <= 0.)   /* Assume resistances are nonsense -- use min. width */
     return (1.);
 
- if (Rtrans >= R_minW_trans) 
+ if (Rtrans >= R_minW_trans)
     return (1.);
 
 /* Area = minimum width area (1) + 0.5 for each additional unit of width.  *
@@ -436,5 +436,5 @@ static float trans_per_R (float Rtrans, float R_minW_trans) {
  * needs only 1).                                                          */
 
  trans_area = 0.5 * R_minW_trans / Rtrans + 0.5;
- return (trans_area); 
+ return (trans_area);
 }

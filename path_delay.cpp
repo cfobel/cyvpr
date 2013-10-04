@@ -6,6 +6,7 @@
 #include "path_delay2.h"
 #include "net_delay.h"
 #include "vpr_utils.h"
+#include "Result.hpp"
 #include <assert.h>
 
 
@@ -89,36 +90,36 @@ static char *tedge_ch_next_avail = NULL;
 
 static int alloc_and_load_pin_mappings (int ***block_pin_to_tnode_ptr,
             int ****sblk_pin_to_tnode_ptr, t_subblock_data subblock_data,
-            int **num_uses_of_sblk_opin); 
+            int **num_uses_of_sblk_opin);
 
 static void free_pin_mappings (int **block_pin_to_tnode, int
           ***sblk_pin_to_tnode, int *num_subblocks_per_block);
 
 static void alloc_and_load_fanout_counts (int ***num_uses_of_clb_ipin_ptr,
-          int ***num_uses_of_sblk_opin_ptr, t_subblock_data subblock_data); 
+          int ***num_uses_of_sblk_opin_ptr, t_subblock_data subblock_data);
 
 static void free_fanout_counts (int **num_uses_of_clb_ipin, int
-             **num_uses_of_sblk_opin); 
+             **num_uses_of_sblk_opin);
 
-static float **alloc_net_slack (void); 
+static float **alloc_net_slack (void);
 
 static void compute_net_slacks (float **net_slack);
 
 static void alloc_and_load_tnodes_and_net_mapping (int **num_uses_of_clb_ipin,
           int **num_uses_of_sblk_opin, int **block_pin_to_tnode, int ***
           sblk_pin_to_tnode, t_subblock_data subblock_data, t_timing_inf
-          timing_inf); 
+          timing_inf);
 
 static void build_clb_tnodes (int iblk, int *n_uses_of_clb_ipin, int
         **block_pin_to_tnode, int **sub_pin_to_tnode, int subblock_lut_size,
         int num_subs, t_subblock *sub_inf, float T_clb_ipin_to_sblk_ipin,
-        int *next_clb_ipin_edge); 
+        int *next_clb_ipin_edge);
 
 static void build_subblock_tnodes (int *n_uses_of_sblk_opin,
           int *blk_pin_to_tnode, int **sub_pin_to_tnode,
           int subblock_lut_size, int num_subs, t_subblock *sub_inf,
           float T_sblk_opin_to_sblk_ipin, float T_sblk_opin_to_clb_opin,
-          t_T_subblock *T_subblock, int *next_sblk_opin_edge, int iblk); 
+          t_T_subblock *T_subblock, int *next_sblk_opin_edge, int iblk);
 
 static void build_ipad_tnodes (int iblk, int **block_pin_to_tnode, float
             T_ipad, int *num_subblocks_per_block, t_subblock
@@ -130,7 +131,7 @@ static boolean is_global_clock (int iblk, int *num_subblocks_per_block,
 static void build_opad_tnodes (int *blk_pin_to_tnode, float T_opad, int iblk);
 
 static void build_block_output_tnode (int inode, int iblk, int ipin,
-            int **block_pin_to_tnode); 
+            int **block_pin_to_tnode);
 
 
 
@@ -146,7 +147,7 @@ void free_subblock_data (t_subblock_data *subblock_data_ptr) {
  free (subblock_data_ptr->subblock_inf);
 
 /* Mark as freed. */
- 
+
  subblock_data_ptr->num_subblocks_per_block = NULL;
  subblock_data_ptr->subblock_inf = NULL;
  subblock_data_ptr->chunk_head_ptr = NULL;
@@ -197,7 +198,7 @@ float **alloc_and_load_timing_graph (t_timing_inf timing_inf, t_subblock_data
 
  if (subblock_data.max_subblocks_per_block > MAX_SHORT) {
     printf ("Error in alloc_and_load_timing_graph: max_subblocks_per_block"
-            "\tis %d -- will cause short overflow in tnode_descript.\n", 
+            "\tis %d -- will cause short overflow in tnode_descript.\n",
             subblock_data.max_subblocks_per_block);
     exit (1);
  }
@@ -211,16 +212,16 @@ float **alloc_and_load_timing_graph (t_timing_inf timing_inf, t_subblock_data
  alloc_and_load_fanout_counts (&num_uses_of_clb_ipin, &num_uses_of_sblk_opin,
                subblock_data);
 
- num_tnodes = alloc_and_load_pin_mappings (&block_pin_to_tnode, 
+ num_tnodes = alloc_and_load_pin_mappings (&block_pin_to_tnode,
                &sblk_pin_to_tnode, subblock_data, num_uses_of_sblk_opin);
 
- alloc_and_load_tnodes_and_net_mapping (num_uses_of_clb_ipin, 
-               num_uses_of_sblk_opin, block_pin_to_tnode, sblk_pin_to_tnode, 
+ alloc_and_load_tnodes_and_net_mapping (num_uses_of_clb_ipin,
+               num_uses_of_sblk_opin, block_pin_to_tnode, sblk_pin_to_tnode,
                subblock_data, timing_inf);
 
  num_sinks =  alloc_and_load_timing_graph_levels ();
- 
- check_timing_graph (subblock_data.num_const_gen, subblock_data.num_ff, 
+
+ check_timing_graph (subblock_data.num_const_gen, subblock_data.num_ff,
                num_sinks);
 
  free_fanout_counts (num_uses_of_clb_ipin, num_uses_of_sblk_opin);
@@ -243,12 +244,12 @@ static float **alloc_net_slack (void) {
  net_slack = (float **) my_malloc (num_nets * sizeof (float *));
 
  for (inet=0;inet<num_nets;inet++) {
-    tmp_ptr = (float *) my_chunk_malloc ((net[inet].num_pins - 1) * 
+    tmp_ptr = (float *) my_chunk_malloc ((net[inet].num_pins - 1) *
               sizeof (float), &tedge_ch_list_head, &tedge_ch_bytes_avail,
                &tedge_ch_next_avail);
     net_slack[inet] = tmp_ptr - 1;   /* [1..num_pins-1] */
  }
- 
+
  return (net_slack);
 }
 
@@ -274,7 +275,7 @@ static int alloc_and_load_pin_mappings (int ***block_pin_to_tnode_ptr,
  subblock_inf = subblock_data.subblock_inf;
 
 
- block_pin_to_tnode = (int **) alloc_matrix (0, num_blocks - 1, 0, 
+ block_pin_to_tnode = (int **) alloc_matrix (0, num_blocks - 1, 0,
                                              pins_per_clb - 1, sizeof (int));
 
  sblk_pin_to_tnode = (int ***) my_malloc (num_blocks * sizeof (int **));
@@ -307,7 +308,7 @@ static int alloc_and_load_pin_mappings (int ***block_pin_to_tnode_ptr,
        for (isub=0;isub<num_subblocks;isub++) {
 
          /* Pin ordering:  inputs, output, clock.   */
-          
+
           has_inputs = FALSE;
           for (ipin=0;ipin<subblock_lut_size;ipin++) {
              if (subblock_inf[iblk][isub].inputs[ipin] != OPEN) {
@@ -350,7 +351,7 @@ static int alloc_and_load_pin_mappings (int ***block_pin_to_tnode_ptr,
              sblk_pin_to_tnode[iblk][isub][clk_pin] = OPEN;
           }
        }
-       
+
     }   /* End if a clb. */
 
     else {   /* INPAD or OUTPAD */
@@ -359,7 +360,7 @@ static int alloc_and_load_pin_mappings (int ***block_pin_to_tnode_ptr,
        block_pin_to_tnode[iblk][1] = curr_tnode + 1;     /* Pad output */
        curr_tnode += 2;
 
-       for (ipin=2;ipin<pins_per_clb;ipin++) 
+       for (ipin=2;ipin<pins_per_clb;ipin++)
           block_pin_to_tnode[iblk][ipin] = OPEN;
 
        sblk_pin_to_tnode[iblk] = NULL;  /* No subblock pins */
@@ -373,7 +374,7 @@ static int alloc_and_load_pin_mappings (int ***block_pin_to_tnode_ptr,
 }
 
 
-static void free_pin_mappings (int **block_pin_to_tnode, int 
+static void free_pin_mappings (int **block_pin_to_tnode, int
           ***sblk_pin_to_tnode, int *num_subblocks_per_block) {
 
 /* Frees the arrays that map from pins to tnode coordinates. */
@@ -381,10 +382,10 @@ static void free_pin_mappings (int **block_pin_to_tnode, int
  int iblk;
 
  free_matrix (block_pin_to_tnode, 0, num_blocks - 1, 0, sizeof (int));
- 
+
  for (iblk=0;iblk<num_blocks;iblk++) {
     if (block[iblk].type == CLB) {
-       free_matrix (sblk_pin_to_tnode[iblk], 0, num_subblocks_per_block[iblk] 
+       free_matrix (sblk_pin_to_tnode[iblk], 0, num_subblocks_per_block[iblk]
                      - 1, 0, sizeof (int));
     }
  }
@@ -420,7 +421,7 @@ static void alloc_and_load_fanout_counts (int ***num_uses_of_clb_ipin_ptr,
     }
 
     else {   /* CLB */
-       num_uses_of_clb_ipin[iblk] = (int *) my_calloc (pins_per_clb, 
+       num_uses_of_clb_ipin[iblk] = (int *) my_calloc (pins_per_clb,
                     sizeof (int));
        num_uses_of_sblk_opin[iblk] = (int *) my_calloc (
                     num_subblocks_per_block[iblk], sizeof (int));
@@ -437,13 +438,13 @@ static void alloc_and_load_fanout_counts (int ***num_uses_of_clb_ipin_ptr,
 }
 
 
-static void free_fanout_counts (int **num_uses_of_clb_ipin, int 
+static void free_fanout_counts (int **num_uses_of_clb_ipin, int
              **num_uses_of_sblk_opin) {
 
 /* Frees the fanout count arrays. */
 
  int iblk;
- 
+
  for (iblk=0;iblk<num_blocks;iblk++) {
     if (block[iblk].type == CLB) {
        free (num_uses_of_clb_ipin[iblk]);
@@ -456,7 +457,7 @@ static void free_fanout_counts (int **num_uses_of_clb_ipin, int
 }
 
 
-static void alloc_and_load_tnodes_and_net_mapping (int **num_uses_of_clb_ipin, 
+static void alloc_and_load_tnodes_and_net_mapping (int **num_uses_of_clb_ipin,
           int **num_uses_of_sblk_opin, int **block_pin_to_tnode, int ***
           sblk_pin_to_tnode, t_subblock_data subblock_data, t_timing_inf
           timing_inf) {
@@ -470,7 +471,7 @@ static void alloc_and_load_tnodes_and_net_mapping (int **num_uses_of_clb_ipin,
 
 
  tnode = (t_tnode *) my_malloc (num_tnodes * sizeof (t_tnode));
- tnode_descript = (t_tnode_descript *) my_malloc (num_tnodes * 
+ tnode_descript = (t_tnode_descript *) my_malloc (num_tnodes *
                    sizeof (t_tnode_descript));
 
  net_to_driver_tnode = (int *) my_malloc (num_nets * sizeof (int));
@@ -488,15 +489,15 @@ static void alloc_and_load_tnodes_and_net_mapping (int **num_uses_of_clb_ipin,
     switch (block[iblk].type) {
 
     case CLB:
-       build_clb_tnodes (iblk, num_uses_of_clb_ipin[iblk], block_pin_to_tnode, 
+       build_clb_tnodes (iblk, num_uses_of_clb_ipin[iblk], block_pin_to_tnode,
                sblk_pin_to_tnode[iblk], subblock_lut_size,
                num_subblocks_per_block[iblk], subblock_inf[iblk],
                timing_inf.T_clb_ipin_to_sblk_ipin, next_clb_ipin_edge);
 
-       build_subblock_tnodes (num_uses_of_sblk_opin[iblk], 
-               block_pin_to_tnode[iblk], sblk_pin_to_tnode[iblk], 
-               subblock_lut_size, num_subblocks_per_block[iblk], 
-               subblock_inf[iblk], timing_inf.T_sblk_opin_to_sblk_ipin, 
+       build_subblock_tnodes (num_uses_of_sblk_opin[iblk],
+               block_pin_to_tnode[iblk], sblk_pin_to_tnode[iblk],
+               subblock_lut_size, num_subblocks_per_block[iblk],
+               subblock_inf[iblk], timing_inf.T_sblk_opin_to_sblk_ipin,
                timing_inf.T_sblk_opin_to_clb_opin, timing_inf.T_subblock,
                next_sblk_opin_edge, iblk);
        break;
@@ -509,22 +510,22 @@ static void alloc_and_load_tnodes_and_net_mapping (int **num_uses_of_clb_ipin,
     case OUTPAD:
        build_opad_tnodes (block_pin_to_tnode[iblk], timing_inf.T_opad, iblk);
        break;
-   
+
     default:
        printf ("Error in alloc_and_load_tnodes_and_net_mapping:\n"
-               "\tUnexpected block type (%d) for block %d (%s).\n", 
+               "\tUnexpected block type (%d) for block %d (%s).\n",
                 block[iblk].type, iblk, block[iblk].name);
        exit (1);
     }
  }
- 
+
  free (next_clb_ipin_edge);
  free (next_sblk_opin_edge);
 }
 
 
-static void build_clb_tnodes (int iblk, int *n_uses_of_clb_ipin, int 
-        **block_pin_to_tnode, int **sub_pin_to_tnode, int subblock_lut_size, 
+static void build_clb_tnodes (int iblk, int *n_uses_of_clb_ipin, int
+        **block_pin_to_tnode, int **sub_pin_to_tnode, int subblock_lut_size,
         int num_subs, t_subblock *sub_inf, float T_clb_ipin_to_sblk_ipin,
         int *next_clb_ipin_edge) {
 
@@ -556,7 +557,7 @@ static void build_clb_tnodes (int iblk, int *n_uses_of_clb_ipin, int
           num_edges = n_uses_of_clb_ipin[ipin];
           tnode[inode].num_edges = num_edges;
 
-          tnode[inode].out_edges = (t_tedge *) my_chunk_malloc (num_edges * 
+          tnode[inode].out_edges = (t_tedge *) my_chunk_malloc (num_edges *
                sizeof (t_tedge), &tedge_ch_list_head, &tedge_ch_bytes_avail,
                &tedge_ch_next_avail);
 
@@ -578,7 +579,7 @@ static void build_clb_tnodes (int iblk, int *n_uses_of_clb_ipin, int
 
       /* Not OPEN and comes from clb ipin? */
 
-       if (from_pin != OPEN && from_pin < pins_per_clb) { 
+       if (from_pin != OPEN && from_pin < pins_per_clb) {
           inode = block_pin_to_tnode[iblk][from_pin];
           to_node = sub_pin_to_tnode[isub][ipin];
           tedge = tnode[inode].out_edges;
@@ -590,7 +591,7 @@ static void build_clb_tnodes (int iblk, int *n_uses_of_clb_ipin, int
 
     from_pin = sub_inf[isub].clock;
 
-    if (from_pin != OPEN && from_pin < pins_per_clb) { 
+    if (from_pin != OPEN && from_pin < pins_per_clb) {
        inode = block_pin_to_tnode[iblk][from_pin];
        to_node = sub_pin_to_tnode[isub][clk_pin];  /* Feeds seq. output */
        tedge = tnode[inode].out_edges;
@@ -616,17 +617,17 @@ static void build_block_output_tnode (int inode, int iblk, int ipin,
 
  int iedge, to_blk, to_pin, to_node, num_edges, inet;
  t_tedge *tedge;
- 
+
  inet = block[iblk].nets[ipin];          /* Won't be OPEN, as inode exists */
  assert (inet != OPEN);                  /* Sanity check. */
 
  net_to_driver_tnode[inet] = inode;
- 
+
  num_edges = net[inet].num_pins - 1;
  tnode[inode].num_edges = num_edges;
 
- tnode[inode].out_edges = (t_tedge *) my_chunk_malloc (num_edges * 
-        sizeof (t_tedge), &tedge_ch_list_head, &tedge_ch_bytes_avail, 
+ tnode[inode].out_edges = (t_tedge *) my_chunk_malloc (num_edges *
+        sizeof (t_tedge), &tedge_ch_list_head, &tedge_ch_bytes_avail,
         &tedge_ch_next_avail);
 
  tedge = tnode[inode].out_edges;
@@ -646,10 +647,10 @@ static void build_block_output_tnode (int inode, int iblk, int ipin,
 }
 
 
-static void build_subblock_tnodes (int *n_uses_of_sblk_opin, 
-          int *blk_pin_to_tnode, int **sub_pin_to_tnode, 
-          int subblock_lut_size, int num_subs, t_subblock *sub_inf, 
-          float T_sblk_opin_to_sblk_ipin, float T_sblk_opin_to_clb_opin, 
+static void build_subblock_tnodes (int *n_uses_of_sblk_opin,
+          int *blk_pin_to_tnode, int **sub_pin_to_tnode,
+          int subblock_lut_size, int num_subs, t_subblock *sub_inf,
+          float T_sblk_opin_to_sblk_ipin, float T_sblk_opin_to_clb_opin,
           t_T_subblock *T_subblock, int *next_sblk_opin_edge, int iblk) {
 
 /* This routine builds the tnodes of the subblock pins within one CLB. Note *
@@ -661,7 +662,7 @@ static void build_subblock_tnodes (int *n_uses_of_sblk_opin,
  float ipin_to_sink_Tdel;
  t_tedge *tedge;
  boolean has_inputs;
- 
+
  out_pin = subblock_lut_size;
  clk_pin = subblock_lut_size + 1;
 
@@ -669,16 +670,16 @@ static void build_subblock_tnodes (int *n_uses_of_sblk_opin,
 
  for (isub=0;isub<num_subs;isub++) {
     inode = sub_pin_to_tnode[isub][out_pin];
-    
+
     if (inode != OPEN) {     /* Output is used -> timing node exists. */
        next_sblk_opin_edge[isub] = 0;    /* Reset */
        num_edges = n_uses_of_sblk_opin[isub];
        tnode[inode].num_edges = num_edges;
 
-       tnode[inode].out_edges = (t_tedge *) my_chunk_malloc (num_edges * 
+       tnode[inode].out_edges = (t_tedge *) my_chunk_malloc (num_edges *
             sizeof (t_tedge), &tedge_ch_list_head, &tedge_ch_bytes_avail,
             &tedge_ch_next_avail);
-    
+
        tnode_descript[inode].type = SUBBLK_OPIN;
        tnode_descript[inode].ipin = out_pin;
        tnode_descript[inode].isubblk = isub;
@@ -716,7 +717,7 @@ static void build_subblock_tnodes (int *n_uses_of_sblk_opin,
        tedge[iedge].to_node = to_node;
 
  /* NB: Could make sblk opin to clk delay parameter; not worth it right now. */
-       tedge[iedge].Tdel = T_sblk_opin_to_sblk_ipin;  
+       tedge[iedge].Tdel = T_sblk_opin_to_sblk_ipin;
     }
 
     to_pin = sub_inf[isub].output;
@@ -774,9 +775,9 @@ static void build_subblock_tnodes (int *n_uses_of_sblk_opin,
        tnode_descript[inode].ipin = OPEN;
        tnode_descript[inode].isubblk = isub;
        tnode_descript[inode].iblk = iblk;
-       
+
       /* Subblock inputs connect to this node. */
- 
+
        to_node = inode;
        ipin_to_sink_Tdel = T_subblock[isub].T_seq_in;
     }
@@ -786,12 +787,12 @@ static void build_subblock_tnodes (int *n_uses_of_sblk_opin,
     has_inputs = FALSE;
     for (ipin=0;ipin<subblock_lut_size;ipin++) {
        inode = sub_pin_to_tnode[isub][ipin];
-       
+
        if (inode != OPEN) {    /* tnode exists -> pin is used */
           has_inputs = TRUE;
           tnode[inode].num_edges = 1;
-          tnode[inode].out_edges = (t_tedge *) my_chunk_malloc ( sizeof 
-                (t_tedge), &tedge_ch_list_head, &tedge_ch_bytes_avail, 
+          tnode[inode].out_edges = (t_tedge *) my_chunk_malloc ( sizeof
+                (t_tedge), &tedge_ch_list_head, &tedge_ch_bytes_avail,
                 &tedge_ch_next_avail);
           tedge = tnode[inode].out_edges;
           tedge[0].to_node = to_node;
@@ -815,7 +816,7 @@ static void build_subblock_tnodes (int *n_uses_of_sblk_opin,
        tedge = tnode[inode].out_edges;
        tedge[0].to_node = to_node;
 
-/* Want constants generated early so they never affect the critical path. */ 
+/* Want constants generated early so they never affect the critical path. */
 
        tedge[0].Tdel = T_CONSTANT_GENERATOR;
 
@@ -847,16 +848,16 @@ static void build_ipad_tnodes (int iblk, int **block_pin_to_tnode, float
  tnode[inode].out_edges = (t_tedge *) my_chunk_malloc ( sizeof (t_tedge),
         &tedge_ch_list_head, &tedge_ch_bytes_avail, &tedge_ch_next_avail);
  tedge = tnode[inode].out_edges;
- tedge[0].to_node =  to_node; 
+ tedge[0].to_node =  to_node;
 
 /* By definition, global clocks from pads arrive at T = 0.  The earliest any *
  * clock can arrive at any flip flop is T = 0, and the fastest global clock  *
  * from a pad should have zero delay on its edges so it does get to the      *
  * flip flop clock pin at T = 0.                                             */
 
- if (is_global_clock (iblk, num_subblocks_per_block, subblock_inf))   
+ if (is_global_clock (iblk, num_subblocks_per_block, subblock_inf))
     tedge[0].Tdel = 0.;
- else 
+ else
     tedge[0].Tdel = T_ipad;
 
  tnode_descript[inode].type = INPAD_SOURCE;
@@ -882,10 +883,10 @@ static boolean is_global_clock (int iblk, int *num_subblocks_per_block,
  * (1) a global signal, and (2) used as a clock input to at least one block. */
 
  int inet, ipin, to_blk, to_pin, isub;
- 
+
  inet = block[iblk].nets[0];
 
- if (!is_global[inet]) 
+ if (!is_global[inet])
     return (FALSE);
 
  for (ipin=1;ipin<net[inet].num_pins;ipin++) {
@@ -919,7 +920,7 @@ static void build_opad_tnodes (int *blk_pin_to_tnode, float T_opad, int iblk) {
  tnode[inode].out_edges = (t_tedge *) my_chunk_malloc ( sizeof (t_tedge),
         &tedge_ch_list_head, &tedge_ch_bytes_avail, &tedge_ch_next_avail);
  tedge = tnode[inode].out_edges;
- tedge[0].to_node =  to_node; 
+ tedge[0].to_node =  to_node;
  tedge[0].Tdel = T_opad;
 
  tnode_descript[inode].type = OUTPAD_IPIN;
@@ -954,7 +955,7 @@ void load_timing_graph_net_delays (float **net_delay) {
 /* Note that the edges of a tnode corresponding to a CLB or INPAD opin must  *
  * be in the same order as the pins of the net driven by the tnode.          */
 
-    for (ipin=1;ipin<net[inet].num_pins;ipin++) 
+    for (ipin=1;ipin<net[inet].num_pins;ipin++)
        tedge[ipin-1].Tdel = net_delay[inet][ipin];
  }
 }
@@ -975,7 +976,7 @@ void free_timing_graph (float **net_slack) {
  free (net_to_driver_tnode);
  free_ivec_vector (tnodes_at_level, 0, num_tnode_levels - 1);
  free (net_slack);
- 
+
  tedge_ch_list_head = NULL;
  tedge_ch_bytes_avail = 0;
  tedge_ch_next_avail = NULL;
@@ -1018,11 +1019,11 @@ void print_timing_graph (char *fname) {
  int inode, iedge, ilevel, i;
  t_tedge *tedge;
  t_tnode_type itype;
- char *tnode_type_names[] = {"INPAD_SOURCE", "INPAD_OPIN", 
-           "OUTPAD_IPIN", "OUTPAD_SINK", "CLB_IPIN", "CLB_OPIN", 
+ char *tnode_type_names[] = {"INPAD_SOURCE", "INPAD_OPIN",
+           "OUTPAD_IPIN", "OUTPAD_SINK", "CLB_IPIN", "CLB_OPIN",
            "SUBBLK_IPIN", "SUBBLK_OPIN", "FF_SINK", "FF_SOURCE",
            "CONSTANT_GEN_SOURCE"};
- 
+
 
  fp = my_fopen (fname, "w", 0);
 
@@ -1036,7 +1037,7 @@ void print_timing_graph (char *fname) {
     itype = tnode_descript[inode].type;
     fprintf (fp, "%-15.15s\t", tnode_type_names[itype]);
 
-    fprintf (fp, "%d\t%d\t%d\t", tnode_descript[inode].ipin, 
+    fprintf (fp, "%d\t%d\t%d\t", tnode_descript[inode].ipin,
              tnode_descript[inode].isubblk, tnode_descript[inode].iblk);
 
     fprintf (fp, "%d\t", tnode[inode].num_edges);
@@ -1050,24 +1051,24 @@ void print_timing_graph (char *fname) {
  fprintf (fp, "\n\nnum_tnode_levels: %d\n", num_tnode_levels);
 
  for (ilevel=0;ilevel<num_tnode_levels;ilevel++) {
-    fprintf (fp, "\n\nLevel: %d  Num_nodes: %d\nNodes:", ilevel, 
+    fprintf (fp, "\n\nLevel: %d  Num_nodes: %d\nNodes:", ilevel,
           tnodes_at_level[ilevel].nelem);
-    for (i=0;i<tnodes_at_level[ilevel].nelem;i++) 
+    for (i=0;i<tnodes_at_level[ilevel].nelem;i++)
        fprintf (fp, "\t%d", tnodes_at_level[ilevel].list[i]);
  }
- 
+
  fprintf (fp, "\n");
  fprintf (fp, "\n\nNet #\tNet_to_driver_tnode\n");
- 
- for (i=0;i<num_nets;i++) 
+
+ for (i=0;i<num_nets;i++)
     fprintf (fp, "%4d\t%6d\n", i, net_to_driver_tnode[i]);
 
  fprintf (fp, "\n\nNode #\t\tT_arr\t\tT_req\n\n");
 
- for (inode=0;inode<num_tnodes;inode++) 
-    fprintf (fp, "%d\t%12g\t%12g\n", inode, tnode[inode].T_arr, 
+ for (inode=0;inode<num_tnodes;inode++)
+    fprintf (fp, "%d\t%12g\t%12g\n", inode, tnode[inode].T_arr,
             tnode[inode].T_req);
- 
+
  fclose (fp);
 }
 
@@ -1079,18 +1080,18 @@ float load_net_slack (float **net_slack, float target_cycle_time) {
  * time is the target delay for the circuit -- if 0, the target_cycle_time  *
  * is set to the critical path found in the timing graph.  This routine     *
  * loads net_slack, and returns the current critical path delay.            */
- 
+
  float T_crit, T_arr, Tdel, T_cycle, T_req;
  int inode, ilevel, num_at_level, i, num_edges, iedge, to_node;
  t_tedge *tedge;
- 
+
 /* Reset all arrival times to -ve infinity.  Can't just set to zero or the   *
  * constant propagation (constant generators work at -ve infinity) won't     *
  * work.                                                                     */
 
- for (inode=0;inode<num_tnodes;inode++) 
+ for (inode=0;inode<num_tnodes;inode++)
     tnode[inode].T_arr = T_CONSTANT_GENERATOR;
- 
+
 /* Compute all arrival times with a breadth-first analysis from inputs to   *
  * outputs.  Also compute critical path (T_crit).                           */
 
@@ -1104,7 +1105,7 @@ float load_net_slack (float **net_slack, float target_cycle_time) {
     tnode[inode].T_arr = 0.;
  }
 
- for (ilevel=0;ilevel<num_tnode_levels;ilevel++) { 
+ for (ilevel=0;ilevel<num_tnode_levels;ilevel++) {
     num_at_level = tnodes_at_level[ilevel].nelem;
 
     for (i=0;i<num_at_level;i++) {
@@ -1112,12 +1113,12 @@ float load_net_slack (float **net_slack, float target_cycle_time) {
        T_arr = tnode[inode].T_arr;
        num_edges = tnode[inode].num_edges;
        tedge = tnode[inode].out_edges;
-       T_crit = max (T_crit, T_arr);
-       
+       T_crit = my_max(T_crit, T_arr);
+
        for (iedge=0;iedge<num_edges;iedge++) {
           to_node = tedge[iedge].to_node;
           Tdel = tedge[iedge].Tdel;
-          tnode[to_node].T_arr = max (tnode[to_node].T_arr, T_arr + Tdel);
+          tnode[to_node].T_arr = my_max(tnode[to_node].T_arr, T_arr + Tdel);
        }
     }
 
@@ -1127,17 +1128,17 @@ float load_net_slack (float **net_slack, float target_cycle_time) {
     T_cycle = target_cycle_time;
  else                            /* Otherwise, target = critical path */
     T_cycle = T_crit;
- 
+
 /* Compute the required arrival times with a backward breadth-first analysis *
  * from sinks (output pads, etc.) to primary inputs.                         */
 
  for (ilevel=num_tnode_levels-1;ilevel>=0;ilevel--) {
     num_at_level = tnodes_at_level[ilevel].nelem;
- 
+
     for (i=0;i<num_at_level;i++) {
        inode = tnodes_at_level[ilevel].list[i];
        num_edges = tnode[inode].num_edges;
- 
+
        if (num_edges == 0) {   /* sink */
           tnode[inode].T_req = T_cycle;
        }
@@ -1146,13 +1147,13 @@ float load_net_slack (float **net_slack, float target_cycle_time) {
           to_node = tedge[0].to_node;
           Tdel = tedge[0].Tdel;
           T_req = tnode[to_node].T_req - Tdel;
-          
+
           for (iedge=1;iedge<num_edges;iedge++) {
              to_node = tedge[iedge].to_node;
              Tdel = tedge[iedge].Tdel;
-             T_req = min (T_req, tnode[to_node].T_req - Tdel);
+             T_req = my_min(T_req, tnode[to_node].T_req - Tdel);
           }
-          
+
           tnode[inode].T_req = T_req;
        }
     }
@@ -1203,7 +1204,7 @@ void print_critical_path (char *fname) {
  critical_path_node = critical_path_head;
 
  fp = my_fopen (fname, "w", 0);
- 
+
  non_global_nets_on_crit_path = 0;
  global_nets_on_crit_path = 0;
  tnodes_on_crit_path = 0;
@@ -1219,9 +1220,9 @@ void print_critical_path (char *fname) {
     if (type == INPAD_OPIN || type == CLB_OPIN) {
        get_tnode_block_and_output_net (inode, &iblk, &inet);
 
-       if (!is_global[inet]) 
+       if (!is_global[inet])
           non_global_nets_on_crit_path++;
-       else 
+       else
           global_nets_on_crit_path++;
 
        total_net_delay += Tdel;
@@ -1236,14 +1237,25 @@ void print_critical_path (char *fname) {
  fprintf (fp, "\nTnodes on crit. path: %d  Non-global nets on crit. path: %d."
           "\n", tnodes_on_crit_path, non_global_nets_on_crit_path);
  fprintf (fp, "Global nets on crit. path: %d.\n", global_nets_on_crit_path);
- fprintf (fp, "Total logic delay: %g (s)  Total net delay: %g (s)\n", 
+ fprintf (fp, "Total logic delay: %g (s)  Total net delay: %g (s)\n",
           total_logic_delay, total_net_delay);
 
- printf ("Nets on crit. path: %d normal, %d global.\n", 
+ printf ("Nets on crit. path: %d normal, %d global.\n",
           non_global_nets_on_crit_path, global_nets_on_crit_path);
 
- printf ("Total logic delay: %g (s)  Total net delay: %g (s)\n", 
+ printf ("Total logic delay: %g (s)  Total net delay: %g (s)\n",
           total_logic_delay, total_net_delay);
+
+    /* Tnodes on critical path. */
+    g_route_result.tnodes_on_crit_path = tnodes_on_crit_path;
+    /* Non-global nets on critical path. */
+    g_route_result.non_global_nets_on_crit_path = non_global_nets_on_crit_path;
+    /* Global nets on crit. path. */
+    g_route_result.global_nets_on_crit_path = global_nets_on_crit_path;
+    /* Total logic delay */
+    g_route_result.total_logic_delay = total_logic_delay;
+    /* Total net delay. */
+    g_route_result.total_net_delay = total_net_delay;
 
  fclose (fp);
  free_int_list (&critical_path_head);
@@ -1273,33 +1285,33 @@ t_linked_int *allocate_and_load_critical_path (void) {
        min_slack = slack;
     }
  }
- 
+
  critical_path_head = (t_linked_int *) my_malloc (sizeof (t_linked_int));
  critical_path_head->data = crit_node;
  prev_crit_node = critical_path_head;
  num_edges = tnode[crit_node].num_edges;
- 
+
  while (num_edges != 0) {   /* Path will end at SINK (no fanout) */
     curr_crit_node = (t_linked_int *) my_malloc (sizeof (t_linked_int));
     prev_crit_node->next = curr_crit_node;
     tedge = tnode[crit_node].out_edges;
     min_slack = HUGE_FLOAT;
-  
+
     for (iedge=0;iedge<num_edges;iedge++) {
        to_node = tedge[iedge].to_node;
        slack = tnode[to_node].T_req - tnode[to_node].T_arr;
- 
+
        if (slack < min_slack) {
           crit_node = to_node;
           min_slack = slack;
-       } 
+       }
     }
- 
+
     curr_crit_node->data = crit_node;
     prev_crit_node = curr_crit_node;
     num_edges = tnode[crit_node].num_edges;
  }
- 
+
  prev_crit_node->next = NULL;
  return (critical_path_head);
 }
@@ -1316,7 +1328,7 @@ void get_tnode_block_and_output_net (int inode, int *iblk_ptr, int *inet_ptr) {
 
  iblk = tnode_descript[inode].iblk;
  tnode_type = tnode_descript[inode].type;
- 
+
  if (tnode_type == CLB_OPIN || tnode_type == INPAD_OPIN) {
     ipin = tnode_descript[inode].ipin;
     inet = block[iblk].nets[ipin];
@@ -1340,14 +1352,14 @@ void do_constant_net_delay_timing_analysis (t_timing_inf timing_inf,
  float **net_delay, **net_slack;
 
  float T_crit;
- 
+
  net_slack = alloc_and_load_timing_graph (timing_inf, subblock_data);
  net_delay = alloc_net_delay (&net_delay_chunk_list_head);
 
  load_constant_net_delay (net_delay, constant_net_delay_value);
  load_timing_graph_net_delays (net_delay);
  T_crit = load_net_slack (net_slack, 0);
- 
+
  printf ("\n");
  print_critical_path ("critical_path.echo");
  printf ("\nCritical Path: %g (s)\n", T_crit);

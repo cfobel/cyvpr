@@ -47,7 +47,7 @@
  *      your first pin statement in the architecture file must be            *
  *      an inpin statement defining the clock pin.                           *
  *                                                                           *
- *   subblocks_per_clb <int>  (Number of LUT + ff logic blocks in each clb   * 
+ *   subblocks_per_clb <int>  (Number of LUT + ff logic blocks in each clb   *
  *      at most).                                                            *
  *   subblock_lut_size <int>  (Number of inputs to each LUT in the           *
  *      clbs.  Each subblock has subblock_lut_size inputs, one output        *
@@ -81,8 +81,8 @@
  *   switch  <int> buffered: {yes|no} R: <float> Cin: <float>                *
  *      Cout: <float> Tdel: <float>.  Describes a type of switch.            *
  *   R_minW_nmos <float>   Resistance, in Ohms, of a minimum width nmos      *
- *      transistor.  Used only in the transistor-level area model.           *  
- *   R_minW_pmos <float>   Resistance, in Ohms, of a minimum width pmos      * 
+ *      transistor.  Used only in the transistor-level area model.           *
+ *   R_minW_pmos <float>   Resistance, in Ohms, of a minimum width pmos      *
  *      transistor.  Used only in the transistor-level area model.           *
  *                                                                           *
  * The following parameters allow timing analysis.                           *
@@ -134,11 +134,11 @@
 /******************** Variables local to this module. **********************/
 
 static int isread[NUMINP];
-static const char *names[NUMINP] = {"io_rat", "chan_width_x", "chan_width_y", 
-   "chan_width_io", "outpin", "inpin", "subblocks_per_clb", 
-   "subblock_lut_size", "Fc_output", "Fc_input", "Fc_pad", "Fc_type", 
+static const char *names[NUMINP] = {"io_rat", "chan_width_x", "chan_width_y",
+   "chan_width_io", "outpin", "inpin", "subblocks_per_clb",
+   "subblock_lut_size", "Fc_output", "Fc_input", "Fc_pad", "Fc_type",
    "switch_block_type", "segment", "switch", "R_minW_nmos", "R_minW_pmos",
-   "C_ipin_cblock", "T_ipin_cblock", "T_sblk_opin_to_sblk_ipin", 
+   "C_ipin_cblock", "T_ipin_cblock", "T_sblk_opin_to_sblk_ipin",
    "T_clb_ipin_to_sblk_ipin", "T_sblk_opin_to_clb_opin", "T_ipad", "T_opad",
    "T_subblock"};
 
@@ -146,58 +146,58 @@ static const char *names[NUMINP] = {"io_rat", "chan_width_x", "chan_width_y",
 /********************** Subroutines local to this module. ******************/
 
 static float get_float (char *ptr, int inp_num, float llim, float ulim,
-            FILE *fp_arch, char *buf); 
+            FILE *fp_arch, char *buf);
 
 static float get_one_float (char *ptr, int inp_num, float low_lim,
-            float upp_lim, FILE *fp_arch, char *buf); 
+            float upp_lim, FILE *fp_arch, char *buf);
 
-static int get_int (char *ptr, int inp_num, FILE *fp_arch, char *buf, 
+static int get_int (char *ptr, int inp_num, FILE *fp_arch, char *buf,
             int min_val);
 
-static char *get_middle_token (FILE *fp, char *buf); 
-static char *get_last_token (FILE *fp, char *buf); 
-static void check_keyword (FILE *fp, char *buf, const char *keyword); 
+static char *get_middle_token (FILE *fp, char *buf);
+static char *get_last_token (FILE *fp, char *buf);
+static void check_keyword (FILE *fp, char *buf, const char *keyword);
 
 static void check_arch (char *arch_file, enum e_route_type route_type,
             struct s_det_routing_arch det_routing_arch, t_segment_inf
-            *segment_inf, t_timing_inf timing_inf, int 
-            max_subblocks_per_block, t_chan_width_dist chan_width_dist); 
+            *segment_inf, t_timing_inf timing_inf, int
+            max_subblocks_per_block, t_chan_width_dist chan_width_dist);
 
 static void fill_arch (void);
 
-static void get_chan (char *ptr, t_chan *chan, int inp_num, FILE *fp_arch, 
-            char *buf); 
+static void get_chan (char *ptr, t_chan *chan, int inp_num, FILE *fp_arch,
+            char *buf);
 
-static void get_pin (char *ptr, int pinnum, enum e_pin_type type, 
+static void get_pin (char *ptr, int pinnum, enum e_pin_type type,
             FILE *fp_arch, char *buf);
-static enum e_Fc_type get_Fc_type (char *ptr, FILE *fp_arch, char *buf); 
+static enum e_Fc_type get_Fc_type (char *ptr, FILE *fp_arch, char *buf);
 
 static enum e_switch_block_type get_switch_block_type (FILE *fp_arch,
-            char *buf); 
+            char *buf);
 
 static void get_segment_inf (FILE *fp_arch, char *buf,
-            t_segment_inf *seg_ptr, int num_switch, enum e_route_type 
-            route_type); 
+            t_segment_inf *seg_ptr, int num_switch, enum e_route_type
+            route_type);
 
-static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch, 
-            enum e_route_type route_type); 
+static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
+            enum e_route_type route_type);
 
-static void get_T_subblock (FILE *fp_arch, char *buf, t_T_subblock 
-           *T_subblock); 
+static void get_T_subblock (FILE *fp_arch, char *buf, t_T_subblock
+           *T_subblock);
 
 static int get_class (FILE *fp_arch, char *buf);
 
 static void load_global_segment_and_switch (struct s_det_routing_arch *
-            det_routing_arch, t_segment_inf *segment_inf, t_timing_inf 
-            *timing_inf); 
+            det_routing_arch, t_segment_inf *segment_inf, t_timing_inf
+            *timing_inf);
 
 static void load_extra_switch_types (struct s_det_routing_arch *
-            det_routing_arch, t_timing_inf *timing_inf); 
+            det_routing_arch, t_timing_inf *timing_inf);
 
-static void countpass (FILE *fp_arch, enum e_route_type route_type, 
-            t_segment_inf **segment_inf_ptr, struct 
-            s_det_routing_arch *det_routing_arch_ptr, t_timing_inf 
-            *timing_inf); 
+static void countpass (FILE *fp_arch, enum e_route_type route_type,
+            t_segment_inf **segment_inf_ptr, struct
+            s_det_routing_arch *det_routing_arch_ptr, t_timing_inf
+            *timing_inf);
 
 
 
@@ -205,8 +205,8 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
 
 
 void read_arch (char *arch_file, enum e_route_type route_type,
-       struct s_det_routing_arch *det_routing_arch, t_segment_inf 
-       **segment_inf_ptr, t_timing_inf *timing_inf_ptr, t_subblock_data 
+       struct s_det_routing_arch *det_routing_arch, t_segment_inf
+       **segment_inf_ptr, t_timing_inf *timing_inf_ptr, t_subblock_data
        *subblock_data_ptr, t_chan_width_dist *chan_width_dist_ptr) {
 
 /* Reads in the architecture description file for the FPGA. */
@@ -217,7 +217,7 @@ void read_arch (char *arch_file, enum e_route_type route_type,
  t_T_subblock *next_T_subblock_ptr;
 
  fp_arch = my_fopen (arch_file, "r", 0);
- countpass (fp_arch, route_type, segment_inf_ptr, det_routing_arch, 
+ countpass (fp_arch, route_type, segment_inf_ptr, det_routing_arch,
             timing_inf_ptr);
 
  rewind (fp_arch);
@@ -225,14 +225,14 @@ void read_arch (char *arch_file, enum e_route_type route_type,
  pinnum = 0;
  next_segment = 0;
 
- for (i=0;i<NUMINP;i++) 
+ for (i=0;i<NUMINP;i++)
     isread[i] = 0;
 
  pinloc = (int **) alloc_matrix (0, 3, 0, pins_per_clb-1, sizeof (int));
 
- for (i=0;i<=3;i++) 
-    for (j=0;j<pins_per_clb;j++) 
-       pinloc[i][j] = 0; 
+ for (i=0;i<=3;i++)
+    for (j=0;j<pins_per_clb;j++)
+       pinloc[i][j] = 0;
 
 /* Initialize these two things to zero, since they're used in graph building *
  * and they needn't be set by the user if timing_analysis isn't enabled.     */
@@ -243,7 +243,7 @@ void read_arch (char *arch_file, enum e_route_type route_type,
 
 /* Start the main pass (pass 2).   */
 
- while ((ptr = my_fgets(buf, BUFSIZE, fp_arch)) != NULL) { 
+ while ((ptr = my_fgets(buf, BUFSIZE, fp_arch)) != NULL) {
     ptr = my_strtok(ptr, TOKENS, fp_arch, buf);
     if (ptr == NULL) continue;                   /* Empty or comment line */
 
@@ -263,7 +263,7 @@ void read_arch (char *arch_file, enum e_route_type route_type,
        continue;
     }
     if (strcmp(ptr,names[3]) == 0) { /* chan_width_io */
-       chan_width_dist_ptr->chan_width_io = get_one_float (ptr, 3, 0. ,5000., 
+       chan_width_dist_ptr->chan_width_io = get_one_float (ptr, 3, 0. ,5000.,
                     fp_arch, buf);
        continue;
     }
@@ -271,7 +271,7 @@ void read_arch (char *arch_file, enum e_route_type route_type,
        get_pin (ptr, pinnum, DRIVER, fp_arch, buf);
        pinnum++;
        isread[4]++;
-       continue;   
+       continue;
     }
     if (strcmp(ptr,names[5]) == 0) { /* inpin */
        get_pin (ptr, pinnum, RECEIVER, fp_arch, buf);
@@ -280,12 +280,12 @@ void read_arch (char *arch_file, enum e_route_type route_type,
        continue;
     }
     if (strcmp(ptr,names[6]) == 0) {  /* subblocks_per_clb */
-       subblock_data_ptr->max_subblocks_per_block = get_int (ptr, 6, fp_arch, 
+       subblock_data_ptr->max_subblocks_per_block = get_int (ptr, 6, fp_arch,
                 buf, 1);
        continue;
     }
     if (strcmp(ptr,names[7]) == 0) {  /* subblock_lut_size */
-       subblock_data_ptr->subblock_lut_size = get_int (ptr, 7, fp_arch, buf, 
+       subblock_data_ptr->subblock_lut_size = get_int (ptr, 7, fp_arch, buf,
                 1);
        continue;
     }
@@ -295,12 +295,12 @@ void read_arch (char *arch_file, enum e_route_type route_type,
        continue;
     }
     if (strcmp(ptr,names[DETAILED_START + 1]) == 0) {  /* Fc_input */
-       det_routing_arch->Fc_input = get_one_float (ptr, DETAILED_START + 1, 0., 
+       det_routing_arch->Fc_input = get_one_float (ptr, DETAILED_START + 1, 0.,
                        1.e20, fp_arch, buf);
        continue;
     }
     if (strcmp(ptr,names[DETAILED_START + 2]) == 0) {  /* Fc_pad */
-       det_routing_arch->Fc_pad = get_one_float (ptr, DETAILED_START + 2, 0., 
+       det_routing_arch->Fc_pad = get_one_float (ptr, DETAILED_START + 2, 0.,
                        1.e20, fp_arch, buf);
        continue;
     }
@@ -310,7 +310,7 @@ void read_arch (char *arch_file, enum e_route_type route_type,
        continue;
     }
     if (strcmp(ptr,names[DETAILED_START + 4]) == 0) {  /* switch_block_type */
-       det_routing_arch->switch_block_type =  get_switch_block_type (fp_arch, 
+       det_routing_arch->switch_block_type =  get_switch_block_type (fp_arch,
                   buf);
        isread[DETAILED_START + 4]++;
        continue;
@@ -329,19 +329,19 @@ void read_arch (char *arch_file, enum e_route_type route_type,
     }
 
     if (strcmp(ptr,names[DETAILED_START + 7]) == 0) {  /* R_minW_nmos */
-       det_routing_arch->R_minW_nmos = get_one_float (ptr, DETAILED_START + 7, 
+       det_routing_arch->R_minW_nmos = get_one_float (ptr, DETAILED_START + 7,
                        0., 1.e20, fp_arch, buf);
        continue;
     }
-    
+
     if (strcmp(ptr,names[DETAILED_START + 8]) == 0) {  /* R_minW_pmos */
-       det_routing_arch->R_minW_pmos = get_one_float (ptr, DETAILED_START + 8, 
+       det_routing_arch->R_minW_pmos = get_one_float (ptr, DETAILED_START + 8,
                        0., 1.e20, fp_arch, buf);
        continue;
     }
 
     if (strcmp(ptr,names[TIMING_START]) == 0) {  /* C_ipin_cblock */
-       timing_inf_ptr->C_ipin_cblock = get_one_float (ptr, TIMING_START, 
+       timing_inf_ptr->C_ipin_cblock = get_one_float (ptr, TIMING_START,
                         -1e-30, 1e20, fp_arch, buf);
        continue;
     }
@@ -351,67 +351,67 @@ void read_arch (char *arch_file, enum e_route_type route_type,
                         -1e-30, 1e20, fp_arch, buf);
        continue;
     }
-    
-    if (strcmp(ptr,names[TIMING_START + 2]) == 0) { 
+
+    if (strcmp(ptr,names[TIMING_START + 2]) == 0) {
 
        /* T_sblk_opin_to_sblk_ipin */
 
-       timing_inf_ptr->T_sblk_opin_to_sblk_ipin = get_one_float (ptr, 
+       timing_inf_ptr->T_sblk_opin_to_sblk_ipin = get_one_float (ptr,
                TIMING_START + 2, -1e-30, 1e20, fp_arch, buf);
        continue;
     }
 
-    if (strcmp(ptr,names[TIMING_START + 3]) == 0) { 
+    if (strcmp(ptr,names[TIMING_START + 3]) == 0) {
 
        /* T_clb_ipin_to_sblk_ipin */
 
-       timing_inf_ptr->T_clb_ipin_to_sblk_ipin = get_one_float (ptr, 
+       timing_inf_ptr->T_clb_ipin_to_sblk_ipin = get_one_float (ptr,
                TIMING_START + 3, -1e-30, 1e20, fp_arch, buf);
        continue;
     }
 
-    if (strcmp(ptr,names[TIMING_START + 4]) == 0) { 
+    if (strcmp(ptr,names[TIMING_START + 4]) == 0) {
 
        /* T_sblk_opin_to_clb_opin */
 
-       timing_inf_ptr->T_sblk_opin_to_clb_opin = get_one_float (ptr, 
+       timing_inf_ptr->T_sblk_opin_to_clb_opin = get_one_float (ptr,
                TIMING_START + 4, -1e-30, 1e20, fp_arch, buf);
        continue;
     }
 
     if (strcmp(ptr,names[TIMING_START + 5]) == 0) {  /* T_ipad */
-       timing_inf_ptr->T_ipad = get_one_float (ptr, TIMING_START + 5, 
+       timing_inf_ptr->T_ipad = get_one_float (ptr, TIMING_START + 5,
                         -1e-30, 1e20, fp_arch, buf);
        continue;
     }
 
     if (strcmp(ptr,names[TIMING_START + 6]) == 0) {  /* T_opad */
-       timing_inf_ptr->T_opad = get_one_float (ptr, TIMING_START + 6, 
+       timing_inf_ptr->T_opad = get_one_float (ptr, TIMING_START + 6,
                     -1e-30, 1e20, fp_arch, buf);
        continue;
     }
 
     if (strcmp(ptr,names[TIMING_START + 7]) == 0) {  /* T_subblock */
-       next_T_subblock_ptr = timing_inf_ptr->T_subblock + 
+       next_T_subblock_ptr = timing_inf_ptr->T_subblock +
                              isread[TIMING_START + 7];
        get_T_subblock (fp_arch, buf, next_T_subblock_ptr);
        isread[TIMING_START + 7]++;
        continue;
     }
-    
+
 
     printf ("Error:  unrecognized keyword (%s) on line %d.\n", ptr, linenum);
     exit (1);
  }
 
  if (route_type == GLOBAL) {
-    load_global_segment_and_switch (det_routing_arch, *segment_inf_ptr, 
+    load_global_segment_and_switch (det_routing_arch, *segment_inf_ptr,
           timing_inf_ptr);
  }
  else {
     load_extra_switch_types (det_routing_arch, timing_inf_ptr);
  }
-               
+
  check_arch (arch_file, route_type, *det_routing_arch, *segment_inf_ptr,
        *timing_inf_ptr, subblock_data_ptr->max_subblocks_per_block,
        *chan_width_dist_ptr);
@@ -419,8 +419,8 @@ void read_arch (char *arch_file, enum e_route_type route_type,
 }
 
 
-static void countpass (FILE *fp_arch, enum e_route_type route_type, 
-    t_segment_inf **segment_inf_ptr, struct s_det_routing_arch 
+static void countpass (FILE *fp_arch, enum e_route_type route_type,
+    t_segment_inf **segment_inf_ptr, struct s_det_routing_arch
     *det_routing_arch_ptr, t_timing_inf *timing_inf_ptr) {
 
 /* This routine parses the input architecture file in order to count the    *
@@ -435,10 +435,10 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
  num_segment = 0;
  num_switch = 0;
  num_T_subblock = 0;
- 
+
  pins_per_class = (int *) my_calloc (num_class, sizeof (int));
 
- while ((ptr = my_fgets(buf, BUFSIZE, fp_arch)) != NULL) { 
+ while ((ptr = my_fgets(buf, BUFSIZE, fp_arch)) != NULL) {
     ptr = my_strtok (ptr, TOKENS, fp_arch, buf);
 
     if (ptr == NULL)   /* Empty or comment line. */
@@ -449,10 +449,10 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
        iclass = get_class (fp_arch, buf);
 
        if (iclass >= num_class) {
-          pins_per_class = (int *) my_realloc (pins_per_class, 
+          pins_per_class = (int *) my_realloc (pins_per_class,
              (iclass + 1) * sizeof (int));
 
-          for (i=num_class;i<=iclass;i++) 
+          for (i=num_class;i<=iclass;i++)
              pins_per_class[i] = 0;
 
           num_class = iclass + 1;
@@ -472,13 +472,13 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
     else if (strcmp (ptr, "T_subblock") == 0) {
        num_T_subblock++;
     }
-       
+
 
 /* Go to end of line (possibly continued) */
 
     while (ptr != NULL) {
        ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
-    } 
+    }
  }
 
 /* Check for missing classes. */
@@ -500,7 +500,7 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
  pins_per_clb = 0;
  for (i=0;i<num_class;i++) {
     class_inf[i].type = OPEN;                   /* Flag for not set yet. */
-    class_inf[i].num_pins = 0; 
+    class_inf[i].num_pins = 0;
     class_inf[i].pinlist = (int *) my_malloc (pins_per_class[i] *
         sizeof (int));
     pins_per_clb += pins_per_class[i];
@@ -514,7 +514,7 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
 /* Now allocate space for segment and switch information if the route_type   *
  * is DETAILED.  Otherwise ignore the segment and switch information, and    *
  * create only one segment and one switch.                                   */
-  
+
  if (route_type == GLOBAL) {
     num_segment = 1;
     num_switch = 1;
@@ -545,10 +545,10 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
 
  det_routing_arch_ptr->num_switch = num_switch;
 
- if (num_T_subblock != 0) 
+ if (num_T_subblock != 0)
     timing_inf_ptr->T_subblock = (t_T_subblock *) my_malloc (num_T_subblock *
                       sizeof (t_T_subblock));
- else 
+ else
     timing_inf_ptr->T_subblock = NULL;
 }
 
@@ -596,7 +596,7 @@ static int get_class (FILE *fp_arch, char *buf) {
 }
 
 
-static void get_pin (char *ptr, int pinnum, enum e_pin_type type, 
+static void get_pin (char *ptr, int pinnum, enum e_pin_type type,
                 FILE *fp_arch, char *buf) {
 
 /* This routine parses an ipin or outpin line.  It should be called right   *
@@ -624,7 +624,7 @@ static void get_pin (char *ptr, int pinnum, enum e_pin_type type,
  class_inf[iclass].num_pins++;
 
  clb_pin_class[pinnum] = iclass;
-  
+
  ptr = my_strtok(NULL,TOKENS,fp_arch,buf);
  if (ptr == NULL) {
     printf("Error:  pin statement specifies no locations, line %d.\n",
@@ -674,7 +674,7 @@ static enum e_Fc_type get_Fc_type (char *ptr, FILE *fp_arch, char *buf) {
          "architecture file.\n", linenum);
     exit (1);
  }
- 
+
  if (strcmp (ptr, "absolute") == 0) {
     Fc_type = ABSOLUTE;
  }
@@ -686,18 +686,18 @@ static enum e_Fc_type get_Fc_type (char *ptr, FILE *fp_arch, char *buf) {
          "architecture file.\n", ptr, linenum);
     exit (1);
  }
- 
+
  ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
  if (ptr != NULL) {
     printf("Error:  extra characters at end of line %d.\n", linenum);
     exit (1);
  }
- 
+
  return (Fc_type);
 }
 
 
-static enum e_switch_block_type get_switch_block_type (FILE *fp_arch, 
+static enum e_switch_block_type get_switch_block_type (FILE *fp_arch,
             char *buf) {
 
 /* Returns the proper value for the switch_block_type member of        *
@@ -738,7 +738,7 @@ static enum e_switch_block_type get_switch_block_type (FILE *fp_arch,
 }
 
 
-static void get_T_subblock (FILE *fp_arch, char *buf, t_T_subblock 
+static void get_T_subblock (FILE *fp_arch, char *buf, t_T_subblock
         *T_subblock) {
 
 /* Parses one T_subblock line, and loads it into the t_T_subblock structure *
@@ -755,7 +755,7 @@ static void get_T_subblock (FILE *fp_arch, char *buf, t_T_subblock
              linenum, T_subblock->T_comb);
     exit (1);
  }
- 
+
  check_keyword (fp_arch, buf, "T_seq_in:");
 
  ptr = get_middle_token (fp_arch, buf);
@@ -775,16 +775,16 @@ static void get_T_subblock (FILE *fp_arch, char *buf, t_T_subblock
             linenum, T_subblock->T_seq_out);
     exit (1);
  }
- 
+
 }
 
 
-static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr, 
+static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
          int num_switch, enum e_route_type route_type) {
 
 /* Loads the segment data structure pointed to by seg_ptr with the proper   *
  * values from fp_arch, if route_type == DETAILED.                          */
- 
+
  char *ptr;
  int num_sb;
 
@@ -804,8 +804,8 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
              linenum, seg_ptr->frequency);
     exit (1);
  }
- 
- check_keyword (fp_arch, buf, "length:"); 
+
+ check_keyword (fp_arch, buf, "length:");
 
  ptr = get_middle_token (fp_arch, buf);
  if (strcmp(ptr, "longline") == 0) {
@@ -822,12 +822,12 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
     }
  }
 
- check_keyword (fp_arch, buf, "wire_switch:"); 
- 
+ check_keyword (fp_arch, buf, "wire_switch:");
+
  ptr = get_middle_token (fp_arch, buf);
  seg_ptr->wire_switch = my_atoi (ptr);
 
-/* Note:  last two switch types are generated automatically.  Shouldn't be * 
+/* Note:  last two switch types are generated automatically.  Shouldn't be *
  * used in the architecture file.                                          */
 
  if (seg_ptr->wire_switch < 0 || seg_ptr->wire_switch >= num_switch - 2) {
@@ -836,12 +836,12 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
     exit (1);
  }
 
- check_keyword (fp_arch, buf, "opin_switch:"); 
- 
+ check_keyword (fp_arch, buf, "opin_switch:");
+
  ptr = get_middle_token (fp_arch, buf);
  seg_ptr->opin_switch = my_atoi (ptr);
 
-/* Note:  last two switch types are generated automatically.  Shouldn't be * 
+/* Note:  last two switch types are generated automatically.  Shouldn't be *
  * used in the architecture file.                                          */
 
  if (seg_ptr->opin_switch < 0 || seg_ptr->opin_switch >= num_switch - 2) {
@@ -851,8 +851,8 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
  }
 
 
- check_keyword (fp_arch, buf, "Frac_cb:"); 
- 
+ check_keyword (fp_arch, buf, "Frac_cb:");
+
  ptr = get_middle_token (fp_arch, buf);
  seg_ptr->frac_cb = atof (ptr);
  if (seg_ptr->frac_cb < 0. || seg_ptr->frac_cb > 1.) {
@@ -861,8 +861,8 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
     exit (1);
  }
 
- check_keyword (fp_arch, buf, "Frac_sb:"); 
- 
+ check_keyword (fp_arch, buf, "Frac_sb:");
+
  ptr = get_middle_token (fp_arch, buf);
  seg_ptr->frac_sb = atof (ptr);
  if (seg_ptr->frac_sb < 0. || seg_ptr->frac_sb > 1.) {
@@ -875,20 +875,20 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
 
 /* Need at least two switch boxes along the length of non-longline segments *
  * to ensure all switches line up (at least for planar sboxes).             */
-    
+
     num_sb = nint ((seg_ptr->length + 1) * seg_ptr->frac_sb);
 
     if (num_sb < 2) {
        printf ("Error on line %d:  Frac_sb value results in only %d switch "
                "boxes.\n"
                "Minimum 2 switch boxes on non-longline segments.\n", linenum,
-               num_sb);  
+               num_sb);
        exit (1);
     }
  }
 
- check_keyword (fp_arch, buf, "Rmetal:"); 
- 
+ check_keyword (fp_arch, buf, "Rmetal:");
+
  ptr = get_middle_token (fp_arch, buf);
  seg_ptr->Rmetal = atof (ptr);
  if (seg_ptr->Rmetal < 0.) {
@@ -897,8 +897,8 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
     exit (1);
  }
 
- check_keyword (fp_arch, buf, "Cmetal:"); 
- 
+ check_keyword (fp_arch, buf, "Cmetal:");
+
  ptr = get_last_token (fp_arch, buf);
  seg_ptr->Cmetal = atof (ptr);
  if (seg_ptr->Cmetal < 0.) {
@@ -909,7 +909,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
 }
 
 
-static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch, 
+static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
          enum e_route_type route_type) {
 
 /* Loads up all the switch information.                                     */
@@ -927,7 +927,7 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
  ptr = get_middle_token (fp_arch, buf);
  index = my_atoi (ptr);
  if (index < 0) {
-    printf ("Error on line %d:  switch number (%d) is out of range.\n", 
+    printf ("Error on line %d:  switch number (%d) is out of range.\n",
         linenum, index);
     exit (1);
  }
@@ -976,7 +976,7 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
     printf ("Error on line %d:  capacitance value (%g) is negative.\n",
         linenum, switch_inf[index].Cin);
     exit (1);
- } 
+ }
 
  check_keyword (fp_arch, buf, "Cout:");
 
@@ -986,18 +986,18 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
     printf ("Error on line %d:  capacitance value (%g) is negative.\n",
         linenum, switch_inf[index].Cout);
     exit (1);
- } 
+ }
 
- if (switch_inf[index].buffered == FALSE && switch_inf[index].Cout 
+ if (switch_inf[index].buffered == FALSE && switch_inf[index].Cout
         != switch_inf[index].Cin) {
     printf ("Error on line %d:  Cin (%g) and Cout (%g) differ for a "
             "pass transitor (switch #%d).\n", linenum, switch_inf[index].Cin,
             switch_inf[index].Cout, index);
     exit (1);
  }
-   
+
  check_keyword (fp_arch, buf, "Tdel:");
- 
+
  ptr = get_last_token (fp_arch, buf);
  switch_inf[index].Tdel = atof (ptr);
  if (switch_inf[index].Tdel < 0) {
@@ -1009,7 +1009,7 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
 
 
 static void load_global_segment_and_switch (struct s_det_routing_arch *
-            det_routing_arch, t_segment_inf *segment_inf, t_timing_inf 
+            det_routing_arch, t_segment_inf *segment_inf, t_timing_inf
             *timing_inf) {
 
 /* Loads up the one segment type (unit length segment) and one switch type   *
@@ -1033,7 +1033,7 @@ static void load_global_segment_and_switch (struct s_det_routing_arch *
  segment_inf[0].longline = FALSE;
  segment_inf[0].Rmetal = 0.;
  segment_inf[0].Cmetal = 0.;
- 
+
  switch_inf[0].buffered = TRUE;
  switch_inf[0].R = 0.;
  switch_inf[0].Cin = 0.;
@@ -1089,7 +1089,7 @@ static void check_keyword (FILE *fp, char *buf, const char *keyword) {
 
  ptr = get_middle_token (fp, buf);
  if (strcmp (ptr, keyword) != 0) {
-    printf ("Error on line %d:  Expected keyword %s, got %s.\n", linenum, 
+    printf ("Error on line %d:  Expected keyword %s, got %s.\n", linenum,
              keyword, ptr);
     exit (1);
  }
@@ -1128,7 +1128,7 @@ static char *get_last_token (FILE *fp, char *buf) {
 }
 
 
-static int get_int (char *ptr, int inp_num, FILE *fp_arch, char *buf, 
+static int get_int (char *ptr, int inp_num, FILE *fp_arch, char *buf,
          int min_val) {
 
 /* This routine gets the next integer on the line.  It must be greater *
@@ -1176,13 +1176,13 @@ static float get_one_float (char *ptr, int inp_num, float low_lim,
     printf("Error:  extra characters at end of line %d.\n", linenum);
     exit (1);
  }
- 
+
  isread[inp_num]++;
  return (val);
 }
 
 
-static float get_float (char *ptr, int inp_num, float low_lim, 
+static float get_float (char *ptr, int inp_num, float low_lim,
    float upp_lim, FILE *fp_arch, char *buf) {
 
 /* This routine gets the floating point number that is next on the line. *
@@ -1190,7 +1190,7 @@ static float get_float (char *ptr, int inp_num, float low_lim,
  * inp_num gives the type of input line being parsed.                    */
 
  float val;
- 
+
  ptr = my_strtok(NULL,TOKENS,fp_arch,buf);
  if (ptr == NULL) {
     printf("Error:  missing %s value on line %d.\n",
@@ -1216,7 +1216,7 @@ static float get_float (char *ptr, int inp_num, float low_lim,
  * Other possibility:  chan_width_x delta peak xpeak dc        */
 
 
-static void get_chan (char *ptr, t_chan *chan, int inp_num, FILE *fp_arch, 
+static void get_chan (char *ptr, t_chan *chan, int inp_num, FILE *fp_arch,
         char *buf) {
 
 /* This routine parses a channel functional description line.  chan  *
@@ -1241,23 +1241,23 @@ static void get_chan (char *ptr, t_chan *chan, int inp_num, FILE *fp_arch,
  else if (strcmp(ptr,"delta") == 0) {
     isread[inp_num]++;
     chan->type = DELTA;
-    chan->peak = get_float(ptr,inp_num,-1.e5,1.e5, fp_arch, buf); 
+    chan->peak = get_float(ptr,inp_num,-1.e5,1.e5, fp_arch, buf);
     chan->xpeak = get_float(ptr,inp_num,-1e-30,1., fp_arch, buf);
     chan->dc = get_float(ptr,inp_num,-1e-30,1., fp_arch, buf);
     chan->width = OPEN;
  }
  else {
-    if (strcmp(ptr,"gaussian") == 0) 
-       chan->type = GAUSSIAN; 
-    if (strcmp(ptr,"pulse") == 0) 
+    if (strcmp(ptr,"gaussian") == 0)
+       chan->type = GAUSSIAN;
+    if (strcmp(ptr,"pulse") == 0)
        chan->type = PULSE;
     if (chan->type == GAUSSIAN || chan->type == PULSE) {
        isread[inp_num]++;
-       chan->peak = get_float(ptr,inp_num,-1.,1., fp_arch, buf); 
+       chan->peak = get_float(ptr,inp_num,-1.,1., fp_arch, buf);
        chan->width = get_float(ptr,inp_num,0.,1.e10, fp_arch, buf);
        chan->xpeak = get_float(ptr,inp_num,-1e-30,1., fp_arch, buf);
        chan->dc = get_float(ptr,inp_num,-1e-30,1., fp_arch, buf);
-    } 
+    }
  }
 
  if (isread[inp_num] == 0) {
@@ -1272,11 +1272,11 @@ static void get_chan (char *ptr, t_chan *chan, int inp_num, FILE *fp_arch,
     exit(1);
  }
 }
-    
+
 
 static void check_arch (char *arch_file, enum e_route_type route_type,
         struct s_det_routing_arch det_routing_arch, t_segment_inf *segment_inf,
-        t_timing_inf timing_inf, int max_subblocks_per_block, 
+        t_timing_inf timing_inf, int max_subblocks_per_block,
         t_chan_width_dist chan_width_dist) {
 
 /* This routine checks that the input architecture file makes sense and *
@@ -1298,10 +1298,10 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
  * 1, except isread[4] (outpin), isread[5] (inpin), isread[13] (segment)  *
  * and isread[14] (switch)  which should all be greater than 0.           */
 
- for (i=0;i<NUM_REQUIRED;i++) 
+ for (i=0;i<NUM_REQUIRED;i++)
     must_be_set[i] = TRUE;
 
- for (i=NUM_REQUIRED;i<NUMINP;i++) 
+ for (i=NUM_REQUIRED;i<NUMINP;i++)
     must_be_set[i] = FALSE;
 
  if (route_type == DETAILED) {
@@ -1328,7 +1328,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
        }
     }
 
-    else if (i != 4 && i != 5 && i != DETAILED_START + 5 && i != 
+    else if (i != 4 && i != 5 && i != DETAILED_START + 5 && i !=
                       DETAILED_START + 6) {
        if (isread[i] == 0) {
           printf("Error:  %s not set in file %s.\n",names[i],
@@ -1344,7 +1344,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
 
     else {    /* outpin, inpin, segment, or switch lines */
        if (isread[i] < 1) {
-          printf("Error:  in file %s.  Clb has %d %s(s).\n",arch_file, 
+          printf("Error:  in file %s.  Clb has %d %s(s).\n",arch_file,
                   isread[i], names[i]);
           fatal = 1;
        }
@@ -1381,8 +1381,8 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
     chan_x_dist = chan_width_dist.chan_x_dist;
     chan_y_dist = chan_width_dist.chan_y_dist;
 
-    if (chan_x_dist.type != UNIFORM || chan_y_dist.type != UNIFORM || 
-         chan_x_dist.peak != chan_y_dist.peak || chan_x_dist.peak != 
+    if (chan_x_dist.type != UNIFORM || chan_y_dist.type != UNIFORM ||
+         chan_x_dist.peak != chan_y_dist.peak || chan_x_dist.peak !=
          chan_width_io) {
        printf("Error in check_arch:  detailed routing currently only\n"
              "supported on FPGAs with all channels of equal width.\n");
@@ -1405,7 +1405,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
           fatal = 1;
        }
     }
- 
+
     for (i=0;i<det_routing_arch.num_switch;i++) {
        if (switch_inf[i].buffered) {
 
@@ -1434,11 +1434,11 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
 
  }     /* End if route_type == DETAILED */
 
- if (fatal) 
+ if (fatal)
     exit(1);
 }
 
-       
+
 void print_arch (char *arch_file, enum e_route_type route_type,
        struct s_det_routing_arch det_routing_arch, t_segment_inf *segment_inf,
        t_timing_inf timing_inf, t_subblock_data subblock_data,
@@ -1470,29 +1470,29 @@ void print_arch (char *arch_file, enum e_route_type route_type,
 
  fprintf(fp,"\nchan_width_x:\n");
  fprintf(fp,"type: %d  peak: %g  width: %g  xpeak: %g  dc: %g\n",
-   chan_x_dist.type, chan_x_dist.peak, chan_x_dist.width, 
+   chan_x_dist.type, chan_x_dist.peak, chan_x_dist.width,
      chan_x_dist.xpeak, chan_x_dist.dc);
 
  fprintf(fp,"\nchan_width_y:\n");
  fprintf(fp,"type: %d  peak: %g  width: %g  xpeak: %g  dc: %g\n\n",
-   chan_y_dist.type, chan_y_dist.peak, chan_y_dist.width, 
+   chan_y_dist.type, chan_y_dist.peak, chan_y_dist.width,
      chan_y_dist.xpeak, chan_y_dist.dc);
 
  fprintf(fp,"Pin #\tclass\ttop\tbottom\tleft\tright\tglobal");
  for (i=0;i<pins_per_clb;i++) {
     fprintf(fp,"\n%d\t%d\t", i, clb_pin_class[i]);
-    for (j=0;j<=3;j++) 
+    for (j=0;j<=3;j++)
        fprintf(fp,"%d\t",pinloc[j][i]);
     fprintf (fp, "%d", is_global_clb_pin[i]);
  }
 
- fprintf(fp,"\n\nClass types:  DRIVER = %d; RECEIVER = %d\n\n", DRIVER, 
+ fprintf(fp,"\n\nClass types:  DRIVER = %d; RECEIVER = %d\n\n", DRIVER,
     RECEIVER);
 
  fprintf(fp,"Class\tType\tNumpins\tPins");
  for (i=0;i<num_class;i++) {
     fprintf(fp,"\n%d\t%d\t%d\t", i, class_inf[i].type, class_inf[i].num_pins);
-    for (j=0;j<class_inf[i].num_pins;j++) 
+    for (j=0;j<class_inf[i].num_pins;j++)
        fprintf(fp,"%d\t",class_inf[i].pinlist[j]);
  }
  fprintf(fp,"\n\n");
@@ -1504,16 +1504,16 @@ void print_arch (char *arch_file, enum e_route_type route_type,
 
  if (route_type == DETAILED) {
     fprintf(fp,"\n");
-    if (det_routing_arch.Fc_type == ABSOLUTE) 
+    if (det_routing_arch.Fc_type == ABSOLUTE)
        fprintf(fp,"Fc value is absolute number of tracks.\n");
-    else 
+    else
        fprintf(fp,"Fc value is fraction of tracks in a channel.\n");
-   
-    fprintf(fp,"Fc_output: %g.  Fc_input: %g.  Fc_pad: %g.\n", 
-            det_routing_arch.Fc_output, det_routing_arch.Fc_input, 
+
+    fprintf(fp,"Fc_output: %g.  Fc_input: %g.  Fc_pad: %g.\n",
+            det_routing_arch.Fc_output, det_routing_arch.Fc_input,
             det_routing_arch.Fc_pad);
 
-    if (det_routing_arch.switch_block_type == SUBSET) 
+    if (det_routing_arch.switch_block_type == SUBSET)
        fprintf (fp, "switch_block_type: SUBSET.\n");
     else if (det_routing_arch.switch_block_type == WILTON)
        fprintf (fp, "switch_block_type: WILTON.\n");
@@ -1523,54 +1523,54 @@ void print_arch (char *arch_file, enum e_route_type route_type,
 
 /* Segmentation info. useful even if route_type == GLOBAL */
 
- fprintf (fp, "\nnum_segment: %d,  num_switch: %d.\n", 
+ fprintf (fp, "\nnum_segment: %d,  num_switch: %d.\n",
           det_routing_arch.num_segment, det_routing_arch.num_switch);
 
- if (route_type == DETAILED) 
+ if (route_type == DETAILED)
     fprintf (fp, "(Two switch types were generated automatically.)\n");
 
  fprintf (fp, "#%d:  delayless switch.  #%d:  wire_to_ipin_switch.\n",
-          det_routing_arch.delayless_switch, 
+          det_routing_arch.delayless_switch,
           det_routing_arch.wire_to_ipin_switch);
 
  fprintf (fp, "\nSeg. #\tfreq.\tlength\tlongln\topin_sw\twire_sw\tFrac_cb\t"
               "Frac_sb\tCmetal\tRmetal\n");
 
- for (i=0;i<det_routing_arch.num_segment;i++) 
-    fprintf (fp, "%d\t%g\t%d\t%d\t%d\t%d\t%g\t%g\t%g\t%g\n", i, 
-       segment_inf[i].frequency, segment_inf[i].length, 
-       segment_inf[i].longline, segment_inf[i].opin_switch, 
-       segment_inf[i].wire_switch, segment_inf[i].frac_cb, 
+ for (i=0;i<det_routing_arch.num_segment;i++)
+    fprintf (fp, "%d\t%g\t%d\t%d\t%d\t%d\t%g\t%g\t%g\t%g\n", i,
+       segment_inf[i].frequency, segment_inf[i].length,
+       segment_inf[i].longline, segment_inf[i].opin_switch,
+       segment_inf[i].wire_switch, segment_inf[i].frac_cb,
        segment_inf[i].frac_sb, segment_inf[i].Cmetal, segment_inf[i].Rmetal);
 
  fprintf (fp,"\nSwitch#\tbuff?\tR\tCin\tCout\tTdel\n");
- for (i=0;i<det_routing_arch.num_switch;i++) 
+ for (i=0;i<det_routing_arch.num_switch;i++)
     fprintf (fp, "%d\t%d\t%g\t%g\t%g\t%g\n", i, switch_inf[i].buffered,
-        switch_inf[i].R, switch_inf[i].Cin, switch_inf[i].Cout, 
+        switch_inf[i].R, switch_inf[i].Cin, switch_inf[i].Cout,
         switch_inf[i].Tdel);
 
- fprintf (fp,"\n\nR_minW_nmos: %g  R_minW_pmos: %g\n", 
+ fprintf (fp,"\n\nR_minW_nmos: %g  R_minW_pmos: %g\n",
         det_routing_arch.R_minW_nmos, det_routing_arch.R_minW_pmos);
 
  if (timing_inf.timing_analysis_enabled) {
     fprintf (fp, "\n\nTiming information:\n");
     fprintf (fp,"---------------------------------------------------------\n");
-    fprintf (fp, "C_ipin_cblock: %g (F) \nT_ipin_cblock: %g (s)\n\n", 
+    fprintf (fp, "C_ipin_cblock: %g (F) \nT_ipin_cblock: %g (s)\n\n",
                 timing_inf.C_ipin_cblock, timing_inf.T_ipin_cblock);
-    fprintf (fp, "T_sblk_opin_to_sblk_ipin: %g (s)\n", 
+    fprintf (fp, "T_sblk_opin_to_sblk_ipin: %g (s)\n",
                        timing_inf.T_sblk_opin_to_sblk_ipin);
-    fprintf (fp, "T_clb_ipin_to_sblk_ipin: %g (s)\n", 
+    fprintf (fp, "T_clb_ipin_to_sblk_ipin: %g (s)\n",
                        timing_inf.T_clb_ipin_to_sblk_ipin);
-    fprintf (fp, "T_sblk_opin_to_clb_opin: %g (s)\n", 
+    fprintf (fp, "T_sblk_opin_to_clb_opin: %g (s)\n",
                        timing_inf.T_sblk_opin_to_clb_opin);
-    fprintf (fp,"T_ipad: %g (s)  \nT_opad: %g (s)\n", 
+    fprintf (fp,"T_ipad: %g (s)  \nT_opad: %g (s)\n",
                 timing_inf.T_ipad, timing_inf.T_opad);
 
     fprintf (fp,"\nSubblock #\tT_comb (s)\tT_seq_in (s)\tT_seq_out (s)\n");
 
     for (i=0;i<subblock_data.max_subblocks_per_block;i++) {
        T_subblock = timing_inf.T_subblock[i];
-       fprintf (fp, "%10d\t%10g\t%10g\t%10g (s)\n", i, T_subblock.T_comb, 
+       fprintf (fp, "%10d\t%10g\t%10g\t%10g (s)\n", i, T_subblock.T_comb,
                 T_subblock.T_seq_in, T_subblock.T_seq_out);
     }
  }
@@ -1594,9 +1594,9 @@ void init_arch (float aspect_ratio, boolean user_sized) {
  * will fit the circuit.                                             */
 
  if (user_sized == TRUE) {
-    if (num_clbs > nx * ny || num_p_inputs + num_p_outputs > 
+    if (num_clbs > nx * ny || num_p_inputs + num_p_outputs >
            2 * io_rat * (nx + ny)) {
-       printf ("Error:  User-specified size is too small for circuit.\n"); 
+       printf ("Error:  User-specified size is too small for circuit.\n");
        exit (1);
     }
  }
@@ -1610,7 +1610,7 @@ void init_arch (float aspect_ratio, boolean user_sized) {
     ny = (int) ceil (sqrt ((double) (num_clbs / aspect_ratio)));
     io_lim = (int) ceil ((num_p_inputs + num_p_outputs) / (2 * io_rat *
            (1. + aspect_ratio)));
-    ny = max (ny, io_lim);
+    ny = my_max(ny, io_lim);
 
     nx = (int) ceil (ny * aspect_ratio);
  }
@@ -1639,11 +1639,11 @@ void init_arch (float aspect_ratio, boolean user_sized) {
     exit (1);
  }
 
- clb = (struct s_clb **) alloc_matrix (0, nx+1, 0, ny+1, 
+ clb = (struct s_clb **) alloc_matrix (0, nx+1, 0, ny+1,
               sizeof(struct s_clb));
 
  chan_width_x = (int *) my_malloc ((ny+1) * sizeof(int));
- chan_width_y = (int *) my_malloc ((nx+1) * sizeof(int)); 
+ chan_width_y = (int *) my_malloc ((nx+1) * sizeof(int));
 
  fill_arch();
 }
@@ -1657,7 +1657,7 @@ static void fill_arch (void) {
 
 /* allocate io_blocks arrays. Done this way to save storage */
 
- i = 2*io_rat*(nx+ny);  
+ i = 2*io_rat*(nx+ny);
  index = (int *) my_malloc (i*sizeof(int));
  for (i=1;i<=nx;i++) {
     clb[i][0].u.io_blocks = index;
@@ -1671,10 +1671,10 @@ static void fill_arch (void) {
     clb[nx+1][i].u.io_blocks = index;
     index+=io_rat;
  }
- 
+
  /* Initialize type, and occupancy. */
 
- for (i=1;i<=nx;i++) {  
+ for (i=1;i<=nx;i++) {
     clb[i][0].type = IO;
     clb[i][ny+1].type = IO;  /* perimeter (IO) cells */
  }
@@ -1692,6 +1692,6 @@ static void fill_arch (void) {
 
 /* Nothing goes in the corners.      */
 
- clb[0][0].type = clb[nx+1][0].type = ILLEGAL;  
+ clb[0][0].type = clb[nx+1][0].type = ILLEGAL;
  clb[0][ny+1].type = clb[nx+1][ny+1].type = ILLEGAL;
 }

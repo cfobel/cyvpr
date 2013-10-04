@@ -31,13 +31,13 @@ void get_segment_usage_stats (int num_segment, t_segment_inf *segment_inf) {
  max_segment_length = 0;
  for (seg_type=0;seg_type<num_segment;seg_type++) {
     if (segment_inf[seg_type].longline == FALSE)
-       max_segment_length = max (max_segment_length, 
+       max_segment_length = my_max(max_segment_length,
                                  segment_inf[seg_type].length);
  }
- 
- seg_occ_by_length = (int *) my_calloc ((max_segment_length + 1), 
+
+ seg_occ_by_length = (int *) my_calloc ((max_segment_length + 1),
                               sizeof (int));
- seg_cap_by_length = (int *) my_calloc ((max_segment_length + 1), 
+ seg_cap_by_length = (int *) my_calloc ((max_segment_length + 1),
                               sizeof (int));
 
  seg_occ_by_type = (int *) my_calloc (num_segment, sizeof (int));
@@ -53,12 +53,12 @@ void get_segment_usage_stats (int num_segment, t_segment_inf *segment_inf) {
           length = segment_inf[seg_type].length;
        else
           length = LONGLINE;
-       
+
        seg_occ_by_length[length] += rr_node[inode].occ;
        seg_cap_by_length[length] += rr_node[inode].capacity;
        seg_occ_by_type[seg_type] += rr_node[inode].occ;
        seg_cap_by_type[seg_type] += rr_node[inode].capacity;
-       
+
     }
  }
 
@@ -68,7 +68,7 @@ void get_segment_usage_stats (int num_segment, t_segment_inf *segment_inf) {
 
  for (seg_type=0;seg_type<num_segment;seg_type++) {
     if (seg_cap_by_type[seg_type] != 0) {
-       utilization = (float) seg_occ_by_type[seg_type] / 
+       utilization = (float) seg_occ_by_type[seg_type] /
                      (float) seg_cap_by_type[seg_type];
        printf ("%8d                  %5.3g\n", seg_type, utilization);
     }
@@ -82,19 +82,19 @@ void get_segment_usage_stats (int num_segment, t_segment_inf *segment_inf) {
 
  for (length=1;length<=max_segment_length;length++) {
     if (seg_cap_by_length[length] != 0) {
-       utilization = (float) seg_occ_by_length[length] / 
+       utilization = (float) seg_occ_by_length[length] /
                      (float) seg_cap_by_length[length];
        printf ("%9d                   %5.3g\n", length, utilization);
     }
  }
 
  if (seg_cap_by_length[LONGLINE] != 0) {
-    utilization = (float) seg_occ_by_length[LONGLINE] / 
+    utilization = (float) seg_occ_by_length[LONGLINE] /
                         (float) seg_cap_by_length[LONGLINE];
        printf ("   longline                 %5.3g\n", utilization);
  }
 
- 
+
  free (seg_occ_by_length);
  free (seg_cap_by_length);
  free (seg_occ_by_type);

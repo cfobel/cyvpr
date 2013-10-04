@@ -409,7 +409,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
  if (move_lim <= 0)
     move_lim = 1;
 
- rlim = (float) max (nx, ny);
+ rlim = (float) my_max(nx, ny);
 
  first_rlim = rlim; /*used in timing-driven placement for exponent computation*/
  final_rlim = 1;
@@ -857,9 +857,9 @@ static void update_rlim (float *rlim, float success_rat) {
  float upper_lim;
 
  *rlim = (*rlim) * (1. - 0.44 + success_rat);
- upper_lim = max(nx,ny);
- *rlim = min(*rlim,upper_lim);
- *rlim = max(*rlim,1.);
+ upper_lim = my_max(nx,ny);
+ *rlim = my_min(*rlim,upper_lim);
+ *rlim = my_max(*rlim,1.);
 /* *rlim = (float) nx; */
 }
 
@@ -884,7 +884,7 @@ static void update_t (float *t, float std_dev, float rlim,
  }
  else {
     fac = exp (-LAMBDA*(*t)/std_dev);
-    fac = max(0.5,fac);
+    fac = my_max(0.5,fac);
     *t = (*t) * fac;
  }   */
 /* ------------------------------------- */
@@ -946,7 +946,7 @@ static float starting_t (float *cost_ptr, float *bb_cost_ptr, float *timing_cost
  if (annealing_sched.type == USER_SCHED)
     return (annealing_sched.init_t);
 
- move_lim = min (max_moves, num_blocks);
+ move_lim = my_min(max_moves, num_blocks);
 
  num_accepted = 0;
  av = 0.;
@@ -1388,8 +1388,8 @@ static void find_to (int x_from, int y_from, int type, float rlim,
 
  int x_rel, y_rel, iside, iplace, rlx, rly;
 
- rlx = min(nx,rlim);   /* Only needed when nx < ny. */
- rly = min (ny,rlim);  /* Added rly for aspect_ratio != 1 case. */
+ rlx = my_min(nx,rlim);   /* Only needed when nx < ny. */
+ rly = my_min(ny,rlim);  /* Added rly for aspect_ratio != 1 case. */
 
 #ifdef DEBUG
  if (rlx < 1 || rlx > nx) {
@@ -2065,11 +2065,11 @@ static void update_region_occ (int inet, struct s_bb *coords,
 
  imin = (int) (net_xmin - 0.5) * inv_region_len;
  imax = (int) (net_xmax - 0.5) * inv_region_len;
- imax = min (imax, num_regions - 1);       /* Watch for weird roundoff */
+ imax = my_min(imax, num_regions - 1);       /* Watch for weird roundoff */
 
  jmin = (int) (net_ymin - 0.5) * inv_region_height;
  jmax = (int) (net_ymax - 0.5) * inv_region_height;
- jmax = min (jmax, num_regions - 1);       /* Watch for weird roundoff */
+ jmax = my_min(jmax, num_regions - 1);       /* Watch for weird roundoff */
 
  inv_bb_len = 1. / (net_xmax - net_xmin);
  inv_bb_height = 1. / (net_ymax - net_ymin);
@@ -2079,10 +2079,10 @@ static void update_region_occ (int inet, struct s_bb *coords,
 
  for (i=imin;i<=imax;i++) {
     for (j=jmin;j<=jmax;j++) {
-       overlap_xlow = max (place_region_bounds_x[i],net_xmin);
-       overlap_xhigh = min (place_region_bounds_x[i+1],net_xmax);
-       overlap_ylow = max (place_region_bounds_y[j],net_ymin);
-       overlap_yhigh = min (place_region_bounds_y[j+1],net_ymax);
+       overlap_xlow = my_max(place_region_bounds_x[i],net_xmin);
+       overlap_xhigh = my_min(place_region_bounds_x[i+1],net_xmax);
+       overlap_ylow = my_max(place_region_bounds_y[j],net_ymin);
+       overlap_yhigh = my_min(place_region_bounds_y[j+1],net_ymax);
 
        x_overlap = overlap_xhigh - overlap_xlow;
        y_overlap = overlap_yhigh - overlap_ylow;
@@ -2320,9 +2320,9 @@ static void load_place_regions (int num_regions) {
      low_lim = (float) j / (float) num_regions * ny + 1.;
      high_lim = (float) (j+1) / (float) num_regions * ny;
      low_block = floor (low_lim);
-     low_block = max (1,low_block); /* Watch for weird roundoff effects. */
+     low_block = my_max(1,low_block); /* Watch for weird roundoff effects. */
      high_block = ceil (high_lim);
-     high_block = min(high_block, ny);
+     high_block = my_min(high_block, ny);
 
      block_capacity = (chan_width_x[low_block - 1] +
           chan_width_x[low_block])/2.;
@@ -2360,9 +2360,9 @@ static void load_place_regions (int num_regions) {
      low_lim = (float) i / (float) num_regions * nx + 1.;
      high_lim = (float) (i+1) / (float) num_regions * nx;
      low_block = floor (low_lim);
-     low_block = max (1,low_block); /* Watch for weird roundoff effects. */
+     low_block = my_max(1,low_block); /* Watch for weird roundoff effects. */
      high_block = ceil (high_lim);
-     high_block = min(high_block, nx);
+     high_block = my_min(high_block, nx);
 
      block_capacity = (chan_width_y[low_block - 1] +
           chan_width_y[low_block])/2.;
@@ -2521,8 +2521,8 @@ static void get_bb_from_scratch (int inet, struct s_bb *coords,
  x = block[plist[0]].x;
  y = block[plist[0]].y;
 
- x = max(min(x,nx),1);
- y = max(min(y,ny),1);
+ x = my_max(my_min(x,nx),1);
+ y = my_max(my_min(y,ny),1);
 
  xmin = x;
  ymin = y;
@@ -2546,8 +2546,8 @@ static void get_bb_from_scratch (int inet, struct s_bb *coords,
  * the which channels are included within the bounding box, and it         *
  * simplifies the code a lot.                                              */
 
-    x = max(min(x,nx),1);
-    y = max(min(y,ny),1);
+    x = my_max(my_min(x,nx),1);
+    y = my_max(my_min(y,ny),1);
 
     if (x == xmin) {
        xmin_edge++;
@@ -2677,10 +2677,10 @@ static void get_non_updateable_bb (int inet, struct s_bb *bb_coord_new) {
   * clip to 1 in both directions as well (since minimum channel index *
   * is 0).  See route.c for a channel diagram.                        */
 
- bb_coord_new->xmin = max(min(xmin,nx),1);
- bb_coord_new->ymin = max(min(ymin,ny),1);
- bb_coord_new->xmax = max(min(xmax,nx),1);
- bb_coord_new->ymax = max(min(ymax,ny),1);
+ bb_coord_new->xmin = my_max(my_min(xmin,nx),1);
+ bb_coord_new->ymin = my_max(my_min(ymin,ny),1);
+ bb_coord_new->xmax = my_max(my_min(xmax,nx),1);
+ bb_coord_new->ymax = my_max(my_min(ymax,ny),1);
 }
 
 
@@ -2700,10 +2700,10 @@ static void update_bb (int inet, struct s_bb *bb_coord_new, struct s_bb
 
 /* IO blocks are considered to be one cell in for simplicity. */
 
- xnew = max(min(xnew,nx),1);
- ynew = max(min(ynew,ny),1);
- xold = max(min(xold,nx),1);
- yold = max(min(yold,ny),1);
+ xnew = my_max(my_min(xnew,nx),1);
+ ynew = my_max(my_min(ynew,ny),1);
+ xold = my_max(my_min(xold,nx),1);
+ yold = my_max(my_min(yold,ny),1);
 
 /* Check if I can update the bounding box incrementally. */
 
@@ -2886,7 +2886,7 @@ static void initial_placement (enum e_pad_loc_type pad_loc_type,
  struct s_pos {int x; int y;} *pos;
  int i, j, k, count, iblk, choice, tsize, isubblk;
 
- tsize = max(nx*ny, 2*(nx+ny));
+ tsize = my_max(nx*ny, 2*(nx+ny));
  pos = (struct s_pos *) my_malloc(tsize*sizeof(struct s_pos));
 
  /* Initialize all occupancy to zero. */

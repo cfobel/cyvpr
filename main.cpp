@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <stdio.h>
 #include <string.h>
 #include "util.h"
@@ -11,9 +12,12 @@
 #include "place_and_route.h"
 #include "stats.h"
 #include "path_delay.h"
+#include "Result.hpp"
 
 
 /******************** Global variables ************************************/
+
+RouteResult g_route_result;
 
              /********** Netlist to be mapped stuff ****************/
 
@@ -235,7 +239,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
     printf ("\nRouting options valid only for timing-driven routing:\n"
 	    "\t[-astar_fac <float>] [-max_criticality <float>]\n"
 	    "\t[-criticality_exp <float>]\n\n");
-    exit(1);
+    throw std::runtime_error("1");
   }
 
   strncpy(net_file,argv[1],BUFSIZE);
@@ -254,7 +258,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (*aspect_ratio <= 0.) {
 	printf("Error:  Aspect ratio must be > 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -273,7 +277,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if ((*gr_automode > 2) || (*gr_automode < 0)) {
 	printf("Error:  -auto value must be between 0 and 2.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -335,7 +339,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (nx <= 0) {
 	printf("Error:  -nx value must be greater than 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -349,7 +353,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (ny <= 0) {
 	printf("Error:  -ny value must be greater than 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -401,7 +405,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
       if (*constant_net_delay < 0.) {
 	printf("Error:  -timing_analyze_only_with_net_delay value must "
 	       "be > 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -415,7 +419,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (annealing_sched->init_t < 0) {
 	printf("Error:  -init_t value must be nonnegative 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       annealing_sched->type = USER_SCHED;
@@ -430,7 +434,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
       if ((annealing_sched->alpha_t <= 0) ||
 	  (annealing_sched->alpha_t >= 1.)) {
 	printf("Error:  -alpha_t value must be between 0. and 1.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       annealing_sched->type = USER_SCHED;
@@ -444,7 +448,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (annealing_sched->exit_t <= 0.) {
 	printf("Error:  -exit_t value must be greater than 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       annealing_sched->type = USER_SCHED;
@@ -458,7 +462,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (annealing_sched->inner_num <= 0.) {
 	printf("Error:  -inner_num value must be greater than 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -479,7 +483,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (placer_opts->place_cost_exp < 0.) {
 	printf("Error:  -place_cost_exp value must be nonnegative.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -494,7 +498,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (placer_opts->td_place_exp_first < 0.) {
 	printf("Error:  -td_place_exp_first value must be nonnegative.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -509,7 +513,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (placer_opts->td_place_exp_last < 0.) {
 	printf("Error:  -td_place_exp_last value must be nonnegative.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -552,7 +556,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (placer_opts->timing_tradeoff < 0.) {
 	printf("Error:  -timing_tradeoff value must be nonnegative.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -589,7 +593,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (placer_opts->block_dist < 0.) {
 	printf("Error:  -block_dist value must be nonnegative.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -627,7 +631,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (placer_opts->num_regions <= 0.) {
 	printf("Error:  -num_regions value must be greater than 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -641,7 +645,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (placer_opts->place_chan_width <= 0.) {
 	printf("Error:  -place_chan_width value must be greater than 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -655,7 +659,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (router_opts->max_router_iterations < 0) {
 	printf("Error:  -max_router_iterations value is less than 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       i += 2;
@@ -877,7 +881,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
       if (router_opts->fixed_channel_width <= 0) {
 	printf("Error:  -route_chan_width value must be greater than 0.\n");
-	exit(1);
+	throw std::runtime_error("1");
       }
 
       if (router_opts->fixed_channel_width >= MAX_CHANNEL_WIDTH) {
@@ -921,10 +925,9 @@ static void parse_command (int argc, char *argv[], char *net_file, char
     }
 
     printf("Error:  Unrecognized flag: %s.  Aborting.\n",argv[i]);
-    exit(1);
+    throw std::runtime_error("1");
 
   }   /* End of giant while loop. */
-
 
   /* Check for illegal options combinations. */
 
@@ -944,7 +947,7 @@ static void parse_command (int argc, char *argv[], char *net_file, char
 
     printf("Error: Cannot use nonlinear placement with \n"
 	   "      timing driven placement\n");
-    exit(1);
+    throw std::runtime_error("1");
   }
 
   if (router_opts->route_type == GLOBAL &&
@@ -1303,7 +1306,7 @@ static void get_input (char *net_file, char *arch_file, int place_cost_type,
 					    num_regions > ny)) {
     printf("Error:  Cannot use more regions than clbs in placement cost "
 	   "function.\n");
-    exit(1);
+    throw std::runtime_error("1");
   }
 
 }
@@ -1328,7 +1331,7 @@ static int read_int_option (int argc, char *argv[], int iarg) {
 
   if (num_read != 1) {
     printf("Error:  %s option requires an integer parameter.\n\n", argv[iarg]);
-    exit(1);
+    throw std::runtime_error("1");
   }
 
   return (value);
@@ -1354,7 +1357,7 @@ static float read_float_option (int argc, char *argv[], int iarg) {
 
   if (num_read != 1) {
     printf("Error:  %s option requires a float parameter.\n\n", argv[iarg]);
-    exit(1);
+    throw std::runtime_error("1");
   }
 
   return (value);
@@ -1362,7 +1365,7 @@ static float read_float_option (int argc, char *argv[], int iarg) {
 
 
 int __main__ (int argc, char *argv[]) {
-
+ g_route_result = RouteResult();
  char title[] = "\n\nVPR FPGA Placement and Routing Program Version 4.3\n"
                 "Original VPR by V. Betz\n"
                 "Timing-driven placement enhancements by A. Marquardt\n"

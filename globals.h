@@ -1,5 +1,13 @@
+#ifndef ___GLOBALS__H___
+#define ___GLOBALS__H___
+
+#include "vpr_types.h"
+#include "Result.hpp"
+
+extern RouteResult g_route_result;
+
 /* Netlist to be placed stuff. */
-extern int num_nets, num_blocks;     
+extern int num_nets, num_blocks;
 extern int num_p_inputs, num_p_outputs, num_clbs, num_globals;
 extern struct s_net *net;
 extern struct s_block *block;
@@ -18,7 +26,7 @@ extern int *chan_width_x, *chan_width_y; /* numerical form */
 extern struct s_clb **clb;
 
 /* [0..num_nets-1] of linked list start pointers.  Defines the routing.  */
-extern struct s_trace **trace_head, **trace_tail;   
+extern struct s_trace **trace_head, **trace_tail;
 
 /* Structures to define the routing architecture of the FPGA.           */
 extern int num_rr_nodes;
@@ -28,3 +36,5 @@ extern t_rr_indexed_data *rr_indexed_data;   /* [0 .. num_rr_indexed_data-1] */
 extern int **net_rr_terminals;             /* [0..num_nets-1][0..num_pins-1] */
 extern struct s_switch_inf *switch_inf; /* [0..det_routing_arch.num_switch-1] */
 extern int **rr_clb_source;              /* [0..num_blocks-1][0..num_class-1] */
+
+#endif // ___GLOBALS__H___

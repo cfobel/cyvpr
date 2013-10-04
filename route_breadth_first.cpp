@@ -9,15 +9,15 @@
 
 /********************* Subroutines local to this module *********************/
 
-static boolean breadth_first_route_net (int inet, float bend_cost); 
+static boolean breadth_first_route_net (int inet, float bend_cost);
 
 static void breadth_first_expand_trace_segment (struct s_trace *start_ptr,
-        int remaining_connections_to_sink); 
+        int remaining_connections_to_sink);
 
 static void breadth_first_expand_neighbours (int inode, float pcost, int inet,
-          float bend_cost); 
+          float bend_cost);
 
-static void breadth_first_add_source_to_heap (int inet); 
+static void breadth_first_add_source_to_heap (int inet);
 
 
 /************************ Subroutine definitions ****************************/
@@ -54,10 +54,10 @@ boolean try_breadth_first_route (struct s_router_opts router_opts,
              printf ("Routing failed.\n");
              return (FALSE);
           }
- 
+
           pathfinder_update_one_cost (trace_head[inet], 1, pres_fac);
- 
-       } 
+
+       }
     }
 
    /* Make sure any CLB OPINs used up by subblocks being hooked directly     *
@@ -70,13 +70,13 @@ boolean try_breadth_first_route (struct s_router_opts router_opts,
 
     reserve_locally_used_opins (pres_fac, rip_up_local_opins,
                     clb_opins_used_locally);
- 
+
     success = feasible_routing ();
     if (success) {
        printf("Successfully routed after %d routing iterations.\n", itry);
        return (TRUE);
     }
- 
+
     if (itry == 1)
        pres_fac = router_opts.initial_pres_fac;
     else
@@ -84,7 +84,7 @@ boolean try_breadth_first_route (struct s_router_opts router_opts,
 
     pathfinder_update_cost (pres_fac, router_opts.acc_fac);
  }
- 
+
  printf ("Routing failed.\n");
  return (FALSE);
 }
@@ -141,7 +141,7 @@ static boolean breadth_first_route_net (int inet, float bend_cost) {
              add_to_mod_list (&rr_node_route_inf[inode].path_cost);
 
           breadth_first_expand_neighbours (inode, new_pcost, inet, bend_cost);
-       } 
+       }
 
        free_heap_data (current);
        current = get_heap_head ();
@@ -149,17 +149,17 @@ static boolean breadth_first_route_net (int inet, float bend_cost) {
        if (current == NULL) { /* Impossible routing. No path for net. */
           reset_path_costs ();
           return (FALSE);
-       } 
- 
+       }
+
        inode = current->index;
     }
- 
+
     rr_node_route_inf[inode].target_flag--;    /* Connected to this SINK. */
     remaining_connections_to_sink = rr_node_route_inf[inode].target_flag;
     tptr = update_traceback (current, inet);
     free_heap_data (current);
  }
- 
+
  empty_heap ();
  reset_path_costs ();
  return (TRUE);
@@ -168,7 +168,7 @@ static boolean breadth_first_route_net (int inet, float bend_cost) {
 
 static void breadth_first_expand_trace_segment (struct s_trace *start_ptr,
         int remaining_connections_to_sink) {
- 
+
 /* Adds all the rr_nodes in the traceback segment starting at tptr (and     *
  * continuing to the end of the traceback) to the heap with a cost of zero. *
  * This allows expansion to begin from the existing wiring.  The            *
@@ -218,14 +218,14 @@ static void breadth_first_expand_trace_segment (struct s_trace *start_ptr,
     while (next_ptr != NULL) {
        inode = tptr->index;
        node_to_heap (inode, 0., NO_PREVIOUS, NO_PREVIOUS, OPEN, OPEN);
- 
+
        if (rr_node[inode].type == IPIN)
           last_ipin_node = inode;
- 
+
        tptr = next_ptr;
        next_ptr = tptr->next;
     }
- 
+
 /* This will stop the IPIN node used to get to this SINK from being         *
  * reexpanded for the remainder of this net's routing.  This will make us   *
  * hook up more IPINs to this SINK (which is what we want).  If IPIN        *

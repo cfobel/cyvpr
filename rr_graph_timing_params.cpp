@@ -35,16 +35,16 @@ void add_rr_graph_C_from_switches (float C_ipin_cblock) {
  boolean buffered;
 
 
- maxlen = max (nx, ny) + 1;
+ maxlen = my_max(nx, ny) + 1;
  cblock_counted = (boolean *) my_calloc (maxlen, sizeof (boolean));
  buffer_Cin = (float *) my_calloc (maxlen, sizeof (float));
 
  for (inode=0;inode<num_rr_nodes;inode++) {
 
-    from_rr_type = rr_node[inode].type; 
+    from_rr_type = rr_node[inode].type;
 
     if (from_rr_type == CHANX || from_rr_type == CHANY) {
- 
+
        for (iedge=0;iedge<rr_node[inode].num_edges;iedge++) {
 
           to_node = rr_node[inode].edges[iedge];
@@ -82,7 +82,7 @@ void add_rr_graph_C_from_switches (float C_ipin_cblock) {
              else if (buffered) {
                 rr_node[to_node].C += Cout;
                 isblock = seg_index_of_sblock (inode, to_node);
-                buffer_Cin[isblock] = max (buffer_Cin[isblock], Cin);
+                buffer_Cin[isblock] = my_max(buffer_Cin[isblock], Cin);
              }
 
           }  /* End edge to CHANX or CHANY node. */
@@ -127,7 +127,7 @@ void add_rr_graph_C_from_switches (float C_ipin_cblock) {
        for (icblock=iseg_low;icblock<=iseg_high;icblock++) {
           cblock_counted[icblock]=FALSE;
        }
-    
+
        for (isblock=iseg_low-1;isblock<=iseg_high;isblock++) {
           rr_node[inode].C += buffer_Cin[isblock]; /* Biggest buf Cin at loc */
           buffer_Cin[isblock] = 0.;
