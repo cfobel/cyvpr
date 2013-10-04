@@ -9,7 +9,6 @@ from path import path
 include_dirs = [path('.').abspath(), ]
 sys.path += include_dirs
 
-#cy_config = dict(include_dirs=include_dirs, language='c++',
 cy_config = dict(include_dirs=include_dirs, language='c++',
                  extra_compile_args=['-O3', '-Wfatal-errors'],
                  libraries=['X11', 'm'])

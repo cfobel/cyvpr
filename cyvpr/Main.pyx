@@ -1,10 +1,33 @@
+from collections import OrderedDict
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.stdlib cimport malloc
 
 
+def rebuild(data):
+    r = cRouteResult()
+    for k, v in data.iteritems():
+        setattr(r, k, v)
+    return r
+
+
 cdef class cRouteResult:
     cdef RouteResult this_data
+
+    def __reduce__(self):
+        data = OrderedDict([('success_channel_widths',
+                              self.success_channel_widths),
+                            ('failure_channel_widths',
+                             self.failure_channel_widths),
+                            ('critical_path_delay', self.critical_path_delay),
+                            ('tnodes_on_crit_path', self.tnodes_on_crit_path),
+                            ('non_global_nets_on_crit_path',
+                             self.non_global_nets_on_crit_path),
+                            ('global_nets_on_crit_path',
+                             self.global_nets_on_crit_path),
+                            ('total_logic_delay', self.total_logic_delay),
+                            ('total_net_delay', self.total_net_delay)])
+        return (rebuild, (data, ))
 
     cdef init(self, RouteResult result):
         self.this_data = result
@@ -13,33 +36,57 @@ cdef class cRouteResult:
         def __get__(self):
             return self.this_data.success_channel_widths
 
+        def __set__(self, value):
+            self.this_data.success_channel_widths = value
+
     property failure_channel_widths:
         def __get__(self):
             return self.this_data.failure_channel_widths
+
+        def __set__(self, value):
+            self.this_data.failure_channel_widths = value
 
     property critical_path_delay:
         def __get__(self):
             return self.this_data.critical_path_delay
 
+        def __set__(self, value):
+            self.this_data.critical_path_delay = value
+
     property tnodes_on_crit_path:
         def __get__(self):
             return self.this_data.tnodes_on_crit_path
+
+        def __set__(self, value):
+            self.this_data.tnodes_on_crit_path = value
 
     property non_global_nets_on_crit_path:
         def __get__(self):
             return self.this_data.non_global_nets_on_crit_path
 
+        def __set__(self, value):
+            self.this_data.non_global_nets_on_crit_path = value
+
     property global_nets_on_crit_path:
         def __get__(self):
             return self.this_data.global_nets_on_crit_path
+
+        def __set__(self, value):
+            self.this_data.global_nets_on_crit_path = value
 
     property total_logic_delay:
         def __get__(self):
             return self.this_data.total_logic_delay
 
+        def __set__(self, value):
+            self.this_data.total_logic_delay = value
+
     property total_net_delay:
         def __get__(self):
             return self.this_data.total_net_delay
+
+        def __set__(self, value):
+            self.this_data.total_net_delay = value
 
 
 def vpr(args):
