@@ -249,12 +249,18 @@ boolean try_route (int width_fac, struct s_router_opts router_opts, struct
 
  init_route_structs (router_opts.bb_factor);
 
+ g_route_state = RouteState();
+ clock_gettime(CLOCK_REALTIME, &g_route_state.start);
  if (router_opts.router_algorithm == BREADTH_FIRST)
     success = try_breadth_first_route (router_opts, clb_opins_used_locally);
 
  else    /* TIMING_DRIVEN route */
     success = try_timing_driven_route (router_opts, net_slack, net_delay,
                 clb_opins_used_locally);
+ clock_gettime(CLOCK_REALTIME, &g_route_state.end);
+ g_route_state.success = success;
+ g_route_state.width_fac = width_fac;
+ g_route_states.push_back(g_route_state);
 
  free_rr_node_route_structs ();
  if(success) {

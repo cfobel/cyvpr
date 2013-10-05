@@ -1,16 +1,20 @@
-#ifndef ___RESULT__HPP___
-#define ___RESULT__HPP___
+#ifndef ___STATE__HPP___
+#define ___STATE__HPP___
 
-#include "State.hpp"
+#include <vector>
+#include <map>
+#include "timing.hpp"
 
 /*
  * # Result types #
  *
  * Added by Christian Fobel <christian@fobel.net> 2013.
  */
-struct RouteResult {
-    std::vector<int> success_channel_widths;
-    std::vector<int> failure_channel_widths;
+struct RouteState {
+    timespec start;
+    timespec end;
+    int width_fac;
+    bool success;
     float critical_path_delay;
     /* Tnodes on critical path. */
     int tnodes_on_crit_path;
@@ -24,4 +28,4 @@ struct RouteResult {
     float total_net_delay;
 };
 
-#endif  // ___RESULT__HPP___
+#endif  // ___STATE__HPP___

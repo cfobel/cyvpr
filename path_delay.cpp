@@ -1248,14 +1248,19 @@ void print_critical_path (char *fname) {
 
     /* Tnodes on critical path. */
     g_route_result.tnodes_on_crit_path = tnodes_on_crit_path;
+    g_route_state.tnodes_on_crit_path = tnodes_on_crit_path;
     /* Non-global nets on critical path. */
     g_route_result.non_global_nets_on_crit_path = non_global_nets_on_crit_path;
+    g_route_state.non_global_nets_on_crit_path = non_global_nets_on_crit_path;
     /* Global nets on crit. path. */
     g_route_result.global_nets_on_crit_path = global_nets_on_crit_path;
+    g_route_state.global_nets_on_crit_path = global_nets_on_crit_path;
     /* Total logic delay */
     g_route_result.total_logic_delay = total_logic_delay;
+    g_route_state.total_logic_delay = total_logic_delay;
     /* Total net delay. */
     g_route_result.total_net_delay = total_net_delay;
+    g_route_state.total_net_delay = total_net_delay;
 
  fclose (fp);
  free_int_list (&critical_path_head);

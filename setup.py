@@ -11,11 +11,11 @@ sys.path += include_dirs
 
 cy_config = dict(include_dirs=include_dirs, language='c++',
                  extra_compile_args=['-O3', '-Wfatal-errors'],
-                 libraries=['X11', 'm'])
+                 libraries=['X11', 'm', 'rt'])
 c_files = map(str, path('.').abspath().files('*.c'))
 cpp_files = map(str, path('.').abspath().files('*.cpp'))
-cy_exts = [Extension('cyvpr.%s' % v, c_files + cpp_files + ['cyvpr/%s.pyx' % v],
-                     **cy_config) for v in ('Main', )]
+cy_exts = [Extension('cyvpr.%s' % v,  ['cyvpr/%s.pyx' % v] + c_files +
+                     cpp_files, **cy_config) for v in ('Main', )]
 
 
 setup(name = "cyvpr",

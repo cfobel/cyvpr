@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <vector>
 #include <stdio.h>
 #include <string.h>
 #include "util.h"
@@ -12,12 +13,16 @@
 #include "place_and_route.h"
 #include "stats.h"
 #include "path_delay.h"
+#include "State.hpp"
 #include "Result.hpp"
 
+using std::vector;
 
 /******************** Global variables ************************************/
 
+RouteState g_route_state;
 RouteResult g_route_result;
+vector<RouteState> g_route_states;
 
              /********** Netlist to be mapped stuff ****************/
 
