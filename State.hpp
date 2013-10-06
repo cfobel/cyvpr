@@ -1,9 +1,11 @@
 #ifndef ___STATE__HPP___
 #define ___STATE__HPP___
 
+#include <utility>
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <map>
 #include "timing.hpp"
@@ -14,12 +16,96 @@ using std::stringstream;
 using std::cout;
 using std::endl;
 
+
+template <typename T>
+inline string str_value(T value) {
+    stringstream s;
+    s << value;
+    return s.str();
+}
+
+
+class StateBase {
+public:
+    virtual string label() const = 0;
+    virtual std::vector<std::pair<string, string> > fieldname_value_pairs() const = 0;
+    virtual string csv_header() const {
+        stringstream s;
+        std::vector<string> fieldnames = csv_fieldnames();
+        s << fieldnames[0];
+        for (int i = 1; i < fieldnames.size(); i++) {
+            s << "," << fieldnames[i];
+        }
+        return s.str();
+    }
+
+    virtual string csv_summary() const {
+        stringstream s;
+
+        s << "# " << label() << " #" << endl
+          << csv_header() << endl
+          << csv();
+
+        return s.str();
+    }
+
+    virtual string str() const {
+        std::vector<std::pair<string, string> > field_to_val =
+                this->fieldname_value_pairs();
+        std::vector<std::pair<string, string> >::const_iterator i =
+                field_to_val.begin();
+
+        stringstream s;
+
+        s << "# " << label() << " #" << endl << endl;
+
+        for(; i != field_to_val.end(); i++) {
+            s << "    " << i->first << ": " << i->second << endl;
+        }
+
+        return s.str();
+    }
+
+    virtual std::vector<string> csv_fieldnames() const {
+        std::vector<std::pair<string, string> > field_to_val =
+                this->fieldname_value_pairs();
+        std::vector<std::pair<string, string> >::const_iterator i =
+                field_to_val.begin();
+        std::vector<string> fieldnames;
+
+        for(; i != field_to_val.end(); i++) {
+            fieldnames.push_back(i->first);
+        }
+
+        return fieldnames;
+    }
+
+    virtual string csv() const {
+        std::vector<std::pair<string, string> > field_to_val =
+                this->fieldname_value_pairs();
+        std::vector<std::pair<string, string> >::const_iterator i =
+                field_to_val.begin();
+        stringstream s;
+
+        if (i != field_to_val.end()) {
+            s << i->second;
+            i++;
+        }
+        for(; i != field_to_val.end(); i++) {
+            s << "," << i->second;
+        }
+
+        return s.str();
+    }
+};
+
+
 /*
  * # Result types #
  *
  * Added by Christian Fobel <christian@fobel.net> 2013.
  */
-class RouteState {
+class RouteState : public StateBase {
 public:
     bool success;
     timespec start;
@@ -37,32 +123,7 @@ public:
     /* Total net delay. */
     float total_net_delay;
 
-    static std::vector<string> csv_fieldnames() {
-        std::vector<string> fieldnames;
-
-        fieldnames.push_back("success");
-        fieldnames.push_back("start_timestamp");
-        fieldnames.push_back("end_timestamp");
-        fieldnames.push_back("width_fac");
-        fieldnames.push_back("critical_path_delay");
-        fieldnames.push_back("tnodes_on_crit_path");
-        fieldnames.push_back("non_global_nets_on_crit_path");
-        fieldnames.push_back("global_nets_on_crit_path");
-        fieldnames.push_back("total_logic_delay");
-        fieldnames.push_back("total_net_delay");
-
-        return fieldnames;
-    }
-
-    static string csv_header() {
-        stringstream s;
-        std::vector<string> fieldnames = csv_fieldnames();
-        s << fieldnames[0];
-        for (int i = 1; i < fieldnames.size(); i++) {
-            s << "," << fieldnames[i];
-        }
-        return s.str();
-    }
+    virtual string label() const { return "RouteState"; }
 
     void set(RouteState const &other) {
         this->success = other.success;
@@ -77,43 +138,41 @@ public:
         this->total_net_delay = other.total_net_delay;
     }
 
-    string csv() const {
-        double start = this->start.tv_sec + (double)this->start.tv_nsec * 1e-9;
-        double end = this->end.tv_sec + (double)this->end.tv_nsec * 1e-9;
-
+    virtual std::vector<std::pair<string, string> > fieldname_value_pairs() const {
         stringstream s;
+        s << std::fixed;
 
-        s << this->success << ",";
-        s << start << ",";
-        s << end << ",";
-        s << this->width_fac << ",";
-        s << this->critical_path_delay << ",";
-        s << this->tnodes_on_crit_path << ",";
-        s << this->non_global_nets_on_crit_path << ",";
-        s << this->global_nets_on_crit_path << ",";
-        s << this->total_logic_delay << ",";
-        s << this->total_net_delay;
-
-        return s.str();
-    }
-
-    string str() const {
-        stringstream s;
+        std::vector<std::pair<string, string> > field_value_pairs;
 
         double start = this->start.tv_sec + (double)this->start.tv_nsec * 1e-9;
         double end = this->end.tv_sec + (double)this->end.tv_nsec * 1e-9;
 
-        s << "success" << this->success << endl;
-        s << "start" << start << endl;
-        s << "end" << end << endl;
-        s << "critical_path_delay: " << this->critical_path_delay << endl;
-        s << "tnodes_on_crit_path: " << this->tnodes_on_crit_path << endl;
-        s << "non_global_nets_on_crit_path: " << this->non_global_nets_on_crit_path << endl;
-        s << "global_nets_on_crit_path: " << this->global_nets_on_crit_path << endl;
-        s << "total_logic_delay: " << this->total_logic_delay << endl;
-        s << "total_net_delay: " << this->total_net_delay;
+        field_value_pairs.push_back(std::make_pair("success", str_value(this->success)));
 
-        return s.str();
+        s.str("");
+        s << std::setprecision(9) << end;
+        field_value_pairs.push_back(std::make_pair("start", s.str()));
+
+        s.str("");
+        s << std::setprecision(9) << start;
+        field_value_pairs.push_back(std::make_pair("end", s.str()));
+
+        field_value_pairs.push_back(std::make_pair("critical_path_delay",
+                                    str_value(this->critical_path_delay)));
+        field_value_pairs.push_back(std::make_pair("tnodes_on_crit_path",
+                                    str_value(this->tnodes_on_crit_path)));
+        field_value_pairs.push_back(std::make_pair
+                ("non_global_nets_on_crit_path",
+                 str_value(this->non_global_nets_on_crit_path)));
+        field_value_pairs.push_back(std::make_pair("global_nets_on_crit_path",
+                                    str_value(this->
+                                              global_nets_on_crit_path)));
+        field_value_pairs.push_back(std::make_pair("total_logic_delay",
+                                    str_value(this->total_logic_delay)));
+        field_value_pairs.push_back(std::make_pair("total_net_delay",
+                                    str_value(this->total_net_delay)));
+
+        return field_value_pairs;
     }
 };
 

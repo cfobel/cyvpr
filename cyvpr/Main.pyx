@@ -52,8 +52,14 @@ cdef class cRouteState:
                             ('total_net_delay', self.total_net_delay)])
         return (rebuild_state, (data, ))
 
+    def __str__(self):
+        return self.this_data.str()
+
     cdef init(self, RouteState state):
         self.this_data = state
+
+    def csv_summary(self):
+        return self.this_data.csv_summary()
 
     property start:
         def __get__(self):
@@ -154,6 +160,9 @@ cdef class cRouteResult:
 
     def __str__(self):
         return self.thisptr.str()
+
+    def csv_summary(self):
+        return self.thisptr.csv_summary()
 
     def csv(self):
         return self.thisptr.csv()

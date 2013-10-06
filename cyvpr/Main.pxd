@@ -12,7 +12,15 @@ cdef extern from "Main.h":
     int __main__(int argc, char *argv[]) except +
 
 
-cdef extern from "Result.hpp":
+cdef extern from "State.hpp":
+    cdef cppclass StateBase:
+        string label()
+        string csv()
+        vector[string] csv_fieldnames()
+        string csv_header()
+        string csv_summary()
+        string str()
+
     cdef cppclass RouteState:
         timespec start
         timespec end
@@ -31,9 +39,12 @@ cdef extern from "Result.hpp":
         float total_net_delay
         string str()
         string csv()
+        string csv_summary()
         vector[string] csv_fieldnames()
         string csv_header()
 
+
+cdef extern from "Result.hpp":
     cdef cppclass RouteResult:
         string arch_file_md5
         string net_file_md5
@@ -45,6 +56,7 @@ cdef extern from "Result.hpp":
         void set(RouteResult other)
         string str()
         string csv()
+        string csv_summary()
         vector[string] csv_fieldnames()
         string csv_header()
 

@@ -16,7 +16,7 @@ using std::stringstream;
  *
  * Added by Christian Fobel <christian@fobel.net> 2013.
  */
-class RouteResult {
+class RouteResult : public StateBase {
 public:
     string arch_file_md5;
     string net_file_md5;
@@ -24,26 +24,7 @@ public:
     std::vector<int> success_channel_widths;
     std::vector<int> failure_channel_widths;
 
-    static std::vector<string> csv_fieldnames() {
-        std::vector<string> fieldnames;
-
-        fieldnames.push_back("arch_file_md5");
-        fieldnames.push_back("net_file_md5");
-        fieldnames.push_back("placed_file_md5");
-        fieldnames.push_back("best_channel_width");
-
-        return fieldnames;
-    }
-
-    static string csv_header() {
-        stringstream s;
-        std::vector<string> fieldnames = csv_fieldnames();
-        s << fieldnames[0];
-        for (int i = 1; i < fieldnames.size(); i++) {
-            s << "," << fieldnames[i];
-        }
-        return s.str();
-    }
+    virtual string label() const { return "RouteResult"; }
 
     void set(RouteResult const &other) {
         this->arch_file_md5 = other.arch_file_md5;
@@ -61,26 +42,19 @@ public:
         return -1;
     }
 
-    string csv() const {
-        stringstream s;
+    virtual std::vector<std::pair<string, string> > fieldname_value_pairs() const {
+        std::vector<std::pair<string, string> > f;
 
-        s << this->arch_file_md5 << ",";
-        s << this->net_file_md5 << ",";
-        s << this->placed_file_md5 << ",";
-        s << this->best_channel_width();
+        f.push_back(std::make_pair("arch_file_md5",
+                                   str_value(this->arch_file_md5)));
+        f.push_back(std::make_pair("net_file_md5",
+                                   str_value(this->net_file_md5)));
+        f.push_back(std::make_pair("placed_file_md5",
+                                   str_value(this->placed_file_md5)));
+        f.push_back(std::make_pair("best_channel_width",
+                                   str_value(this->best_channel_width())));
 
-        return s.str();
-    }
-
-    string str() const {
-        stringstream s;
-
-        s << "arch_file_md5: " << this->arch_file_md5 << endl;
-        s << "net_file_md5: " << this->net_file_md5 << endl;
-        s << "placed_file_md5: " << this->placed_file_md5 << endl;
-        s << "best_channel_width: " << this->best_channel_width() << endl;
-
-        return s.str();
+        return f;
     }
 };
 
