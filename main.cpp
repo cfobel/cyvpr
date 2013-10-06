@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 #include "util.h"
 #include "vpr_types.h"
 #include "globals.h"
@@ -19,6 +20,7 @@
 #include "State.hpp"
 #include "Result.hpp"
 #include "md5.hpp"
+#include "SignalException.hpp"
 
 using std::vector;
 using std::string;
@@ -1376,7 +1378,22 @@ static float read_float_option (int argc, char *argv[], int iarg) {
 }
 
 
+void signal_handler(int signum) {
+    throw SignalException(signum);
+}
+
+
 int __main__ (int argc, char *argv[]) {
+    /*
+    * attach signal handlers as described in the tutorial (note we are
+    * attaching the same handler to multiple signals)
+    */
+    signal(SIGTERM, signal_handler);
+    signal(SIGINT, signal_handler);
+    //signal(SIGABRT,checkpoint_term);
+    //signal(SIGALRM,checkpoint_term);
+    //signal(SIGHUP,checkpoint_only);
+
     g_args = std::vector<std::string>(argv, argv + argc);
 
     g_route_result = RouteResult();

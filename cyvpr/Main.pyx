@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from datetime import datetime
+import warnings
 
 from libcpp.vector cimport vector
 from libcpp.string cimport string
@@ -232,7 +233,12 @@ def vpr_route(net_path, placed_path, output_path, fast=True):
     args = [net_path, '/var/benchmarks/4lut_sanitized.arch', placed_path,
             output_path, '-route_only', '-fast', '-nodisp']
     print '[vpr_route] args:', args
-    vpr(args)
+    try:
+        vpr(args)
+        signal_caught = None
+    except RuntimeError, e:
+        warnings.warn('Stopped by signal - ' + str(e))
+        signal_caught = str(e)
 
     cy_result = cRouteResult()
     cy_result.set(g_route_result)
@@ -246,7 +252,12 @@ def vpr_route(net_path, placed_path, output_path, fast=True):
         state = cRouteState()
         state.init(g_route_states[i])
         states.append(state)
-    return g_args, cy_result, states
+    return OrderedDict([
+        ('args', g_args),
+        ('signal_caught', signal_caught),
+        ('result', cy_result),
+        ('states', states),
+    ])
 
 
 def test():
