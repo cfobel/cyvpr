@@ -1,3 +1,6 @@
+#include <iostream>
+#include <fstream>
+#include <string>
 #include <stdexcept>
 #include <vector>
 #include <stdio.h>
@@ -15,14 +18,18 @@
 #include "path_delay.h"
 #include "State.hpp"
 #include "Result.hpp"
+#include "md5.hpp"
 
 using std::vector;
+using std::string;
+using std::ifstream;
 
 /******************** Global variables ************************************/
 
 RouteState g_route_state;
 RouteResult g_route_result;
 vector<RouteState> g_route_states;
+vector<string> g_args;
 
              /********** Netlist to be mapped stuff ****************/
 
@@ -1370,6 +1377,8 @@ static float read_float_option (int argc, char *argv[], int iarg) {
 
 
 int __main__ (int argc, char *argv[]) {
+    g_args = std::vector<std::string>(argv, argv + argc);
+
  g_route_result = RouteResult();
  char title[] = "\n\nVPR FPGA Placement and Routing Program Version 4.3\n"
                 "Original VPR by V. Betz\n"
@@ -1396,6 +1405,7 @@ int __main__ (int argc, char *argv[]) {
  t_chan_width_dist chan_width_dist;
  float constant_net_delay;
 
+ g_route_states.clear();
 
  printf("%s",title);
 
@@ -1414,6 +1424,25 @@ int __main__ (int argc, char *argv[]) {
         placer_opts.num_regions, aspect_ratio, user_sized,
         router_opts.route_type, &det_routing_arch, &segment_inf,
         &timing_inf, &subblock_data, &chan_width_dist);
+
+    if (operation == PLACE_AND_ROUTE || operation == ROUTE_ONLY) {
+        MD5 m;
+
+        ifstream net_infile(net_file);
+        m = MD5(net_infile);
+        net_infile.close();
+        g_route_result.net_file_md5 = m.hexdigest();
+
+        ifstream arch_infile(arch_file);
+        m = MD5(arch_infile);
+        arch_infile.close();
+        g_route_result.arch_file_md5 = m.hexdigest();
+
+        ifstream placed_infile(place_file);
+        m = MD5(placed_infile);
+        placed_infile.close();
+        g_route_result.placed_file_md5 = m.hexdigest();
+    }
 
  if (full_stats == TRUE)
     print_lambda ();

@@ -2,6 +2,7 @@
 #define ___GLOBALS__H___
 
 #include <vector>
+#include <string>
 #include "vpr_types.h"
 #include "State.hpp"
 #include "Result.hpp"
@@ -9,6 +10,7 @@
 extern RouteState g_route_state;
 extern RouteResult g_route_result;
 extern std::vector<RouteState> g_route_states;
+extern std::vector<std::string> g_args;
 
 /* Netlist to be placed stuff. */
 extern int num_nets, num_blocks;

@@ -133,7 +133,10 @@ cdef class cRouteState:
 
 
 cdef class cRouteResult:
-    cdef RouteResult this_data
+    cdef RouteResult *thisptr
+
+    def __cinit__(self):
+        self.thisptr = new RouteResult()
 
     def __reduce__(self):
         data = OrderedDict([('success_channel_widths',
@@ -147,67 +150,110 @@ cdef class cRouteResult:
                             ('global_nets_on_crit_path',
                              self.global_nets_on_crit_path),
                             ('total_logic_delay', self.total_logic_delay),
-                            ('total_net_delay', self.total_net_delay)])
+                            ('total_net_delay', self.total_net_delay),
+                            ('net_file_md5', self.net_file_md5),
+                            ('arch_file_md5', self.arch_file_md5),
+                            ('placed_file_md5', self.placed_file_md5), ])
         return (rebuild, (data, ))
 
-    cdef init(self, RouteResult result):
-        self.this_data = result
+    cdef set(self, RouteResult result):
+        self.thisptr.set(result)
+
+    def __str__(self):
+        return self.thisptr.str()
+
+    def csv(self):
+        return self.thisptr.csv()
+
+    property csv_header:
+        def __get__(self):
+            return self.thisptr.csv_header()
 
     property success_channel_widths:
         def __get__(self):
-            return self.this_data.success_channel_widths
+            return self.thisptr.success_channel_widths
 
         def __set__(self, value):
-            self.this_data.success_channel_widths = value
+            self.thisptr.success_channel_widths = value
 
     property failure_channel_widths:
         def __get__(self):
-            return self.this_data.failure_channel_widths
+            return self.thisptr.failure_channel_widths
 
         def __set__(self, value):
-            self.this_data.failure_channel_widths = value
+            self.thisptr.failure_channel_widths = value
 
     property critical_path_delay:
         def __get__(self):
-            return self.this_data.critical_path_delay
+            return self.thisptr.critical_path_delay
 
         def __set__(self, value):
-            self.this_data.critical_path_delay = value
+            self.thisptr.critical_path_delay = value
 
     property tnodes_on_crit_path:
         def __get__(self):
-            return self.this_data.tnodes_on_crit_path
+            return self.thisptr.tnodes_on_crit_path
 
         def __set__(self, value):
-            self.this_data.tnodes_on_crit_path = value
+            self.thisptr.tnodes_on_crit_path = value
 
     property non_global_nets_on_crit_path:
         def __get__(self):
-            return self.this_data.non_global_nets_on_crit_path
+            return self.thisptr.non_global_nets_on_crit_path
 
         def __set__(self, value):
-            self.this_data.non_global_nets_on_crit_path = value
+            self.thisptr.non_global_nets_on_crit_path = value
 
     property global_nets_on_crit_path:
         def __get__(self):
-            return self.this_data.global_nets_on_crit_path
+            return self.thisptr.global_nets_on_crit_path
 
         def __set__(self, value):
-            self.this_data.global_nets_on_crit_path = value
+            self.thisptr.global_nets_on_crit_path = value
 
     property total_logic_delay:
         def __get__(self):
-            return self.this_data.total_logic_delay
+            return self.thisptr.total_logic_delay
 
         def __set__(self, value):
-            self.this_data.total_logic_delay = value
+            self.thisptr.total_logic_delay = value
 
     property total_net_delay:
         def __get__(self):
-            return self.this_data.total_net_delay
+            return self.thisptr.total_net_delay
 
         def __set__(self, value):
-            self.this_data.total_net_delay = value
+            self.thisptr.total_net_delay = value
+
+    def get_net_file_md5(self):
+        print self.thisptr.net_file_md5.c_str()
+
+    property net_file_md5:
+        def __get__(self):
+            cdef string s = self.thisptr.net_file_md5
+            return s
+
+        def __set__(self, value):
+            self.thisptr.net_file_md5 = value
+
+    property arch_file_md5:
+        def __get__(self):
+            cdef string s = self.thisptr.arch_file_md5
+            return s
+
+        def __set__(self, value):
+            self.thisptr.arch_file_md5 = value
+
+    property placed_file_md5:
+        def __get__(self):
+            cdef string s = self.thisptr.placed_file_md5
+            return s
+
+        def __set__(self, value):
+            self.thisptr.placed_file_md5 = value
+
+    def __dealloc__(self):
+        del self.thisptr
 
 
 def vpr(args):
@@ -251,8 +297,8 @@ def vpr_route(net_path, placed_path, output_path, fast=True):
     print 'routed successfully with the following channel widths:', g_route_result.success_channel_widths
     print 'failed to route with the following channel widths:', g_route_result.failure_channel_widths
 
-    result = cRouteResult()
-    result.init(g_route_result)
+    cy_result = cRouteResult()
+    cy_result.set(g_route_result)
 
     states = []
     cdef int i
@@ -261,10 +307,10 @@ def vpr_route(net_path, placed_path, output_path, fast=True):
         state = cRouteState()
         state.init(g_route_states[i])
         states.append(state)
-    return result, states
+    return g_args, cy_result, states
 
 
 def test():
     result = cRouteResult()
-    result.init(g_route_result)
+    result.set(g_route_result)
     return result

@@ -10,6 +10,7 @@
 #include "route_breadth_first.h"
 #include "place_and_route.h"
 #include "rr_graph.h"
+#include "path_delay.h"
 
 /***************** Variables shared only by route modules *******************/
 
@@ -260,14 +261,15 @@ boolean try_route (int width_fac, struct s_router_opts router_opts, struct
  clock_gettime(CLOCK_REALTIME, &g_route_state.end);
  g_route_state.success = success;
  g_route_state.width_fac = width_fac;
- g_route_states.push_back(g_route_state);
 
  free_rr_node_route_structs ();
  if(success) {
-     g_route_result.success_channel_widths.push_back(width_fac);
+    print_critical_path ("critical_path.echo");
+    g_route_result.success_channel_widths.push_back(width_fac);
  } else {
      g_route_result.failure_channel_widths.push_back(width_fac);
  }
+ g_route_states.push_back(g_route_state);
  return (success);
 }
 

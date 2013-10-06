@@ -1,4 +1,5 @@
 from libcpp.vector cimport vector
+from libcpp.string cimport string
 
 
 cdef extern from "time.h":
@@ -29,7 +30,10 @@ cdef extern from "Result.hpp":
         # Total net delay.
         float total_net_delay
 
-    struct RouteResult:
+    cdef cppclass RouteResult:
+        string arch_file_md5
+        string net_file_md5
+        string placed_file_md5
         vector[int] success_channel_widths
         vector[int] failure_channel_widths
         float critical_path_delay
@@ -43,9 +47,15 @@ cdef extern from "Result.hpp":
         float total_logic_delay
         # Total net delay.
         float total_net_delay
+        void set(RouteResult other)
+        string str()
+        string csv()
+        vector[string] csv_fieldnames()
+        string csv_header()
 
 
 cdef extern from "globals.h":
     RouteResult g_route_result
     RouteState g_route_state
     vector[RouteState] g_route_states
+    vector[string] g_args
