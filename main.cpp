@@ -1379,33 +1379,33 @@ static float read_float_option (int argc, char *argv[], int iarg) {
 int __main__ (int argc, char *argv[]) {
     g_args = std::vector<std::string>(argv, argv + argc);
 
- g_route_result = RouteResult();
- char title[] = "\n\nVPR FPGA Placement and Routing Program Version 4.3\n"
-                "Original VPR by V. Betz\n"
-                "Timing-driven placement enhancements by A. Marquardt\n"
-                "Source completed March 25, 2000; compiled " __DATE__ ".\n"
-                "This code is licensed only for non-commercial use.\n\n";
+    g_route_result = RouteResult();
+    char title[] = "\n\nVPR FPGA Placement and Routing Program Version 4.3\n"
+            "Original VPR by V. Betz\n"
+            "Timing-driven placement enhancements by A.  Marquardt\n"
+            "Source completed March 25, 2000; compiled " __DATE__ ".\n"
+            "This code is licensed only for non-commercial use.\n\n";
 
- char net_file[BUFSIZE], place_file[BUFSIZE], arch_file[BUFSIZE];
- char route_file[BUFSIZE];
- float aspect_ratio;
- boolean full_stats, user_sized;
- char pad_loc_file[BUFSIZE];
- enum e_operation operation;
- boolean verify_binary_search;
- boolean show_graphics;
- int gr_automode;
- struct s_annealing_sched annealing_sched;
- struct s_placer_opts placer_opts;
- struct s_router_opts router_opts;
- struct s_det_routing_arch det_routing_arch;
- t_segment_inf *segment_inf;
- t_timing_inf timing_inf;
- t_subblock_data subblock_data;
- t_chan_width_dist chan_width_dist;
- float constant_net_delay;
+    char net_file[BUFSIZE], place_file[BUFSIZE], arch_file[BUFSIZE];
+    char route_file[BUFSIZE];
+    float aspect_ratio;
+    boolean full_stats, user_sized;
+    char pad_loc_file[BUFSIZE];
+    enum e_operation operation;
+    boolean verify_binary_search;
+    boolean show_graphics;
+    int gr_automode;
+    struct s_annealing_sched annealing_sched;
+    struct s_placer_opts placer_opts;
+    struct s_router_opts router_opts;
+    struct s_det_routing_arch det_routing_arch;
+    t_segment_inf *segment_inf;
+    t_timing_inf timing_inf;
+    t_subblock_data subblock_data;
+    t_chan_width_dist chan_width_dist;
+    float constant_net_delay;
 
- g_route_states.clear();
+    g_route_states.clear();
 
  printf("%s",title);
 

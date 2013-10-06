@@ -139,21 +139,13 @@ cdef class cRouteResult:
         self.thisptr = new RouteResult()
 
     def __reduce__(self):
-        data = OrderedDict([('success_channel_widths',
-                              self.success_channel_widths),
-                            ('failure_channel_widths',
-                             self.failure_channel_widths),
-                            ('critical_path_delay', self.critical_path_delay),
-                            ('tnodes_on_crit_path', self.tnodes_on_crit_path),
-                            ('non_global_nets_on_crit_path',
-                             self.non_global_nets_on_crit_path),
-                            ('global_nets_on_crit_path',
-                             self.global_nets_on_crit_path),
-                            ('total_logic_delay', self.total_logic_delay),
-                            ('total_net_delay', self.total_net_delay),
-                            ('net_file_md5', self.net_file_md5),
+        data = OrderedDict([('net_file_md5', self.net_file_md5),
                             ('arch_file_md5', self.arch_file_md5),
-                            ('placed_file_md5', self.placed_file_md5), ])
+                            ('placed_file_md5', self.placed_file_md5),
+                            ('success_channel_widths',
+                             self.success_channel_widths),
+                            ('failure_channel_widths',
+                             self.failure_channel_widths), ])
         return (rebuild, (data, ))
 
     cdef set(self, RouteResult result):
@@ -164,6 +156,9 @@ cdef class cRouteResult:
 
     def csv(self):
         return self.thisptr.csv()
+
+    def best_channel_width(self):
+        return self.thisptr.best_channel_width()
 
     property csv_header:
         def __get__(self):
@@ -182,51 +177,6 @@ cdef class cRouteResult:
 
         def __set__(self, value):
             self.thisptr.failure_channel_widths = value
-
-    property critical_path_delay:
-        def __get__(self):
-            return self.thisptr.critical_path_delay
-
-        def __set__(self, value):
-            self.thisptr.critical_path_delay = value
-
-    property tnodes_on_crit_path:
-        def __get__(self):
-            return self.thisptr.tnodes_on_crit_path
-
-        def __set__(self, value):
-            self.thisptr.tnodes_on_crit_path = value
-
-    property non_global_nets_on_crit_path:
-        def __get__(self):
-            return self.thisptr.non_global_nets_on_crit_path
-
-        def __set__(self, value):
-            self.thisptr.non_global_nets_on_crit_path = value
-
-    property global_nets_on_crit_path:
-        def __get__(self):
-            return self.thisptr.global_nets_on_crit_path
-
-        def __set__(self, value):
-            self.thisptr.global_nets_on_crit_path = value
-
-    property total_logic_delay:
-        def __get__(self):
-            return self.thisptr.total_logic_delay
-
-        def __set__(self, value):
-            self.thisptr.total_logic_delay = value
-
-    property total_net_delay:
-        def __get__(self):
-            return self.thisptr.total_net_delay
-
-        def __set__(self, value):
-            self.thisptr.total_net_delay = value
-
-    def get_net_file_md5(self):
-        print self.thisptr.net_file_md5.c_str()
 
     property net_file_md5:
         def __get__(self):
@@ -283,22 +233,11 @@ def vpr_route(net_path, placed_path, output_path, fast=True):
             output_path, '-route_only', '-fast', '-nodisp']
     print '[vpr_route] args:', args
     vpr(args)
-    # Tnodes on critical path.
-    print 'tnodes_on_crit_path:', g_route_result.tnodes_on_crit_path
-    # Non-global nets on critical path.
-    print 'non_global_nets_on_crit_path:', g_route_result.non_global_nets_on_crit_path
-    # Global nets on critical path.
-    print 'global_nets_on_crit_path:', g_route_result.global_nets_on_crit_path
-    # Total logic delay
-    print 'total_logic_delay:', g_route_result.total_logic_delay
-    # Total net delay.
-    print 'total_net_delay:', g_route_result.total_net_delay
-    print 'critical path delay:', g_route_result.critical_path_delay
-    print 'routed successfully with the following channel widths:', g_route_result.success_channel_widths
-    print 'failed to route with the following channel widths:', g_route_result.failure_channel_widths
 
     cy_result = cRouteResult()
     cy_result.set(g_route_result)
+
+    print cy_result
 
     states = []
     cdef int i

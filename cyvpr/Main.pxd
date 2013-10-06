@@ -13,7 +13,7 @@ cdef extern from "Main.h":
 
 
 cdef extern from "Result.hpp":
-    struct RouteState:
+    cdef cppclass RouteState:
         timespec start
         timespec end
         int width_fac
@@ -29,6 +29,10 @@ cdef extern from "Result.hpp":
         float total_logic_delay
         # Total net delay.
         float total_net_delay
+        string str()
+        string csv()
+        vector[string] csv_fieldnames()
+        string csv_header()
 
     cdef cppclass RouteResult:
         string arch_file_md5
@@ -36,17 +40,8 @@ cdef extern from "Result.hpp":
         string placed_file_md5
         vector[int] success_channel_widths
         vector[int] failure_channel_widths
-        float critical_path_delay
-        # Tnodes on critical path.
-        int tnodes_on_crit_path
-        # Non-global nets on critical path.
-        int non_global_nets_on_crit_path
-        # Global nets on critical path.
-        int global_nets_on_crit_path
-        # Total logic delay
-        float total_logic_delay
-        # Total net delay.
-        float total_net_delay
+
+        int best_channel_width()
         void set(RouteResult other)
         string str()
         string csv()

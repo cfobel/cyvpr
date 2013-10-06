@@ -133,7 +133,6 @@ boolean try_timing_driven_route (struct s_router_opts router_opts, float
     T_crit = load_net_slack (net_slack, 0);
     printf ("T_crit: %g.\n", T_crit);
     g_route_state.critical_path_delay = T_crit;
-    g_route_result.critical_path_delay = T_crit;
  }
 
  printf ("Routing failed.\n");
