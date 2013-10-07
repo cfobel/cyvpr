@@ -1,15 +1,16 @@
-#include <stdio.h> 
-#include <string.h> 
-#include "util.h" 
+#include <vector>
+#include <stdio.h>
+#include <string.h>
+#include "util.h"
 #include "vpr_types.h"
 #include "globals.h"
 #include "hash.h"
 #include "read_place.h"
 
 
-static int get_subblock (int i, int j, int bnum); 
-static void read_place_header (FILE *fp, char *net_file, char *arch_file, 
-              char *buf); 
+static int get_subblock (int i, int j, int bnum);
+static void read_place_header (FILE *fp, char *net_file, char *arch_file,
+              char *buf);
 
 
 void read_user_pad_loc (char *pad_loc_file) {
@@ -20,7 +21,7 @@ void read_user_pad_loc (char *pad_loc_file) {
  int iblk, i, j, xtmp, ytmp, bnum, isubblk;
  FILE *fp;
  char buf[BUFSIZE], bname[BUFSIZE], *ptr;
- 
+
  printf ("\nReading locations of IO pads from %s.\n", pad_loc_file);
  linenum = 0;
  fp = my_fopen (pad_loc_file, "r", 0);
@@ -36,7 +37,7 @@ void read_user_pad_loc (char *pad_loc_file) {
  for (i=0;i<=nx+1;i++) {
     for (j=0;j<=ny+1;j++) {
        if (clb[i][j].type == IO) {
-          for (isubblk=0;isubblk<io_rat;isubblk++) 
+          for (isubblk=0;isubblk<io_rat;isubblk++)
              clb[i][j].u.io_blocks[isubblk] = OPEN;  /* Flag for err. check */
        }
     }
@@ -50,8 +51,8 @@ void read_user_pad_loc (char *pad_loc_file) {
        ptr = my_fgets (buf, BUFSIZE, fp);
        continue;      /* Skip blank or comment lines. */
     }
-     
-    strcpy (bname, ptr); 
+
+    strcpy (bname, ptr);
 
     ptr = my_strtok (NULL, TOKENS, fp, buf);
     if (ptr == NULL) {
@@ -59,14 +60,14 @@ void read_user_pad_loc (char *pad_loc_file) {
        exit (1);
     }
     sscanf (ptr, "%d", &xtmp);
-   
+
     ptr = my_strtok (NULL, TOKENS, fp, buf);
     if (ptr == NULL) {
        printf ("Error:  line %d is incomplete.\n", linenum);
        exit (1);
     }
     sscanf (ptr, "%d", &ytmp);
-    
+
     ptr = my_strtok (NULL, TOKENS, fp, buf);
     if (ptr == NULL) {
        printf ("Error:  line %d is incomplete.\n", linenum);
@@ -110,7 +111,7 @@ void read_user_pad_loc (char *pad_loc_file) {
        printf("an illegal location (%d, %d).\n", i, j);
        exit (1);
     }
- 
+
     if (isubblk >= io_rat || isubblk < 0) {
        printf ("Error:  Block %s subblock number (%d) on line %d is out of "
                "range.\n", bname, isubblk, linenum);
@@ -118,7 +119,7 @@ void read_user_pad_loc (char *pad_loc_file) {
     }
     clb[i][j].u.io_blocks[isubblk] = bnum;
     clb[i][j].occ++;
- 
+
     ptr = my_fgets (buf, BUFSIZE, fp);
  }
 
@@ -130,7 +131,7 @@ void read_user_pad_loc (char *pad_loc_file) {
        exit (1);
     }
  }
- 
+
  for (i=0;i<=nx+1;i++) {
     for (j=0;j<=ny+1;j++) {
        if (clb[i][j].type == IO) {
@@ -144,7 +145,7 @@ void read_user_pad_loc (char *pad_loc_file) {
        }
     }
  }
- 
+
  fclose (fp);
  free_hash_table (hash_table);
  printf ("Successfully read %s.\n\n", pad_loc_file);
@@ -161,11 +162,11 @@ void dump_clbs (void) {
     for (j=0;j<=ny+1;j++) {
        printf("clb (%d,%d):  type: %d  occ: %d\n",
         i,j,clb[i][j].type, clb[i][j].occ);
-       if (clb[i][j].type == CLB) 
+       if (clb[i][j].type == CLB)
           printf("block: %d\n",clb[i][j].u.block);
        if (clb[i][j].type == IO) {
           printf("io_blocks: ");
-          for (index=0;index<clb[i][j].occ;index++) 
+          for (index=0;index<clb[i][j].occ;index++)
               printf("%d  ", clb[i][j].u.io_blocks[index]);
           printf("\n");
        }
@@ -185,7 +186,7 @@ void print_place (char *place_file, char *net_file, char *arch_file) {
  * file to avoid loading a placement with the wrong support files    *
  * later.                                                            */
 
- FILE *fp; 
+ FILE *fp;
  int i, subblock;
 
  fp = my_fopen(place_file,"w",0);
@@ -198,7 +199,7 @@ void print_place (char *place_file, char *net_file, char *arch_file) {
 
  for (i=0;i<num_blocks;i++) {
     fprintf (fp,"%s\t", block[i].name);
-    if (strlen(block[i].name) < 8) 
+    if (strlen(block[i].name) < 8)
        fprintf (fp, "\t");
 
     fprintf (fp,"%d\t%d", block[i].x, block[i].y);
@@ -211,10 +212,34 @@ void print_place (char *place_file, char *net_file, char *arch_file) {
     }
     fprintf (fp, "\t#%d\n", i);
  }
- 
+
  fclose(fp);
 }
 
+
+std::vector<std::vector<unsigned int> > extract_block_positions() {
+/* Return the position of all blocks in the placement as a two-dimensional vector, with dimensions indexed as follows:
+ *
+ *     block-index, x=0/y=1/slot-index=2
+ */
+ std::vector<std::vector<unsigned int> > block_positions(num_blocks,
+                                                         std::vector
+                                                         <unsigned int>(3));
+
+ for (int i = 0; i < num_blocks; i++) {
+    block_positions[i][0] = block[i].x;
+    block_positions[i][1] = block[i].y;
+    if (block[i].type == CLB) {
+        /* Sub block number not meaningful in the case of CLB. */
+        block_positions[i][2] = 0;
+    } else {
+        /* IO block.  Save sub block number as slot-index. */
+        block_positions[i][2] = get_subblock (block[i].x, block[i].y, i);
+    }
+ }
+
+ return block_positions;
+}
 
 static int get_subblock (int i, int j, int bnum) {
 
@@ -224,7 +249,7 @@ static int get_subblock (int i, int j, int bnum) {
  int k;
 
  for (k=0;k<io_rat;k++) {
-    if (clb[i][j].u.io_blocks[k] == bnum) 
+    if (clb[i][j].u.io_blocks[k] == bnum)
        return (k);
  }
 
@@ -247,7 +272,7 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
  printf("Reading the placement from file %s.\n", place_file);
  fp = my_fopen (place_file, "r", 0);
  linenum = 0;
- 
+
  read_place_header (fp, net_file, arch_file, buf);
 
  for (i=0;i<=nx+1;i++) {
@@ -276,8 +301,8 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
        ptr = my_fgets (buf, BUFSIZE, fp);
        continue;      /* Skip blank or comment lines. */
     }
-     
-    strcpy (bname, ptr); 
+
+    strcpy (bname, ptr);
 
     ptr = my_strtok (NULL, TOKENS, fp, buf);
     if (ptr == NULL) {
@@ -285,14 +310,14 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
        exit (1);
     }
     sscanf (ptr, "%d", &xtmp);
-   
+
     ptr = my_strtok (NULL, TOKENS, fp, buf);
     if (ptr == NULL) {
        printf ("Error:  line %d is incomplete.\n", linenum);
        exit (1);
     }
     sscanf (ptr, "%d", &ytmp);
-    
+
     ptr = my_strtok (NULL, TOKENS, fp, buf);
     if (ptr == NULL) {
        printf ("Error:  line %d is incomplete.\n", linenum);
@@ -337,11 +362,11 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
                bnum, bname);
           printf("a logic block location (%d, %d).\n", i, j);
           exit (1);
-       } 
+       }
        clb[i][j].u.block = bnum;
        clb[i][j].occ++;
     }
- 
+
     else if (clb[i][j].type == IO) {
        if (block[bnum].type != INPAD && block[bnum].type != OUTPAD) {
           printf("Error in read_place.  Attempt to place block #%d (%s) in\n",
@@ -357,7 +382,7 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
        clb[i][j].u.io_blocks[isubblock] = bnum;
        clb[i][j].occ++;
     }
- 
+
     else {    /* Block type was ILLEGAL or some unknown value */
        printf("Error in read_place.  Block #%d (%s) is in an illegal ",
            bnum, bname);
@@ -378,7 +403,7 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
        exit (1);
     }
  }
- 
+
  for (i=0;i<=nx+1;i++) {
     for (j=0;j<=ny+1;j++) {
        if (clb[i][j].type == IO) {
@@ -397,7 +422,7 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
 }
 
 
-static void read_place_header (FILE *fp, char *net_file, char *arch_file, 
+static void read_place_header (FILE *fp, char *net_file, char *arch_file,
               char *buf) {
 
 /* Reads the header from the placement file.  Used only to check that this *
@@ -410,12 +435,12 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
 
 
  ptr = my_fgets (buf, BUFSIZE, fp);
- 
+
  if (ptr == NULL) {
     printf ("Error:  netlist file and architecture file used not listed.\n");
     exit (1);
  }
- 
+
  ptr = my_strtok (buf, TOKENS, fp, buf);
  while (ptr == NULL) {   /* Skip blank or comment lines. */
     ptr = my_fgets (buf, BUFSIZE, fp);
@@ -424,7 +449,7 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
     }
     ptr = my_strtok (buf, TOKENS, fp, buf);
  }
- 
+
  for (i=0;i<=5;i++) {
     if (i == 2) {
        strcpy (net_check, ptr);
@@ -435,10 +460,10 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
     else {
        if (strcmp (ptr, line_one_names[i]) != 0) {
           printf ("Error on line %d, word %d:  \n"
-                  "Expected keyword %s, got %s.\n", linenum, i+1, 
+                  "Expected keyword %s, got %s.\n", linenum, i+1,
                   line_one_names[i], ptr);
           exit (1);
-       } 
+       }
     }
     ptr = my_strtok (NULL, TOKENS, fp, buf);
     if (ptr == NULL && i != 5) {
@@ -446,15 +471,15 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
        exit (1);
     }
  }
- 
+
  if (strcmp(net_check, net_file) != 0) {
-    printf("Warning:  Placement generated with netlist file %s:\n", 
+    printf("Warning:  Placement generated with netlist file %s:\n",
             net_check);
     printf("current net file is %s.\n", net_file);
  }
- 
+
  if (strcmp(arch_check, arch_file) != 0) {
-    printf("Warning:  Placement generated with architecture file %s:\n", 
+    printf("Warning:  Placement generated with architecture file %s:\n",
            arch_check);
     printf("current architecture file is %s.\n", arch_file);
  }
@@ -467,7 +492,7 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
     printf ("Error:  Array size not listed.\n");
     exit (1);
  }
- 
+
  ptr = my_strtok (buf, TOKENS, fp, buf);
  while (ptr == NULL) {   /* Skip blank or comment lines. */
     ptr = my_fgets (buf, BUFSIZE, fp);
@@ -488,10 +513,10 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
     else {
        if (strcmp (ptr, line_two_names[i]) != 0) {
           printf ("Error on line %d, word %d:  \n"
-                  "Expected keyword %s, got %s.\n", linenum, i+1, 
+                  "Expected keyword %s, got %s.\n", linenum, i+1,
                   line_two_names[i], ptr);
           exit (1);
-       } 
+       }
     }
     ptr = my_strtok (NULL, TOKENS, fp, buf);
     if (ptr == NULL && i != 6) {

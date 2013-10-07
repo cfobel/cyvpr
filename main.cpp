@@ -3,6 +3,7 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
+#include <map>
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
@@ -23,6 +24,7 @@
 #include "SignalException.hpp"
 
 using std::vector;
+using std::map;
 using std::string;
 using std::ifstream;
 
@@ -32,6 +34,12 @@ RouteState g_route_state;
 RouteResult g_route_result;
 vector<RouteState> g_route_states;
 vector<string> g_args;
+/* Mapping from file type _(i.e., `net`, `arch`, `placed`, or `routed`)_ to
+ * corresponding file-path.
+ * __NB__ The `routed` file-path is only present when routing is enabled. */
+map<string, string> g_filepath;
+/* The MD5 hash of each file-path in the `g_filepath` map. */
+map<string, string> g_file_md5;
 
              /********** Netlist to be mapped stuff ****************/
 
@@ -260,6 +268,10 @@ static void parse_command (int argc, char *argv[], char *net_file, char
   strncpy(arch_file,argv[2],BUFSIZE);
   strncpy(place_file,argv[3],BUFSIZE);
   strncpy(route_file,argv[4],BUFSIZE);
+
+  g_filepath["arch"] = string(arch_file);
+  g_filepath["net"] = string(net_file);
+  g_filepath["placed"] = string(place_file);
   i = 5;
 
 /* Now get any optional arguments.      */
@@ -1423,6 +1435,8 @@ int __main__ (int argc, char *argv[]) {
     float constant_net_delay;
 
     g_route_states.clear();
+    g_filepath.clear();
+    g_file_md5.clear();
 
  printf("%s",title);
 
@@ -1443,22 +1457,23 @@ int __main__ (int argc, char *argv[]) {
         &timing_inf, &subblock_data, &chan_width_dist);
 
     if (operation == PLACE_AND_ROUTE || operation == ROUTE_ONLY) {
+        g_filepath["routed"] = string(route_file);
+    }
+
+    map<string, string>::const_iterator i = g_filepath.begin();
+    for (; i != g_filepath.end(); i++) {
         MD5 m;
 
-        ifstream net_infile(net_file);
-        m = MD5(net_infile);
-        net_infile.close();
-        g_route_result.net_file_md5 = m.hexdigest();
+        ifstream infile((i->second).c_str());
+        m = MD5(infile);
+        infile.close();
+        g_file_md5[i->first] = m.hexdigest();
+    }
 
-        ifstream arch_infile(arch_file);
-        m = MD5(arch_infile);
-        arch_infile.close();
-        g_route_result.arch_file_md5 = m.hexdigest();
-
-        ifstream placed_infile(place_file);
-        m = MD5(placed_infile);
-        placed_infile.close();
-        g_route_result.placed_file_md5 = m.hexdigest();
+    if (operation == PLACE_AND_ROUTE || operation == ROUTE_ONLY) {
+        g_route_result.net_file_md5 = g_file_md5["net"];
+        g_route_result.arch_file_md5 = g_file_md5["arch"];
+        g_route_result.placed_file_md5 = g_file_md5["placed"];
     }
 
  if (full_stats == TRUE)

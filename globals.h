@@ -2,6 +2,7 @@
 #define ___GLOBALS__H___
 
 #include <vector>
+#include <map>
 #include <string>
 #include "vpr_types.h"
 #include "State.hpp"
@@ -11,6 +12,12 @@ extern RouteState g_route_state;
 extern RouteResult g_route_result;
 extern std::vector<RouteState> g_route_states;
 extern std::vector<std::string> g_args;
+/* Mapping from file type _(i.e., `net`, `arch`, `placed`, or `routed`)_ to
+ * corresponding file-path.
+ * __NB__ The `routed` file-path is only present when routing is enabled. */
+extern std::map<std::string, std::string> g_filepath;
+/* The MD5 hash of each file-path in the `g_filepath` map. */
+extern std::map<std::string, std::string> g_file_md5;
 
 /* Netlist to be placed stuff. */
 extern int num_nets, num_blocks;

@@ -1,68 +1,43 @@
+from collections import OrderedDict
+from datetime import datetime
+import warnings
+
+from libcpp.map cimport map
 from libcpp.vector cimport vector
 from libcpp.string cimport string
+from libc.stdlib cimport malloc
 
 
-cdef extern from "time.h":
-    struct timespec:
-        long int tv_sec
-        long int tv_nsec
+ctypedef unsigned int uint
 
 
 cdef extern from "Main.h":
     int __main__(int argc, char *argv[]) except +
-
-
-cdef extern from "State.hpp":
-    cdef cppclass StateBase:
-        string label()
-        string csv()
-        vector[string] csv_fieldnames()
-        string csv_header()
-        string csv_summary()
-        string str()
-
-    cdef cppclass RouteState:
-        timespec start
-        timespec end
-        int width_fac
-        bint success
-        float critical_path_delay
-        # Tnodes on critical path.
-        int tnodes_on_crit_path
-        # Non-global nets on critical path.
-        int non_global_nets_on_crit_path
-        # Global nets on critical path.
-        int global_nets_on_crit_path
-        # Total logic delay
-        float total_logic_delay
-        # Total net delay.
-        float total_net_delay
-        string str()
-        string csv()
-        string csv_summary()
-        vector[string] csv_fieldnames()
-        string csv_header()
-
-
-cdef extern from "Result.hpp":
-    cdef cppclass RouteResult:
-        string arch_file_md5
-        string net_file_md5
-        string placed_file_md5
-        vector[int] success_channel_widths
-        vector[int] failure_channel_widths
-
-        int best_channel_width()
-        void set(RouteResult other)
-        string str()
-        string csv()
-        string csv_summary()
-        vector[string] csv_fieldnames()
-        string csv_header()
+    vector[vector[uint]] extract_block_positions()
 
 
 cdef extern from "globals.h":
-    RouteResult g_route_result
-    RouteState g_route_state
-    vector[RouteState] g_route_states
     vector[string] g_args
+    map[string, string] g_filepath
+    map[string, string] g_file_md5
+
+
+cdef inline vpr(args):
+    cdef int argc = len(args) + 1
+    cdef char **argv = <char **> malloc(argc * sizeof(char *))
+    cdef vector[string] args_
+
+    args_.push_back("./vpr")
+    for a in args:
+        args_.push_back(str(a))
+
+    cdef int i
+    for i in xrange(args_.size()):
+        argv[i] = <char *>args_[i].c_str()
+    __main__(args_.size(), argv)
+    data = OrderedDict([
+        ('file_md5s', g_file_md5),
+        ('filepaths', g_filepath),
+        ('block_positions', extract_block_positions()),
+    ])
+    return data
