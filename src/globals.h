@@ -10,11 +10,11 @@
 
 #ifdef IGNORE_PRINTF
 
-#define my_printf(fmt, ...) (0)
+#define my_printf(...) (0)
 
 #else
 
-#define my_printf(fmt, ...) printf(fmt, ...)
+#define my_printf(...) (printf(__VA_ARGS__))
 
 #endif
 
