@@ -5,8 +5,6 @@ import warnings
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.stdlib cimport malloc
-from cyvpr.Main cimport vpr
-from cyvpr.State cimport cStateBase, StateBase
 
 
 def unix_time(datetime_):
@@ -36,8 +34,6 @@ def rebuild_state(data):
 
 
 cdef class cRouteState(cStateBase):
-    cdef RouteState *thisptr
-
     def __cinit__(self):
         self.thisptr = new RouteState()
         self.baseptr = <StateBase *>self.thisptr
@@ -60,9 +56,6 @@ cdef class cRouteState(cStateBase):
 
     def __str__(self):
         return self.thisptr.str()
-
-    cdef init(self, RouteState state):
-        self.thisptr.set(state)
 
     def csv_summary(self):
         return self.thisptr.csv_summary()
@@ -149,8 +142,6 @@ cdef class cRouteState(cStateBase):
 
 
 cdef class cRouteResult(cStateBase):
-    cdef RouteResult *thisptr
-
     def __cinit__(self):
         self.thisptr = new RouteResult()
         self.baseptr = <StateBase *>self.thisptr
@@ -164,9 +155,6 @@ cdef class cRouteResult(cStateBase):
                             ('failure_channel_widths',
                              self.failure_channel_widths), ])
         return (rebuild, (data, ))
-
-    cdef set(self, RouteResult result):
-        self.thisptr.set(result)
 
     def best_channel_width(self):
         return self.thisptr.best_channel_width()
@@ -211,51 +199,3 @@ cdef class cRouteResult(cStateBase):
 
     def __dealloc__(self):
         del self.thisptr
-
-
-def vpr_place(net_path, output_path, fast=True, seed=0):
-    args = [net_path, '/var/benchmarks/4lut_sanitized.arch', output_path,
-            'routed.out', '-place_only', '-fast', '-place_algorithm',
-            'bounding_box', '-nodisp', '-seed', str(seed)]
-    return vpr(args)
-
-
-def vpr_route(net_path, placed_path, output_path, timing_driven=True, fast=False):
-    args = [net_path, '/var/benchmarks/4lut_sanitized.arch', placed_path,
-            output_path, '-route_only', '-nodisp', '-router_algorithm']
-    if timing_driven:
-        args += ['timing_driven']
-    else:
-        args += ['breadth_first']
-
-    if fast:
-        args += ['-fast']
-
-    print '[vpr_route] args:', args
-    try:
-        vpr_data = vpr(args)
-        signal_caught = None
-    except RuntimeError, e:
-        warnings.warn('Stopped by signal - ' + str(e))
-        signal_caught = str(e)
-
-    cy_result = cRouteResult()
-    cy_result.set(g_route_result)
-
-    print cy_result
-
-    states = []
-    cdef int i
-    cdef cRouteState state
-    for i in range(g_route_states.size()):
-        state = cRouteState()
-        state.init(g_route_states[i])
-        states.append(state)
-    return OrderedDict([
-        ('file_md5s', g_file_md5),
-        ('filepaths', g_filepath),
-        ('args', g_args),
-        ('signal_caught', signal_caught),
-        ('result', cy_result),
-        ('states', states),
-    ])

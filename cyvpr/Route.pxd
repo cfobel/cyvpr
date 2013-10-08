@@ -1,17 +1,13 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 
-from cyvpr.Main cimport g_args, g_filepath, g_file_md5
+from cyvpr.State cimport cStateBase, StateBase
 
 
 cdef extern from "time.h":
     struct timespec:
         long int tv_sec
         long int tv_nsec
-
-
-cdef extern from "Main.h":
-    int __main__(int argc, char *argv[]) except +
 
 
 cdef extern from "State.hpp":
@@ -56,10 +52,18 @@ cdef extern from "Result.hpp":
         string csv_header()
 
 
-cdef extern from "globals.h":
-    RouteResult g_route_result
-    RouteState g_route_state
-    vector[RouteState] g_route_states
-
-
 cdef datetime_from_timespec_tuple(timespec t)
+
+
+cdef class cRouteState(cStateBase):
+    cdef RouteState *thisptr
+
+    cdef inline init(self, RouteState state):
+        self.thisptr.set(state)
+
+
+cdef class cRouteResult(cStateBase):
+    cdef RouteResult *thisptr
+
+    cdef inline set(self, RouteResult result):
+        self.thisptr.set(result)

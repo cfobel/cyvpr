@@ -14,10 +14,10 @@ cy_config = dict(include_dirs=include_dirs, language='c++',
                  libraries=['X11', 'm', 'rt'])
 c_files = map(str, path('.').abspath().files('*.c'))
 cpp_files = map(str, path('.').abspath().files('*.cpp'))
-cy_exts = [Extension('cyvpr.%s' % v,  ['cyvpr/%s.pyx' % v] + c_files +
-                     cpp_files, **cy_config) for v in ('Main', )]
-                     #cpp_files, **cy_config) for v in ('Main', 'State',
-                                                       #'Route')]
+vpr_ext = Extension('cyvpr.Main',  ['cyvpr/Main.pyx'] + c_files + cpp_files,
+                    **cy_config)
+cy_exts = [Extension('cyvpr.%s' % v, ['cyvpr/%s.pyx' % v], **cy_config)
+           for v in ('State', 'Route')]
 
 
 setup(name = "cyvpr",
@@ -29,5 +29,5 @@ setup(name = "cyvpr",
     license = "",
     long_description = """""",
     packages = ['cyvpr', ],
-    ext_modules=cythonize(cy_exts)
+    ext_modules=cythonize([vpr_ext] + cy_exts)
 )

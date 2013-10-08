@@ -7,6 +7,8 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.stdlib cimport malloc
 
+from cyvpr.Route cimport RouteState, RouteResult, cRouteResult, cRouteState
+
 
 ctypedef unsigned int uint
 
@@ -18,6 +20,8 @@ cdef extern from "Main.h":
 
 cdef extern from "globals.h":
     vector[string] g_args
+    RouteResult g_route_result
+    vector[RouteState] g_route_states
 
 
 cdef inline vpr(args):
@@ -43,7 +47,7 @@ cdef extern from "Main.h":
 
         Main()
         void init(int argc, char **argv)
-        void do_place_and_route()
+        void do_place_and_route() except +
         void do_read_place()
         size_t block_count()
         size_t net_count()
