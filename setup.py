@@ -29,5 +29,6 @@ setup(name = "cyvpr",
     license = "",
     long_description = """""",
     packages = ['cyvpr', ],
+    package_data = {'cyvpr': ['data/*']},
     ext_modules=cythonize([vpr_ext] + cy_exts)
 )
