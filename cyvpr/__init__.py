@@ -25,16 +25,17 @@ def get_includes():
     return [os.path.abspath(os.path.dirname(cyvpr.__file__))]
 
 
-def get_architecture_root():
+def get_data_root():
     """
-    Return the directory that contains the architecture files to use with
-    `cyvpr`.
+    Return the directory that contains the data _(i.e., architecture, net,
+    etc.)_ files to use with `cyvpr`.
 
         import cyvpr
         ...
-        print cyvpr.get_architecture_root()
+        print cyvpr.get_data_root()
         ...
 
     """
     import cyvpr
-    return [os.path.abspath(os.path.dirname(cyvpr.__file__))]
+    return [os.path.abspath(os.path.join(os.path.dirname(cyvpr.__file__),
+                                         'data'))]

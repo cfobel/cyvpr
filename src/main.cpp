@@ -1523,7 +1523,9 @@ void Main::reset_buffer() {
 }
 
 void Main::do_place_and_route() {
-    reset_buffer();
+    if (operation_ != PLACE_ONLY) {
+        reset_buffer();
+    }
     place_and_route(operation_, placer_opts_, *buffer_, place_file_, net_file_,
                     arch_file_, route_file_, full_stats_, verify_binary_search_,
                     annealing_sched_, router_opts_, det_routing_arch_, segment_inf_,
