@@ -1435,7 +1435,6 @@ void Main::init(int argc, char **argv) {
 
 
 void Main::init() {
-    attach_signals();
     extract_arg_strings();
     g_route_result = RouteResult();
     char title[] = "\n\nVPR FPGA Placement and Routing Program Version 4.3\n"

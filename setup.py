@@ -21,7 +21,7 @@ cy_exts = [Extension('cyvpr.%s' % v, ['cyvpr/%s.pyx' % v], **cy_config)
 
 
 setup(name = "cyvpr",
-    version = "0.0.1",
+    version = "0.1",
     description = "VPR FPGA placement, with on Cython bindings",
     keywords = "fpga placement python cython VPR",
     author = "Christian Fobel",

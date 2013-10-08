@@ -46,8 +46,12 @@ public:
     /* The MD5 hash of each file-path in the `g_filepath` map. */
     std::map<std::string, std::string> file_md5_;
 
-    Main() : buffer_(NULL) {}
-    Main(int argc, char **argv) : argc_(argc), argv_(argv), buffer_(NULL) {}
+    Main() : buffer_(NULL) {
+        attach_signals();
+    }
+    Main(int argc, char **argv) : argc_(argc), argv_(argv), buffer_(NULL) {
+        attach_signals();
+    }
 
     size_t block_count();
     size_t net_count();

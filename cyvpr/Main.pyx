@@ -92,30 +92,10 @@ cdef class cMain:
             args += ['-fast']
 
         self.init(args)
-        try:
-            self.thisptr.do_place_and_route()
-            signal_caught = None
-        except RuntimeError, e:
-            warnings.warn('Stopped by signal - ' + str(e))
-            signal_caught = str(e)
-
-        cy_result = cRouteResult()
-        cy_result.set(g_route_result)
-
-        states = []
-
-        cdef int i
-        cdef cRouteState state
-
-        for i in range(g_route_states.size()):
-            state = cRouteState()
-            state.init(g_route_states[i])
-            states.append(state)
+        self.thisptr.do_place_and_route()
         return OrderedDict([
-            ('args', g_args),
-            ('signal_caught', signal_caught),
-            ('result', cy_result),
-            ('states', states),
+            ('result', self.most_recent_route_result()),
+            ('states', self.most_recent_route_states()),
         ])
 
     property net_count:
@@ -133,3 +113,23 @@ cdef class cMain:
     property file_md5s:
         def __get__(self):
             return self.thisptr.file_md5_
+
+    def most_recent_args(self):
+        return g_args
+
+    def most_recent_route_result(self):
+        cy_result = cRouteResult()
+        cy_result.set(g_route_result)
+        return cy_result
+
+    def most_recent_route_states(self):
+        states = []
+
+        cdef int i
+        cdef cRouteState state
+
+        for i in range(g_route_states.size()):
+            state = cRouteState()
+            state.init(g_route_states[i])
+            states.append(state)
+        return states
