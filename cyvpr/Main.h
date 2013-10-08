@@ -4,8 +4,8 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "../vpr_types.h"
-#include "../Buffer.hpp"
+#include "../src/vpr_types.h"
+#include "../src/Buffer.hpp"
 
 int __main__ (int argc, char *argv[]);
 std::vector<std::vector<unsigned int> > extract_block_positions();
