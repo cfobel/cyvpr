@@ -7,6 +7,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+
+#ifdef IGNORE_PRINTF
+
+#define printf(fmt, ...) (0)
+
+#endif
+
 #include "util.h"
 #include "vpr_types.h"
 #include "globals.h"
@@ -14,6 +21,7 @@
 #include "read_netlist.h"
 #include "print_netlist.h"
 #include "read_arch.h"
+#include "read_place.h"
 #include "draw.h"
 #include "place_and_route.h"
 #include "stats.h"
@@ -22,6 +30,7 @@
 #include "Result.hpp"
 #include "md5.hpp"
 #include "SignalException.hpp"
+#include "cyvpr/Main.h"
 
 using std::vector;
 using std::map;
@@ -34,12 +43,6 @@ RouteState g_route_state;
 RouteResult g_route_result;
 vector<RouteState> g_route_states;
 vector<string> g_args;
-/* Mapping from file type _(i.e., `net`, `arch`, `placed`, or `routed`)_ to
- * corresponding file-path.
- * __NB__ The `routed` file-path is only present when routing is enabled. */
-map<string, string> g_filepath;
-/* The MD5 hash of each file-path in the `g_filepath` map. */
-map<string, string> g_file_md5;
 
              /********** Netlist to be mapped stuff ****************/
 
@@ -269,9 +272,6 @@ static void parse_command (int argc, char *argv[], char *net_file, char
   strncpy(place_file,argv[3],BUFSIZE);
   strncpy(route_file,argv[4],BUFSIZE);
 
-  g_filepath["arch"] = string(arch_file);
-  g_filepath["net"] = string(net_file);
-  g_filepath["placed"] = string(place_file);
   i = 5;
 
 /* Now get any optional arguments.      */
@@ -1158,8 +1158,8 @@ static void parse_command (int argc, char *argv[], char *net_file, char
       printf("\tPlacer will fix the IO pins in a random configuration.\n");
     }
     else if (placer_opts->pad_loc_type == USER) {
-      printf ("\tPlacer will fix the IO pins as specified by file %s.\n",
-	      placer_opts->pad_loc_file);
+        printf ("\tPlacer will fix the IO pins as specified by file %s.\n",
+        placer_opts->pad_loc_file);
     }
 
     /* The default bend_cost for DETAILED routing is 0, while the default for *
@@ -1395,7 +1395,7 @@ void signal_handler(int signum) {
 }
 
 
-int __main__ (int argc, char *argv[]) {
+void Main::attach_signals() {
     /*
     * attach signal handlers as described in the tutorial (note we are
     * attaching the same handler to multiple signals)
@@ -1405,9 +1405,38 @@ int __main__ (int argc, char *argv[]) {
     //signal(SIGABRT,checkpoint_term);
     //signal(SIGALRM,checkpoint_term);
     //signal(SIGHUP,checkpoint_only);
+}
 
-    g_args = std::vector<std::string>(argv, argv + argc);
+void Main::extract_arg_strings() {
+    g_args = std::vector<std::string>(this->argv_, this->argv_ + this->argc_);
+}
 
+void Main::run_default() {
+    if (operation_ == TIMING_ANALYSIS_ONLY) {  /* Just run the timing analyzer. */
+        this->timing_analysis();
+    } else {
+        this->do_place_and_route();
+    }
+}
+
+void Main::timing_analysis() {
+    do_constant_net_delay_timing_analysis (timing_inf_, subblock_data_,
+                    constant_net_delay_);
+    free_subblock_data(&subblock_data_);
+    exit (0);
+}
+
+
+void Main::init(int argc, char **argv) {
+    this->argc_ = argc;
+    this->argv_ = argv;
+    this->init();
+}
+
+
+void Main::init() {
+    attach_signals();
+    extract_arg_strings();
     g_route_result = RouteResult();
     char title[] = "\n\nVPR FPGA Placement and Routing Program Version 4.3\n"
             "Original VPR by V. Betz\n"
@@ -1415,114 +1444,125 @@ int __main__ (int argc, char *argv[]) {
             "Source completed March 25, 2000; compiled " __DATE__ ".\n"
             "This code is licensed only for non-commercial use.\n\n";
 
-    char net_file[BUFSIZE], place_file[BUFSIZE], arch_file[BUFSIZE];
-    char route_file[BUFSIZE];
     float aspect_ratio;
-    boolean full_stats, user_sized;
-    char pad_loc_file[BUFSIZE];
-    enum e_operation operation;
-    boolean verify_binary_search;
-    boolean show_graphics;
-    int gr_automode;
-    struct s_annealing_sched annealing_sched;
-    struct s_placer_opts placer_opts;
-    struct s_router_opts router_opts;
-    struct s_det_routing_arch det_routing_arch;
-    t_segment_inf *segment_inf;
-    t_timing_inf timing_inf;
-    t_subblock_data subblock_data;
-    t_chan_width_dist chan_width_dist;
-    float constant_net_delay;
+    boolean user_sized;
+
+    printf("%s", title);
+
+    /* Parse the command line. */
+
+    placer_opts_.pad_loc_file = pad_loc_file_;
+
+    parse_command(argc_, argv_, net_file_, arch_file_, place_file_,
+                  route_file_, &operation_, &aspect_ratio,  &full_stats_,
+                  &user_sized, &verify_binary_search_, &gr_automode_,
+                  &show_graphics_, &annealing_sched_, &placer_opts_,
+                  &router_opts_, &timing_inf_.timing_analysis_enabled,
+                  &constant_net_delay_);
+
+    /* Parse input circuit and architecture */
+
+    get_input(net_file_, arch_file_, placer_opts_.place_cost_type,
+            placer_opts_.num_regions, aspect_ratio, user_sized,
+            router_opts_.route_type, &det_routing_arch_, &segment_inf_,
+            &timing_inf_, &subblock_data_, &chan_width_dist_);
 
     g_route_states.clear();
-    g_filepath.clear();
-    g_file_md5.clear();
+    filepath_.clear();
+    file_md5_.clear();
 
- printf("%s",title);
+    filepath_["arch"] = string(arch_file_);
+    filepath_["net"] = string(net_file_);
+    filepath_["placed"] = string(place_file_);
 
- placer_opts.pad_loc_file = pad_loc_file;
-
-/* Parse the command line. */
-
- parse_command (argc, argv, net_file, arch_file, place_file, route_file,
-  &operation, &aspect_ratio,  &full_stats, &user_sized, &verify_binary_search,
-  &gr_automode, &show_graphics, &annealing_sched, &placer_opts, &router_opts,
-  &timing_inf.timing_analysis_enabled, &constant_net_delay);
-
-/* Parse input circuit and architecture */
-
- get_input (net_file, arch_file, placer_opts.place_cost_type,
-        placer_opts.num_regions, aspect_ratio, user_sized,
-        router_opts.route_type, &det_routing_arch, &segment_inf,
-        &timing_inf, &subblock_data, &chan_width_dist);
-
-    if (operation == PLACE_AND_ROUTE || operation == ROUTE_ONLY) {
-        g_filepath["routed"] = string(route_file);
+    if (operation_ == PLACE_AND_ROUTE || operation_ == ROUTE_ONLY) {
+        filepath_["routed"] = string(route_file_);
     }
 
-    map<string, string>::const_iterator i = g_filepath.begin();
-    for (; i != g_filepath.end(); i++) {
+    map<string, string>::const_iterator i = filepath_.begin();
+    for (; i != filepath_.end(); i++) {
         MD5 m;
 
         ifstream infile((i->second).c_str());
         m = MD5(infile);
         infile.close();
-        g_file_md5[i->first] = m.hexdigest();
+        file_md5_[i->first] = m.hexdigest();
     }
 
-    if (operation == PLACE_AND_ROUTE || operation == ROUTE_ONLY) {
-        g_route_result.net_file_md5 = g_file_md5["net"];
-        g_route_result.arch_file_md5 = g_file_md5["arch"];
-        g_route_result.placed_file_md5 = g_file_md5["placed"];
+    if (operation_ == PLACE_AND_ROUTE || operation_ == ROUTE_ONLY) {
+        g_route_result.net_file_md5 = file_md5_["net"];
+        g_route_result.arch_file_md5 = file_md5_["arch"];
+        g_route_result.placed_file_md5 = file_md5_["placed"];
     }
 
- if (full_stats == TRUE)
-    print_lambda ();
+    if (full_stats_ == TRUE) print_lambda ();
 
 #ifdef DEBUG
-    print_netlist ("net.echo", net_file, subblock_data);
-    print_arch (arch_file, router_opts.route_type, det_routing_arch,
-         segment_inf, timing_inf, subblock_data, chan_width_dist);
+        print_netlist ("net.echo", net_file_, subblock_data_);
+        print_arch (arch_file_, router_opts_.route_type, det_routing_arch_,
+            segment_inf_, timing_inf_, subblock_data_, chan_width_dist_);
 #endif
 
- if (operation == TIMING_ANALYSIS_ONLY) {  /* Just run the timing analyzer. */
-    do_constant_net_delay_timing_analysis (timing_inf, subblock_data,
-                     constant_net_delay);
-    free_subblock_data (&subblock_data);
-    exit (0);
- }
+    fflush (stdout);
+}
 
- set_graphics_state (show_graphics, gr_automode, router_opts.route_type);
- if (show_graphics) {
-    /* Get graphics going */
-    init_graphics("VPR:  Versatile Place and Route for FPGAs");
-    alloc_draw_structs ();
- }
+void Main::initialize_graphics() {
+    set_graphics_state(show_graphics_, gr_automode_, router_opts_.route_type);
+    if (show_graphics_) {
+        /* Get graphics going */
+        init_graphics("VPR:  Versatile Place and Route for FPGAs");
+        alloc_draw_structs ();
+    }
+}
 
- fflush (stdout);
+void Main::reset_buffer() {
+    if (buffer_ != NULL) {
+        delete buffer_;
+    }
+    buffer_ = (BufferBase *)(new FileBuffer(place_file_));
+    printf("Reading the placement from file %s.\n", place_file_);
+}
 
- BufferBase *buffer = NULL;
- if (strcmp(place_file, "-") == 0) {
-    printf("Reading the placement from file %s.\n", place_file);
- } else {
-    buffer = (BufferBase *)(new FileBuffer(place_file));
-    printf("Reading the placement from file %s.\n", place_file);
- }
- place_and_route(operation, placer_opts, *buffer, place_file, net_file,
-                 arch_file, route_file, full_stats, verify_binary_search,
-                 annealing_sched, router_opts, det_routing_arch, segment_inf,
-                 timing_inf, &subblock_data, chan_width_dist);
+void Main::do_place_and_route() {
+    reset_buffer();
+    place_and_route(operation_, placer_opts_, *buffer_, place_file_, net_file_,
+                    arch_file_, route_file_, full_stats_, verify_binary_search_,
+                    annealing_sched_, router_opts_, det_routing_arch_, segment_inf_,
+                    timing_inf_, &subblock_data_, chan_width_dist_);
+}
 
- if(buffer != NULL) {
-     delete buffer;
- }
+void Main::do_read_place() {
+    reset_buffer();
+    parse_placement_file(*buffer_, net_file_, arch_file_);
+}
 
- if (show_graphics)
-    close_graphics();  /* Close down X Display */
+size_t Main::block_count() {
+    return num_blocks;
+}
+
+size_t Main::net_count() {
+    return num_nets;
+}
+
+Main::~Main() {
+    if (show_graphics_) {
+        close_graphics();  /* Close down X Display */
+    }
+    if(buffer_ != NULL) {
+        delete buffer_;
+    }
 }
 
 
-int main (int argc, char *argv[]) {
-    __main__(argc, argv);
-     exit (0);
+int __main__(int argc, char *argv[]) {
+    Main m(argc, argv);
+    m.init();
+    m.run_default();
+}
+
+
+int main(int argc, char *argv[]) {
+    int result = __main__(argc, argv);
+    exit (0);
+    return result;
 }

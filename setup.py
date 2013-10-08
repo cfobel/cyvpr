@@ -15,8 +15,9 @@ cy_config = dict(include_dirs=include_dirs, language='c++',
 c_files = map(str, path('.').abspath().files('*.c'))
 cpp_files = map(str, path('.').abspath().files('*.cpp'))
 cy_exts = [Extension('cyvpr.%s' % v,  ['cyvpr/%s.pyx' % v] + c_files +
-                     cpp_files, **cy_config) for v in ('Main', 'State',
-                                                       'Route')]
+                     cpp_files, **cy_config) for v in ('Main', )]
+                     #cpp_files, **cy_config) for v in ('Main', 'State',
+                                                       #'Route')]
 
 
 setup(name = "cyvpr",

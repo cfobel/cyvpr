@@ -18,8 +18,6 @@ cdef extern from "Main.h":
 
 cdef extern from "globals.h":
     vector[string] g_args
-    map[string, string] g_filepath
-    map[string, string] g_file_md5
 
 
 cdef inline vpr(args):
@@ -35,9 +33,17 @@ cdef inline vpr(args):
     for i in xrange(args_.size()):
         argv[i] = <char *>args_[i].c_str()
     __main__(args_.size(), argv)
-    data = OrderedDict([
-        ('file_md5s', g_file_md5),
-        ('filepaths', g_filepath),
-        ('block_positions', extract_block_positions()),
-    ])
-    return data
+    return extract_block_positions()
+
+
+cdef extern from "Main.h":
+    cdef cppclass Main:
+        map[string, string] filepath_
+        map[string, string] file_md5_
+
+        Main()
+        void init(int argc, char **argv)
+        void do_place_and_route()
+        void do_read_place()
+        size_t block_count()
+        size_t net_count()
