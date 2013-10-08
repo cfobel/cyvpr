@@ -188,7 +188,7 @@ float **alloc_and_load_timing_graph (t_timing_inf timing_inf, t_subblock_data
 /************* End of variable declarations ********************************/
 
  if (tedge_ch_list_head != NULL) {
-    my_printf ("Error in alloc_and_load_timing_graph:\n"
+    printf ("Error in alloc_and_load_timing_graph:\n"
             "\tAn old timing graph still exists.\n");
     exit (1);
  }
@@ -197,14 +197,14 @@ float **alloc_and_load_timing_graph (t_timing_inf timing_inf, t_subblock_data
  * tnode_descript to use ints instead of shorts for isubblk or ipin.        */
 
  if (subblock_data.max_subblocks_per_block > MAX_SHORT) {
-    my_printf ("Error in alloc_and_load_timing_graph: max_subblocks_per_block"
+    printf ("Error in alloc_and_load_timing_graph: max_subblocks_per_block"
             "\tis %d -- will cause short overflow in tnode_descript.\n",
             subblock_data.max_subblocks_per_block);
     exit (1);
  }
 
  if (pins_per_clb > MAX_SHORT) {
-    my_printf ("Error in alloc_and_load_timing_graph: pins_per_clb is %d."
+    printf ("Error in alloc_and_load_timing_graph: pins_per_clb is %d."
             "\tWill cause short overflow in tnode_descript.\n", pins_per_clb);
     exit (1);
  }
@@ -512,7 +512,7 @@ static void alloc_and_load_tnodes_and_net_mapping (int **num_uses_of_clb_ipin,
        break;
 
     default:
-       my_printf ("Error in alloc_and_load_tnodes_and_net_mapping:\n"
+       printf ("Error in alloc_and_load_tnodes_and_net_mapping:\n"
                "\tUnexpected block type (%d) for block %d (%s).\n",
                 block[iblk].type, iblk, block[iblk].name);
        exit (1);
@@ -966,7 +966,7 @@ void free_timing_graph (float **net_slack) {
 /* Frees the timing graph data. */
 
  if (tedge_ch_list_head == NULL) {
-    my_printf ("Error in free_timing_graph: No timing graph to free.\n");
+    printf ("Error in free_timing_graph: No timing graph to free.\n");
     exit (1);
  }
 

@@ -646,7 +646,7 @@ static void timing_driven_check_net_delays (float **net_delay) {
     for (ipin=1;ipin<net[inet].num_pins;ipin++) {
        if (net_delay_check[inet][ipin] == 0.) { /* Should be only GLOBAL nets */
           if (net_delay_check[inet][ipin] != 0.) {
-             my_printf ("Error in timing_driven_check_net_delays: net %d pin %d."
+             printf ("Error in timing_driven_check_net_delays: net %d pin %d."
                      "\tIncremental calc. net_delay is %g, but from scratch "
                      "net delay is %g.\n", inet, ipin, net_delay[inet][ipin],
                      net_delay_check[inet][ipin]);
@@ -656,7 +656,7 @@ static void timing_driven_check_net_delays (float **net_delay) {
        else {
           if (fabs (1. - net_delay[inet][ipin] / net_delay_check[inet][ipin])
                           > ERROR_TOL) {
-             my_printf ("Error in timing_driven_check_net_delays: net %d pin %d."
+             printf ("Error in timing_driven_check_net_delays: net %d pin %d."
                      "\tIncremental calc. net_delay is %g, but from scratch "
                      "net delay is %g.\n", inet, ipin, net_delay[inet][ipin],
                      net_delay_check[inet][ipin]);

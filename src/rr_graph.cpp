@@ -330,7 +330,7 @@ static void alloc_and_load_rr_graph (int **rr_node_indices,
  * allocated as I fill in the graph.                                    */
 
  if (rr_mem_chunk_list_head != NULL) {
-    my_printf("Error in alloc_and_load_rr_graph:  rr_mem_chunk_list_head = %p.\n",
+    printf("Error in alloc_and_load_rr_graph:  rr_mem_chunk_list_head = %p.\n",
             rr_mem_chunk_list_head);
     my_printf("Expected NULL.  It appears an old rr_graph has not been freed.\n");
     exit (1);
@@ -384,7 +384,7 @@ static void alloc_and_load_rr_graph (int **rr_node_indices,
        }
 
        else if (clb[i][j].type != ILLEGAL) {
-          my_printf ("Error in alloc_and_load_rr_graph.\n"
+          printf ("Error in alloc_and_load_rr_graph.\n"
                   "Block at (%d, %d) has unknown type (%d).\n", i, j,
                    clb[i][j].type);
           exit (1);
@@ -531,7 +531,7 @@ static int which_io_block (int iblk) {
 
 
  if (block[iblk].type != INPAD && block[iblk].type != OUTPAD) {
-    my_printf ("Error in which_io_block:  block %d is not an IO block.\n", iblk);
+    printf ("Error in which_io_block:  block %d is not an IO block.\n", iblk);
     exit (1);
  }
 
@@ -544,7 +544,7 @@ static int which_io_block (int iblk) {
  }
 
  if (ifound < 0) {
-    my_printf ("Error in which_io_block:  block %d not found in clb array.\n",
+    printf ("Error in which_io_block:  block %d not found in clb array.\n",
              iblk);
     exit (1);
  }
@@ -1447,7 +1447,7 @@ static int track_side (int clb_side) {
     return (LEFT);
 
  default:
-    my_printf("Error:  unexpected clb_side (%d) in track_side.\n", clb_side);
+    printf("Error:  unexpected clb_side (%d) in track_side.\n", clb_side);
     exit (1);
  }
 }

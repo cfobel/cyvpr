@@ -96,7 +96,6 @@ cdef class cMain:
         return OrderedDict([
             ('result', self.most_recent_route_result()),
             ('states', self.most_recent_route_states()),
-            ('routed_net_info', self.routed_net_info()),
         ])
 
     property net_count:

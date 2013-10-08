@@ -179,7 +179,7 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
              break;
 
           default:
-             my_printf ("Error in count_routing_transistors:  Unexpected \n"
+             printf ("Error in count_routing_transistors:  Unexpected \n"
                   "connection from node %d (type %d) to node %d (type %d).\n",
                   from_node, from_rr_type, to_node, to_rr_type);
              exit (1);

@@ -502,7 +502,7 @@ static float comp_width (t_chan *chan, float x, float separation) {
     break;
 
  default:
-    my_printf("Error in comp_width:  Unknown channel type %d.\n",chan->type);
+    printf("Error in comp_width:  Unknown channel type %d.\n",chan->type);
     exit (1);
     break;
  }

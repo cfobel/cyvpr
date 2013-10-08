@@ -251,7 +251,7 @@ static void get_num_bends_and_length (int inet, int *bends_ptr, int *len_ptr,
 
  prevptr = trace_head[inet];   /* Should always be SOURCE. */
  if (prevptr == NULL) {
-    my_printf ("Error in get_num_bends_and_length:  net #%d has no traceback.\n",
+    printf ("Error in get_num_bends_and_length:  net #%d has no traceback.\n",
             inet);
     exit (1);
  }
@@ -384,6 +384,9 @@ void get_num_bends_and_length(std::vector<unsigned int> &bends,
     int bends_i;
     int wire_length_i;
     int segments_i;
+    bends.resize(net_count);
+    wire_lengths.resize(net_count);
+    segments.resize(net_count);
 
     for (int i = 0; i < net_count; i++) {
         get_num_bends_and_length(i, &bends_i, &wire_length_i, &segments_i);

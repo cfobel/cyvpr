@@ -22,10 +22,10 @@ FILE *my_fopen (char *fname, char *flag, int prompt) {
        scanf("%s",fname);
     if ((fp = fopen(fname,flag)) != NULL)
        break;
-    my_printf("Error opening file %s for %s access.\n",fname,flag);
+    printf("Error opening file %s for %s access.\n",fname,flag);
     if (!prompt)
        exit(1);
-    my_printf("Please enter another filename.\n");
+    printf("Please enter another filename.\n");
  }
  return (fp);
 }
@@ -119,9 +119,9 @@ void *my_chunk_malloc (size_t size, struct s_linked_vptr **chunk_ptr_head,
        tmp_ptr = (char *) my_malloc (size);
 
 /*#ifdef DEBUG
-       my_printf("NB:  my_chunk_malloc got a request for %d bytes.\n",
+       printf("NB:  my_chunk_malloc got a request for %d bytes.\n",
           size);
-       my_printf("You should consider using my_malloc for such big requests.\n");
+       printf("You should consider using my_malloc for such big requests.\n");
 #endif */
 
        if (chunk_ptr_head != NULL)
@@ -262,7 +262,7 @@ void alloc_ivector_and_copy_int_list (t_linked_int **list_head_ptr,
     ivec->list = NULL;
 
     if (list_head != NULL) {
-       my_printf ("Error in alloc_ivector_and_copy_int_list:\n Copied %d "
+       printf ("Error in alloc_ivector_and_copy_int_list:\n Copied %d "
            "elements, but list at %p contains more.\n", num_items, list_head);
        exit (1);
     }
@@ -282,7 +282,7 @@ void alloc_ivector_and_copy_int_list (t_linked_int **list_head_ptr,
  list[num_items-1] = linked_int->data;
 
  if (linked_int->next != NULL) {
-    my_printf ("Error in alloc_ivector_and_copy_int_list:\n Copied %d elements, "
+    printf ("Error in alloc_ivector_and_copy_int_list:\n Copied %d elements, "
             "but list at %p contains more.\n", num_items, list_head);
     exit (1);
  }
@@ -315,10 +315,10 @@ char *my_fgets(char *buf, int max_size, FILE *fp) {
     if (buf[i] == '\n')
        break;
     if (buf[i] == '\0') {
-       my_printf("Error on line %d -- line is too long for input buffer.\n",
+       printf("Error on line %d -- line is too long for input buffer.\n",
           linenum);
-       my_printf("All lines must be at most %d characters long.\n",BUFSIZE-2);
-       my_printf("The problem could also be caused by a missing newline.\n");
+       printf("All lines must be at most %d characters long.\n",BUFSIZE-2);
+       printf("The problem could also be caused by a missing newline.\n");
        exit (1);
     }
  }
@@ -531,7 +531,7 @@ int my_irand (int imax) {
 
 #ifdef CHECK_RAND
  if ((ival < 0) || (ival > imax)) {
-    my_printf("Bad value in my_irand, imax = %d  ival = %d\n",imax,ival);
+    printf("Bad value in my_irand, imax = %d  ival = %d\n",imax,ival);
     exit(1);
  }
 #endif
@@ -553,7 +553,7 @@ float my_frand (void) {
 
 #ifdef CHECK_RAND
  if ((fval < 0) || (fval > 1.)) {
-    my_printf("Bad value in my_frand, fval = %g\n",fval);
+    printf("Bad value in my_frand, fval = %g\n",fval);
     exit(1);
  }
 #endif

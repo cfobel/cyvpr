@@ -58,13 +58,13 @@ void check_netlist (t_subblock_data *subblock_data_ptr, int *num_driver) {
 
  for (i=0;i<num_nets;i++) {
     if (num_driver[i] != 1) {
-       my_printf ("Error:  net %s has %d signals driving it.\n",
+       printf ("Error:  net %s has %d signals driving it.\n",
            net[i].name,num_driver[i]);
        error++;
     }
 
     if ((net[i].num_pins - num_driver[i]) < 1) {
-       my_printf("Error:  net %s has no fanout.\n",net[i].name);
+       printf("Error:  net %s has no fanout.\n",net[i].name);
        error++;
     }
 
@@ -87,7 +87,7 @@ void check_netlist (t_subblock_data *subblock_data_ptr, int *num_driver) {
 /* This error check is a redundant double check.                 */
 
        if (num_conn != 1) {
-          my_printf("Error:  io block #%d (%s) of type %d"
+          printf("Error:  io block #%d (%s) of type %d"
              "has %d pins.\n", i, block[i].name, block[i].type,
              num_conn);
           error++;
@@ -95,7 +95,7 @@ void check_netlist (t_subblock_data *subblock_data_ptr, int *num_driver) {
 
   /* IO blocks must have no subblock information. */
        if (num_subblocks_per_block[i] != 0) {
-          my_printf("Error:  IO block #%d (%s) contains %d subblocks.\n"
+          printf("Error:  IO block #%d (%s) contains %d subblocks.\n"
               "Expected 0.\n", i, block[i].name, num_subblocks_per_block[i]);
           error++;
        }
@@ -110,7 +110,7 @@ void check_netlist (t_subblock_data *subblock_data_ptr, int *num_driver) {
  free (num_uses_of_sblk_opin);
 
  if (error != 0) {
-    my_printf("Found %d fatal Errors in the input netlist.\n",error);
+    printf("Found %d fatal Errors in the input netlist.\n",error);
     exit(1);
  }
 }
@@ -149,7 +149,7 @@ static int check_connections_to_global_clb_pins (int inet) {
                      blk_pin, iblk, block[iblk].name);
           }
           else {      /* Otherwise -> Error */
-             my_printf ("Error in check_connections_to_global_clb_pins:\n"
+             printf ("Error in check_connections_to_global_clb_pins:\n"
                    "\tpin %d on net #%d (%s) connects to CLB input pin (#%d)\n"
                    "\ton block #%d (%s).\n", ipin, inet, net[inet].name,
                    blk_pin, iblk, block[iblk].name);
@@ -211,7 +211,7 @@ static int check_clb_conn (int iblk, int num_conn) {
  * just a redundant double check.                                    */
 
  if (num_conn > pins_per_clb) {
-    my_printf("Error:  logic block #%d with output %s has %d pins.\n",
+    printf("Error:  logic block #%d with output %s has %d pins.\n",
        iblk, block[iblk].name,num_conn);
     error++;
  }
@@ -240,7 +240,7 @@ static int check_for_duplicate_block_names (void) {
 
  while (h_ptr != NULL) {
     if (h_ptr->count != 1) {
-       my_printf ("Error:  %d blocks are named %s.  Block names must be unique."
+       printf ("Error:  %d blocks are named %s.  Block names must be unique."
                "\n", h_ptr->count, h_ptr->name);
        error++;
     }
@@ -269,7 +269,7 @@ static int check_subblocks (int iblk, t_subblock_data *subblock_data_ptr,
  subblock_lut_size = subblock_data_ptr->subblock_lut_size;
 
  if (num_subblocks < 1 || num_subblocks > max_subblocks_per_block) {
-    my_printf("Error:  block #%d (%s) contains %d subblocks.\n",
+    printf("Error:  block #%d (%s) contains %d subblocks.\n",
            iblk, block[iblk].name, num_subblocks);
     error++;
  }
@@ -339,7 +339,7 @@ static int check_subblock_pin (int clb_pin, int min_val, int max_val,
 
  if (clb_pin != OPEN) {
     if (clb_pin < min_val || clb_pin > max_val) {
-       my_printf("Error:  Block #%d (%s) subblock #%d (%s)"
+       printf("Error:  Block #%d (%s) subblock #%d (%s)"
              "connects to nonexistent clb pin #%d.\n", iblk, block[iblk].name,
              isubblk, subblock_inf[isubblk].name, clb_pin);
        return (1);
@@ -348,7 +348,7 @@ static int check_subblock_pin (int clb_pin, int min_val, int max_val,
     if (clb_pin < pins_per_clb) {  /* clb pin */
        iclass = clb_pin_class[clb_pin];
        if (class_inf[iclass].type != pin_type) {
-          my_printf ("Error:  Block #%d (%s) subblock #%d (%s) pin connects\n"
+          printf ("Error:  Block #%d (%s) subblock #%d (%s) pin connects\n"
                "\tto clb pin (#%d) of wrong input/output type.\n", iblk,
                block[iblk].name, isubblk, subblock_inf[isubblk].name,
                clb_pin);
@@ -472,7 +472,7 @@ static int check_internal_subblock_connections (t_subblock_data
     if (num_uses_of_sblk_opin[isub] == 0) {   /* Output unused */
 
        if (has_inputs || subblock_inf[isub].clock != OPEN) {
-          my_printf ("Error:  output of subblock #%d (%s) of block #%d (%s) is "
+          printf ("Error:  output of subblock #%d (%s) of block #%d (%s) is "
                   "never used.\n", isub, subblock_inf[isub].name, iblk,
                   block[iblk].name);
           error++;
@@ -491,7 +491,7 @@ static int check_internal_subblock_connections (t_subblock_data
              num_const_gen++;
           }
           else {
-             my_printf ("Error:  block #%d (%s), subblock #%d (%s) is a CLOCKED "
+             printf ("Error:  block #%d (%s), subblock #%d (%s) is a CLOCKED "
                "\n\tconstant generator.\n\t(Has no inputs but is clocked.)\n",
                  iblk, block[iblk].name, isub, subblock_inf[isub].name);
              num_const_gen++;
@@ -540,12 +540,12 @@ static int check_clb_to_subblock_connections (int iblk, t_subblock
     if (block[iblk].nets[ipin] != OPEN) {
        if (is_opin(ipin)) {   /* CLB output */
           if (num_uses_of_clb_pin[ipin] == 0) {  /* No driver? */
-             my_printf ("Error:  output pin %d on block #%d (%s) is not driven "
+             printf ("Error:  output pin %d on block #%d (%s) is not driven "
                      "by any subblock.\n", ipin, iblk, block[iblk].name);
              error++;
           }
           else if (num_uses_of_clb_pin[ipin] > 1) {  /* Multiple drivers? */
-             my_printf ("Error:  output pin %d on block #%d (%s) is driven "
+             printf ("Error:  output pin %d on block #%d (%s) is driven "
                      "by %d subblocks.\n", ipin, iblk, block[iblk].name,
                       num_uses_of_clb_pin[ipin]);
              error++;
@@ -554,7 +554,7 @@ static int check_clb_to_subblock_connections (int iblk, t_subblock
 
        else {   /* CLB ipin */
           if (num_uses_of_clb_pin[ipin] <= 0) {    /* Fans out? */
-             my_printf ("Error:  pin %d on block #%d (%s) does not fanout to any "
+             printf ("Error:  pin %d on block #%d (%s) does not fanout to any "
                      "subblocks.\n", ipin, iblk, block[iblk].name);
              error++;
           }
@@ -563,7 +563,7 @@ static int check_clb_to_subblock_connections (int iblk, t_subblock
 
     else if (is_opin(ipin)) {   /* OPEN CLB output pin */
        if (num_uses_of_clb_pin[ipin] > 1) {
-          my_printf ("Error:  pin %d on block #%d (%s) is driven by %d "
+          printf ("Error:  pin %d on block #%d (%s) is driven by %d "
                   "subblocks.\n", ipin, iblk, block[iblk].name,
                   num_uses_of_clb_pin[ipin]);
           error++;

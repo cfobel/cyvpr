@@ -391,13 +391,13 @@ void init_route_structs (int bb_factor) {
  * really were.                                                           */
 
  if (rr_modified_head != NULL) {
-    my_printf ("Error in init_route_structs.  List of modified rr nodes is \n"
+    printf ("Error in init_route_structs.  List of modified rr nodes is \n"
             "not empty.\n");
     exit (1);
  }
 
  if (heap_tail != 1) {
-    my_printf ("Error in init_route_structs.  Heap is not empty.\n");
+    printf ("Error in init_route_structs.  Heap is not empty.\n");
     exit (1);
  }
 }
@@ -430,7 +430,7 @@ struct s_trace *update_traceback (struct s_heap *hptr, int inet) {
 #ifdef DEBUG
    rr_type = rr_node[inode].type;
    if (rr_type != SINK) {
-      my_printf("Error in update_traceback.  Expected type = SINK (%d).\n",
+      printf("Error in update_traceback.  Expected type = SINK (%d).\n",
          SINK);
       my_printf("Got type = %d while tracing back net %d.\n", rr_type, inet);
       exit(1);
@@ -765,7 +765,7 @@ void alloc_and_load_rr_node_route_structs (void) {
  int inode;
 
  if (rr_node_route_inf != NULL) {
-    my_printf ("Error in alloc_and_load_rr_node_route_structs:  \n"
+    printf ("Error in alloc_and_load_rr_node_route_structs:  \n"
             "old rr_node_route_inf array exists.\n");
     exit (1);
  }
@@ -1138,7 +1138,7 @@ void print_route (char *route_file) {
              break;
 
           default:
-             my_printf ("Error in print_route:  Unexpected traceback element "
+             printf ("Error in print_route:  Unexpected traceback element "
                      "type: %d (%s).\n", rr_type, name_type[rr_type]);
              exit (1);
              break;

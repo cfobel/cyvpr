@@ -211,7 +211,7 @@ static t_rc_node *alloc_and_load_rc_tree (int inet, t_rc_node
  tptr = trace_head[inet];
  
  if (tptr == NULL) {
-    my_printf ("Error in alloc_and_load_rc_tree:  Traceback for net %d doesn't "
+    printf ("Error in alloc_and_load_rc_tree:  Traceback for net %d doesn't "
             "exist.\n", inet);
     exit (1);
  }
@@ -244,7 +244,7 @@ static t_rc_node *alloc_and_load_rc_tree (int inet, t_rc_node
      #ifdef DEBUG
        prev_node = prev_rc->inode;
        if (rr_node[prev_node].type != SINK) {
-          my_printf ("Error in alloc_and_load_rc_tree:  Routing of net %d is "
+          printf ("Error in alloc_and_load_rc_tree:  Routing of net %d is "
                   "not a tree.\n", inet);
           exit (1);
        }

@@ -101,7 +101,7 @@ int seg_index_of_sblock (int from_node, int to_node) {
        }
     }
     else {
-       my_printf ("Error in seg_index_of_sblock:  to_node %d is of type %d.\n",
+       printf ("Error in seg_index_of_sblock:  to_node %d is of type %d.\n",
                to_node, to_rr_type);
        exit (1);
     }
@@ -120,14 +120,14 @@ int seg_index_of_sblock (int from_node, int to_node) {
        } 
     } 
     else { 
-       my_printf ("Error in seg_index_of_sblock:  to_node %d is of type %d.\n", 
+       printf ("Error in seg_index_of_sblock:  to_node %d is of type %d.\n", 
                to_node, to_rr_type);
        exit (1); 
     }
  }    /* End from_rr_type is CHANY */
 
  else {
-    my_printf ("Error in seg_index_of_sblock:  from_node %d is of type %d.\n", 
+    printf ("Error in seg_index_of_sblock:  from_node %d is of type %d.\n", 
             from_node, from_rr_type);
     exit (1); 
  }

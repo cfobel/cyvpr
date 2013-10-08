@@ -225,7 +225,7 @@ static void load_font(int pointsize) {
        pointsize);
 
 #ifdef VERBOSE
- my_printf ("Loading font: point size: %d, fontname: %s\n",pointsize, fontname);
+ printf ("Loading font: point size: %d, fontname: %s\n",pointsize, fontname);
 #endif
 
 /* Load font and get font information structure. */
@@ -532,7 +532,7 @@ void create_button (char *prev_button_text , char *button_text,
  }
 
  if (bnum == -1) {
-    my_printf ("Error in create_button:  button with text %s not found.\n",
+    printf ("Error in create_button:  button with text %s not found.\n",
             prev_button_text);
     exit (1);
  }
@@ -586,7 +586,7 @@ void destroy_button (char *button_text) {
  }
 
  if (bnum == -1) {
-    my_printf ("Error in destroy_button:  button with text %s not found.\n",
+    printf ("Error in destroy_button:  button with text %s not found.\n",
             button_text);
     exit (1);
  }
@@ -890,7 +890,7 @@ static int which_button (Window win) {
     if (button[i].win == win)
        return(i);
  }
- my_printf("Error:  Unknown button ID in which_button.\n");
+ printf("Error:  Unknown button ID in which_button.\n");
  return(0);
 }
 
@@ -991,9 +991,9 @@ void event_loop (void (*act_on_button) (float x, float y),
     switch (report.type) {
     case Expose:
 #ifdef VERBOSE
-       my_printf("Got an expose event.\n");
-       my_printf("Count is: %d.\n",report.xexpose.count);
-       my_printf("Window ID is: %d.\n",report.xexpose.window);
+       printf("Got an expose event.\n");
+       printf("Count is: %d.\n",report.xexpose.count);
+       printf("Window ID is: %d.\n",report.xexpose.window);
 #endif
        if (report.xexpose.count != 0)
            break;
@@ -1009,14 +1009,14 @@ void event_loop (void (*act_on_button) (float x, float y),
        top_height = report.xconfigure.height;
        update_transform();
 #ifdef VERBOSE
-       my_printf("Got a ConfigureNotify.\n");
-       my_printf("New width: %d  New height: %d.\n",top_width,top_height);
+       printf("Got a ConfigureNotify.\n");
+       printf("New width: %d  New height: %d.\n",top_width,top_height);
 #endif
        break;
     case ButtonPress:
 #ifdef VERBOSE
-       my_printf("Got a buttonpress.\n");
-       my_printf("Window ID is: %d.\n",report.xbutton.window);
+       printf("Got a buttonpress.\n");
+       printf("Window ID is: %d.\n",report.xbutton.window);
 #endif
        if (report.xbutton.window == toplevel) {
           x = XTOWORLD(report.xbutton.x);
@@ -1026,7 +1026,7 @@ void event_loop (void (*act_on_button) (float x, float y),
        else {  /* A menu button was pressed. */
           bnum = which_button(report.xbutton.window);
 #ifdef VERBOSE
-       my_printf("Button number is %d\n",bnum);
+       printf("Button number is %d\n",bnum);
 #endif
           button[bnum].ispressed = 1;
           drawbut(bnum);
@@ -1276,9 +1276,9 @@ void fillpoly (t_point *points, int npoints) {
  float xmin, ymin, xmax, ymax;
 
  if (npoints > MAXPTS) {
-    my_printf("Error in fillpoly:  Only %d points allowed per polygon.\n",
+    printf("Error in fillpoly:  Only %d points allowed per polygon.\n",
        MAXPTS);
-    my_printf("%d points were requested.  Polygon is not drawn.\n",npoints);
+    printf("%d points were requested.  Polygon is not drawn.\n",npoints);
     return;
  }
 
@@ -1541,7 +1541,7 @@ static void update_win (int x[2], int y[2], void (*drawscreen)(void)) {
  y[1] = my_min(y[1],top_height-T_AREA_HEIGHT);
 
  if ((x[0] == x[1]) || (y[0] == y[1])) {
-    my_printf("Illegal (zero area) window.  Window unchanged.\n");
+    printf("Illegal (zero area) window.  Window unchanged.\n");
     return;
  }
  x1 = XTOWORLD(my_min(x[0],x[1]));
@@ -1573,9 +1573,9 @@ static void adjustwin (void (*drawscreen) (void)) {
     switch (report.type) {
     case Expose:
 #ifdef VERBOSE
-       my_printf("Got an expose event.\n");
-       my_printf("Count is: %d.\n",report.xexpose.count);
-       my_printf("Window ID is: %d.\n",report.xexpose.window);
+       printf("Got an expose event.\n");
+       printf("Count is: %d.\n",report.xexpose.count);
+       printf("Window ID is: %d.\n",report.xexpose.window);
 #endif
        if (report.xexpose.count != 0)
            break;
@@ -1593,15 +1593,15 @@ static void adjustwin (void (*drawscreen) (void)) {
        top_height = report.xconfigure.height;
        update_transform();
 #ifdef VERBOSE
-       my_printf("Got a ConfigureNotify.\n");
-       my_printf("New width: %d  New height: %d.\n",top_width,top_height);
+       printf("Got a ConfigureNotify.\n");
+       printf("New width: %d  New height: %d.\n",top_width,top_height);
 #endif
        break;
     case ButtonPress:
 #ifdef VERBOSE
-       my_printf("Got a buttonpress.\n");
-       my_printf("Window ID is: %d.\n",report.xbutton.window);
-       my_printf("Location (%d, %d).\n", report.xbutton.x,
+       printf("Got a buttonpress.\n");
+       printf("Window ID is: %d.\n",report.xbutton.window);
+       printf("Location (%d, %d).\n", report.xbutton.x,
           report.xbutton.y);
 #endif
        if (report.xbutton.window != toplevel) break;
@@ -1618,8 +1618,8 @@ static void adjustwin (void (*drawscreen) (void)) {
        break;
     case MotionNotify:
 #ifdef VERBOSE
-       my_printf("Got a MotionNotify Event.\n");
-       my_printf("x: %d    y: %d\n",report.xmotion.x,report.xmotion.y);
+       printf("Got a MotionNotify Event.\n");
+       printf("x: %d    y: %d\n",report.xmotion.x,report.xmotion.y);
 #endif
        if (xold >= 0) {  /* xold set -ve before we draw first box */
           XDrawRectangle(display,toplevel,gcxor,my_min(x[0],xold),
@@ -1703,8 +1703,8 @@ int init_postscript (char *fname) {
 
  ps = fopen (fname,"w");
  if (ps == NULL) {
-    my_printf("Error: could not open %s for PostScript output.\n",fname);
-    my_printf("Drawing to screen instead.\n");
+    printf("Error: could not open %s for PostScript output.\n",fname);
+    printf("Drawing to screen instead.\n");
     return (0);
  }
  disp_type = POSTSCRIPT;  /* Graphics go to postscript file now. */

@@ -147,19 +147,21 @@ cdef class cRouteState(cStateBase):
     property bends:
         def __get__(self):
             if self._bends is None:
-                self._bends = np.asarray(self.thisptr.bends)
+                self._bends = np.asarray(self.thisptr.bends, dtype='uint')
             return self._bends
 
     property wire_lengths:
         def __get__(self):
             if self._wire_lengths is None:
-                self._wire_lengths = np.asarray(self.thisptr.wire_lengths)
+                self._wire_lengths = np.asarray(self.thisptr.wire_lengths,
+                                                dtype='uint')
             return self._wire_lengths
 
     property segments:
         def __get__(self):
             if self._segments is None:
-                self._segments = np.asarray(self.thisptr.segments)
+                self._segments = np.asarray(self.thisptr.segments,
+                                            dtype='uint')
             return self._segments
 
 

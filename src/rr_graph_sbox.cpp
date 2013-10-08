@@ -214,7 +214,7 @@ static int get_simple_switch_block_track (enum e_side from_side, enum e_side
 
 
  if (to_track == SBOX_ERROR) {
-    my_printf("Error in get_simple_switch_block_track.  Unexpected connection.\n"
+    printf("Error in get_simple_switch_block_track.  Unexpected connection.\n"
            "from_side: %d  to_side: %d  switch_block_type: %d.\n", from_side,
            to_side, switch_block_type);
     exit (1);
@@ -267,7 +267,7 @@ static enum e_side get_sbox_side (int get_i, int get_j, t_rr_type get_type,
  }
 
  else {
-    my_printf ("Error in get_sbox_side.  Unexpected get_type: %d.\n", get_type);
+    printf ("Error in get_sbox_side.  Unexpected get_type: %d.\n", get_type);
     exit (1);
  }
 

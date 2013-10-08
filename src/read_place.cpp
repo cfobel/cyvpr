@@ -54,34 +54,34 @@ void read_user_pad_loc (char *pad_loc_file) {
 
     ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       my_printf ("Error:  line %d is incomplete.\n", file_buffer.linenum_);
+       printf ("Error:  line %d is incomplete.\n", file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &xtmp);
 
     ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       my_printf ("Error:  line %d is incomplete.\n", file_buffer.linenum_);
+       printf ("Error:  line %d is incomplete.\n", file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &ytmp);
 
     ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       my_printf ("Error:  line %d is incomplete.\n", file_buffer.linenum_);
+       printf ("Error:  line %d is incomplete.\n", file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &isubblk);
 
     ptr = file_buffer.token(NULL, TOKENS);
     if (ptr != NULL) {
-       my_printf ("Error:  extra characters at end of line %d.\n", file_buffer.linenum_);
+       printf ("Error:  extra characters at end of line %d.\n", file_buffer.linenum_);
        exit (1);
     }
 
     h_ptr = get_hash_entry (hash_table, bname);
     if (h_ptr == NULL) {
-       my_printf ("Error:  block %s on line %d: no such IO pad.\n",
+       printf ("Error:  block %s on line %d: no such IO pad.\n",
                 bname, file_buffer.linenum_);
        exit (1);
     }
@@ -90,13 +90,13 @@ void read_user_pad_loc (char *pad_loc_file) {
     j = ytmp;
 
     if (block[bnum].x != OPEN) {
-       my_printf ("Error:  line %d.  Block %s listed twice in pad file.\n",
+       printf ("Error:  line %d.  Block %s listed twice in pad file.\n",
                 file_buffer.linenum_, bname);
        exit (1);
     }
 
     if (i < 0 || i > nx+1 || j < 0 || j > ny + 1) {
-       my_printf("Error:  block #%d (%s) location\n", bnum, bname);
+       printf("Error:  block #%d (%s) location\n", bnum, bname);
        my_printf("(%d,%d) is out of range.\n", i, j);
        exit (1);
     }
@@ -105,13 +105,13 @@ void read_user_pad_loc (char *pad_loc_file) {
     block[bnum].y = j;   /* I need to set .x only as a done flag.         */
 
     if (clb[i][j].type != IO) {
-       my_printf("Error:  attempt to place IO block %s in \n", bname);
+       printf("Error:  attempt to place IO block %s in \n", bname);
        my_printf("an illegal location (%d, %d).\n", i, j);
        exit (1);
     }
 
     if (isubblk >= io_rat || isubblk < 0) {
-       my_printf ("Error:  Block %s subblock number (%d) on line %d is out of "
+       printf ("Error:  Block %s subblock number (%d) on line %d is out of "
                "range.\n", bname, isubblk, file_buffer.linenum_);
        exit (1);
     }
@@ -124,7 +124,7 @@ void read_user_pad_loc (char *pad_loc_file) {
  for (iblk=0;iblk<num_blocks;iblk++) {
     if ((block[iblk].type == INPAD || block[iblk].type == OUTPAD) &&
              block[iblk].x == OPEN) {
-       my_printf ("Error:  IO block %s location was not specified in "
+       printf ("Error:  IO block %s location was not specified in "
                "the pad file.\n", block[iblk].name);
        exit (1);
     }
@@ -135,7 +135,7 @@ void read_user_pad_loc (char *pad_loc_file) {
        if (clb[i][j].type == IO) {
           for (isubblk=0;isubblk<clb[i][j].occ;isubblk++) {
              if (clb[i][j].u.io_blocks[isubblk] == OPEN) {
-                my_printf ("Error:  The IO blocks at (%d, %d) do not have \n"
+                printf ("Error:  The IO blocks at (%d, %d) do not have \n"
                         "consecutive subblock numbers starting at 0.\n", i, j);
                 exit (1);
              }
@@ -250,7 +250,7 @@ static int get_subblock (int i, int j, int bnum) {
        return (k);
  }
 
- my_printf("Error in get_subblock.  Block %d is not at location (%d,%d)\n",
+ printf("Error in get_subblock.  Block %d is not at location (%d,%d)\n",
     bnum, i, j);
  exit (1);
 }
@@ -301,34 +301,34 @@ void parse_placement_file(BufferBase &place_file_buffer, char *net_file,
 
     ptr = place_file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       my_printf ("Error:  line %d is incomplete.\n", place_file_buffer.linenum_);
+       printf ("Error:  line %d is incomplete.\n", place_file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &xtmp);
 
     ptr = place_file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       my_printf ("Error:  line %d is incomplete.\n", place_file_buffer.linenum_);
+       printf ("Error:  line %d is incomplete.\n", place_file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &ytmp);
 
     ptr = place_file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       my_printf ("Error:  line %d is incomplete.\n", place_file_buffer.linenum_);
+       printf ("Error:  line %d is incomplete.\n", place_file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &isubblock);
 
     ptr = place_file_buffer.token(NULL, TOKENS);
     if (ptr != NULL) {
-       my_printf ("Error:  extra characters at end of line %d.\n", place_file_buffer.linenum_);
+       printf ("Error:  extra characters at end of line %d.\n", place_file_buffer.linenum_);
        exit (1);
     }
 
     h_ptr = get_hash_entry (hash_table, bname);
     if (h_ptr == NULL) {
-       my_printf ("Error:  block %s on line %d does not exist in the netlist.\n",
+       printf ("Error:  block %s on line %d does not exist in the netlist.\n",
                 bname, place_file_buffer.linenum_);
        exit (1);
     }
@@ -337,13 +337,13 @@ void parse_placement_file(BufferBase &place_file_buffer, char *net_file,
     j = ytmp;
 
     if (block[bnum].x != OPEN) {
-       my_printf ("Error:  line %d.  Block %s listed twice in placement file.\n",
+       printf ("Error:  line %d.  Block %s listed twice in placement file.\n",
                 place_file_buffer.linenum_, bname);
        exit (1);
     }
 
     if (i < 0 || i > nx+1 || j < 0 || j > ny + 1) {
-       my_printf("Error in read_place.  Block #%d (%s) location\n", bnum, bname);
+       printf("Error in read_place.  Block #%d (%s) location\n", bnum, bname);
        my_printf("(%d,%d) is out of range.\n", i, j);
        exit (1);
     }
@@ -353,7 +353,7 @@ void parse_placement_file(BufferBase &place_file_buffer, char *net_file,
 
     if (clb[i][j].type == CLB) {
        if (block[bnum].type != CLB) {
-          my_printf("Error in read_place.  Attempt to place block #%d (%s) in\n",
+          printf("Error in read_place.  Attempt to place block #%d (%s) in\n",
                bnum, bname);
           my_printf("a logic block location (%d, %d).\n", i, j);
           exit (1);
@@ -364,13 +364,13 @@ void parse_placement_file(BufferBase &place_file_buffer, char *net_file,
 
     else if (clb[i][j].type == IO) {
        if (block[bnum].type != INPAD && block[bnum].type != OUTPAD) {
-          my_printf("Error in read_place.  Attempt to place block #%d (%s) in\n",
+          printf("Error in read_place.  Attempt to place block #%d (%s) in\n",
                bnum, bname);
           my_printf("an IO block location (%d, %d).\n", i, j);
           exit (1);
        }
        if (isubblock >= io_rat || isubblock < 0) {
-          my_printf ("Error:  Block %s subblock number (%d) on line %d is out of "
+          printf ("Error:  Block %s subblock number (%d) on line %d is out of "
                   "range.\n", bname, isubblock, place_file_buffer.linenum_);
           exit (1);
        }
@@ -379,7 +379,7 @@ void parse_placement_file(BufferBase &place_file_buffer, char *net_file,
     }
 
     else {    /* Block type was ILLEGAL or some unknown value */
-       my_printf("Error in read_place.  Block #%d (%s) is in an illegal ",
+       printf("Error in read_place.  Block #%d (%s) is in an illegal ",
            bnum, bname);
        my_printf("location.\nLocation specified: (%d,%d).\n", i, j);
        exit (1);
@@ -392,7 +392,7 @@ void parse_placement_file(BufferBase &place_file_buffer, char *net_file,
 
  for (i=0;i<num_blocks;i++) {
     if (block[i].x == OPEN) {
-       my_printf ("Error in read_place:  block %s location was not specified in "
+       printf ("Error in read_place:  block %s location was not specified in "
                "the placement file.\n", block[i].name);
        exit (1);
     }
@@ -403,7 +403,7 @@ void parse_placement_file(BufferBase &place_file_buffer, char *net_file,
        if (clb[i][j].type == IO) {
           for (isubblock=0;isubblock<clb[i][j].occ;isubblock++) {
              if (clb[i][j].u.io_blocks[isubblock] == OPEN) {
-                my_printf ("Error:  The IO blocks at (%d, %d) do not have \n"
+                printf ("Error:  The IO blocks at (%d, %d) do not have \n"
                         "consecutive subblock numbers starting at 0.\n", i, j);
                 exit (1);
              }
@@ -430,7 +430,7 @@ static void read_place_header(BufferBase &file_buffer, char *net_file,
  ptr = file_buffer.get_joined_string(BUFSIZE);
 
  if (ptr == NULL) {
-    my_printf ("Error:  netlist file and architecture file used not listed.\n");
+    printf ("Error:  netlist file and architecture file used not listed.\n");
     exit (1);
  }
 
@@ -438,7 +438,7 @@ static void read_place_header(BufferBase &file_buffer, char *net_file,
  while (ptr == NULL) {   /* Skip blank or comment lines. */
     ptr = file_buffer.get_joined_string(BUFSIZE);
     if (ptr == NULL) {
-       my_printf ("Error:  netlist file and architecture file used not listed.\n");       exit (1);
+       printf ("Error:  netlist file and architecture file used not listed.\n");       exit (1);
     }
     ptr = file_buffer.token(file_buffer.buffer_, TOKENS);
  }
@@ -452,7 +452,7 @@ static void read_place_header(BufferBase &file_buffer, char *net_file,
     }
     else {
        if (strcmp (ptr, line_one_names[i]) != 0) {
-          my_printf ("Error on line %d, word %d:  \n"
+          printf ("Error on line %d, word %d:  \n"
                   "Expected keyword %s, got %s.\n", file_buffer.linenum_, i+1,
                   line_one_names[i], ptr);
           exit (1);
@@ -460,7 +460,7 @@ static void read_place_header(BufferBase &file_buffer, char *net_file,
     }
     ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL && i != 5) {
-       my_printf ("Error:  Unexpected end of line on line %d.\n", file_buffer.linenum_);
+       printf ("Error:  Unexpected end of line on line %d.\n", file_buffer.linenum_);
        exit (1);
     }
  }
@@ -482,7 +482,7 @@ static void read_place_header(BufferBase &file_buffer, char *net_file,
  ptr = file_buffer.get_joined_string(BUFSIZE);
 
  if (ptr == NULL) {
-    my_printf ("Error:  Array size not listed.\n");
+    printf ("Error:  Array size not listed.\n");
     exit (1);
  }
 
@@ -490,7 +490,7 @@ static void read_place_header(BufferBase &file_buffer, char *net_file,
  while (ptr == NULL) {   /* Skip blank or comment lines. */
     ptr = file_buffer.get_joined_string(BUFSIZE);
     if (ptr == NULL) {
-       my_printf ("Error:  array size not listed.\n");
+       printf ("Error:  array size not listed.\n");
        exit (1);
     }
     ptr = file_buffer.token(file_buffer.buffer_, TOKENS);
@@ -505,7 +505,7 @@ static void read_place_header(BufferBase &file_buffer, char *net_file,
     }
     else {
        if (strcmp (ptr, line_two_names[i]) != 0) {
-          my_printf ("Error on line %d, word %d:  \n"
+          printf ("Error on line %d, word %d:  \n"
                   "Expected keyword %s, got %s.\n", file_buffer.linenum_, i+1,
                   line_two_names[i], ptr);
           exit (1);
@@ -513,13 +513,13 @@ static void read_place_header(BufferBase &file_buffer, char *net_file,
     }
     ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL && i != 6) {
-       my_printf ("Error:  Unexpected end of line on line %d.\n", file_buffer.linenum_);
+       printf ("Error:  Unexpected end of line on line %d.\n", file_buffer.linenum_);
        exit (1);
     }
  }
 
  if (nx_check != nx || ny_check != ny) {
-    my_printf ("Error:  placement file assumes an array size of %d x %d.\n",
+    printf ("Error:  placement file assumes an array size of %d x %d.\n",
              nx_check, ny_check);
     my_printf ("Current size is %d x %d.\n", nx, ny);
     exit (1);
