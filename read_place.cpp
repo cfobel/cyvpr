@@ -9,8 +9,8 @@
 
 
 static int get_subblock (int i, int j, int bnum);
-static void read_place_header (FILE *fp, char *net_file, char *arch_file,
-              char *buf);
+static void read_place_header(BufferBase &file_buffer, char *net_file,
+                              char *arch_file);
 
 
 void read_user_pad_loc (char *pad_loc_file) {
@@ -19,12 +19,10 @@ void read_user_pad_loc (char *pad_loc_file) {
 
  struct s_hash **hash_table, *h_ptr;
  int iblk, i, j, xtmp, ytmp, bnum, isubblk;
- FILE *fp;
  char buf[BUFSIZE], bname[BUFSIZE], *ptr;
 
  printf ("\nReading locations of IO pads from %s.\n", pad_loc_file);
- linenum = 0;
- fp = my_fopen (pad_loc_file, "r", 0);
+ FileBuffer file_buffer(my_fopen(pad_loc_file, "r", 0));
 
  hash_table = alloc_hash_table ();
  for (iblk=0;iblk<num_blocks;iblk++) {
@@ -43,48 +41,48 @@ void read_user_pad_loc (char *pad_loc_file) {
     }
  }
 
- ptr = my_fgets (buf, BUFSIZE, fp);
+ ptr = file_buffer.get_joined_string(BUFSIZE);
 
  while (ptr != NULL) {
-    ptr = my_strtok (buf, TOKENS, fp, buf);
+    ptr = file_buffer.token(buf, TOKENS);
     if (ptr == NULL) {
-       ptr = my_fgets (buf, BUFSIZE, fp);
+       ptr = file_buffer.get_joined_string(BUFSIZE);
        continue;      /* Skip blank or comment lines. */
     }
 
     strcpy (bname, ptr);
 
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       printf ("Error:  line %d is incomplete.\n", linenum);
+       printf ("Error:  line %d is incomplete.\n", file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &xtmp);
 
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       printf ("Error:  line %d is incomplete.\n", linenum);
+       printf ("Error:  line %d is incomplete.\n", file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &ytmp);
 
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       printf ("Error:  line %d is incomplete.\n", linenum);
+       printf ("Error:  line %d is incomplete.\n", file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &isubblk);
 
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = file_buffer.token(NULL, TOKENS);
     if (ptr != NULL) {
-       printf ("Error:  extra characters at end of line %d.\n", linenum);
+       printf ("Error:  extra characters at end of line %d.\n", file_buffer.linenum_);
        exit (1);
     }
 
     h_ptr = get_hash_entry (hash_table, bname);
     if (h_ptr == NULL) {
        printf ("Error:  block %s on line %d: no such IO pad.\n",
-                bname, linenum);
+                bname, file_buffer.linenum_);
        exit (1);
     }
     bnum = h_ptr->index;
@@ -93,7 +91,7 @@ void read_user_pad_loc (char *pad_loc_file) {
 
     if (block[bnum].x != OPEN) {
        printf ("Error:  line %d.  Block %s listed twice in pad file.\n",
-                linenum, bname);
+                file_buffer.linenum_, bname);
        exit (1);
     }
 
@@ -114,13 +112,13 @@ void read_user_pad_loc (char *pad_loc_file) {
 
     if (isubblk >= io_rat || isubblk < 0) {
        printf ("Error:  Block %s subblock number (%d) on line %d is out of "
-               "range.\n", bname, isubblk, linenum);
+               "range.\n", bname, isubblk, file_buffer.linenum_);
        exit (1);
     }
     clb[i][j].u.io_blocks[isubblk] = bnum;
     clb[i][j].occ++;
 
-    ptr = my_fgets (buf, BUFSIZE, fp);
+    ptr = file_buffer.get_joined_string(BUFSIZE);
  }
 
  for (iblk=0;iblk<num_blocks;iblk++) {
@@ -146,7 +144,6 @@ void read_user_pad_loc (char *pad_loc_file) {
     }
  }
 
- fclose (fp);
  free_hash_table (hash_table);
  printf ("Successfully read %s.\n\n", pad_loc_file);
 }
@@ -259,7 +256,8 @@ static int get_subblock (int i, int j, int bnum) {
 }
 
 
-void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
+void parse_placement_file(BufferBase &place_file_buffer, char *net_file,
+                          char *arch_file) {
 
 /* Reads the blocks in from a previously placed circuit.             */
 
@@ -269,11 +267,8 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
  struct s_hash **hash_table, *h_ptr;
  int i, j, bnum, isubblock, xtmp, ytmp;
 
- printf("Reading the placement from file %s.\n", place_file);
- fp = my_fopen (place_file, "r", 0);
- linenum = 0;
 
- read_place_header (fp, net_file, arch_file, buf);
+ read_place_header(place_file_buffer, net_file, arch_file);
 
  for (i=0;i<=nx+1;i++) {
     for (j=0;j<=ny+1;j++) {
@@ -293,48 +288,48 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
  for (i=0;i<num_blocks;i++)
     h_ptr = insert_in_hash_table (hash_table, block[i].name, i);
 
- ptr = my_fgets (buf, BUFSIZE, fp);
+ ptr = place_file_buffer.get_joined_string(BUFSIZE);
 
  while (ptr != NULL) {
-    ptr = my_strtok (buf, TOKENS, fp, buf);
+    ptr = place_file_buffer.token(place_file_buffer.buffer_, TOKENS);
     if (ptr == NULL) {
-       ptr = my_fgets (buf, BUFSIZE, fp);
+     ptr = place_file_buffer.get_joined_string(BUFSIZE);
        continue;      /* Skip blank or comment lines. */
     }
 
     strcpy (bname, ptr);
 
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = place_file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       printf ("Error:  line %d is incomplete.\n", linenum);
+       printf ("Error:  line %d is incomplete.\n", place_file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &xtmp);
 
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = place_file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       printf ("Error:  line %d is incomplete.\n", linenum);
+       printf ("Error:  line %d is incomplete.\n", place_file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &ytmp);
 
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = place_file_buffer.token(NULL, TOKENS);
     if (ptr == NULL) {
-       printf ("Error:  line %d is incomplete.\n", linenum);
+       printf ("Error:  line %d is incomplete.\n", place_file_buffer.linenum_);
        exit (1);
     }
     sscanf (ptr, "%d", &isubblock);
 
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = place_file_buffer.token(NULL, TOKENS);
     if (ptr != NULL) {
-       printf ("Error:  extra characters at end of line %d.\n", linenum);
+       printf ("Error:  extra characters at end of line %d.\n", place_file_buffer.linenum_);
        exit (1);
     }
 
     h_ptr = get_hash_entry (hash_table, bname);
     if (h_ptr == NULL) {
        printf ("Error:  block %s on line %d does not exist in the netlist.\n",
-                bname, linenum);
+                bname, place_file_buffer.linenum_);
        exit (1);
     }
     bnum = h_ptr->index;
@@ -343,7 +338,7 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
 
     if (block[bnum].x != OPEN) {
        printf ("Error:  line %d.  Block %s listed twice in placement file.\n",
-                linenum, bname);
+                place_file_buffer.linenum_, bname);
        exit (1);
     }
 
@@ -376,7 +371,7 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
        }
        if (isubblock >= io_rat || isubblock < 0) {
           printf ("Error:  Block %s subblock number (%d) on line %d is out of "
-                  "range.\n", bname, isubblock, linenum);
+                  "range.\n", bname, isubblock, place_file_buffer.linenum_);
           exit (1);
        }
        clb[i][j].u.io_blocks[isubblock] = bnum;
@@ -390,11 +385,10 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
        exit (1);
     }
 
-    ptr = my_fgets (buf, BUFSIZE, fp);
+    ptr = place_file_buffer.get_joined_string(BUFSIZE);
  }
 
  free_hash_table (hash_table);
- fclose (fp);
 
  for (i=0;i<num_blocks;i++) {
     if (block[i].x == OPEN) {
@@ -418,13 +412,12 @@ void parse_placement_file (char *place_file, char *net_file, char *arch_file) {
     }
  }
 
- printf ("Successfully read %s.\n", place_file);
+ //printf ("Successfully read %s.\n", place_file);
 }
 
 
-static void read_place_header (FILE *fp, char *net_file, char *arch_file,
-              char *buf) {
-
+static void read_place_header(BufferBase &file_buffer, char *net_file,
+                              char *arch_file) {
 /* Reads the header from the placement file.  Used only to check that this *
  * placement file matches the current architecture, netlist, etc.          */
 
@@ -434,20 +427,20 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
  int nx_check, ny_check, i;
 
 
- ptr = my_fgets (buf, BUFSIZE, fp);
+ ptr = file_buffer.get_joined_string(BUFSIZE);
 
  if (ptr == NULL) {
     printf ("Error:  netlist file and architecture file used not listed.\n");
     exit (1);
  }
 
- ptr = my_strtok (buf, TOKENS, fp, buf);
+ ptr = file_buffer.token(file_buffer.buffer_, TOKENS);
  while (ptr == NULL) {   /* Skip blank or comment lines. */
-    ptr = my_fgets (buf, BUFSIZE, fp);
+    ptr = file_buffer.get_joined_string(BUFSIZE);
     if (ptr == NULL) {
        printf ("Error:  netlist file and architecture file used not listed.\n");       exit (1);
     }
-    ptr = my_strtok (buf, TOKENS, fp, buf);
+    ptr = file_buffer.token(file_buffer.buffer_, TOKENS);
  }
 
  for (i=0;i<=5;i++) {
@@ -460,14 +453,14 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
     else {
        if (strcmp (ptr, line_one_names[i]) != 0) {
           printf ("Error on line %d, word %d:  \n"
-                  "Expected keyword %s, got %s.\n", linenum, i+1,
+                  "Expected keyword %s, got %s.\n", file_buffer.linenum_, i+1,
                   line_one_names[i], ptr);
           exit (1);
        }
     }
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL && i != 5) {
-       printf ("Error:  Unexpected end of line on line %d.\n", linenum);
+       printf ("Error:  Unexpected end of line on line %d.\n", file_buffer.linenum_);
        exit (1);
     }
  }
@@ -486,21 +479,21 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
 
 /* Now check the second line (array size). */
 
- ptr = my_fgets (buf, BUFSIZE, fp);
+ ptr = file_buffer.get_joined_string(BUFSIZE);
 
  if (ptr == NULL) {
     printf ("Error:  Array size not listed.\n");
     exit (1);
  }
 
- ptr = my_strtok (buf, TOKENS, fp, buf);
+ ptr = file_buffer.token(file_buffer.buffer_, TOKENS);
  while (ptr == NULL) {   /* Skip blank or comment lines. */
-    ptr = my_fgets (buf, BUFSIZE, fp);
+    ptr = file_buffer.get_joined_string(BUFSIZE);
     if (ptr == NULL) {
        printf ("Error:  array size not listed.\n");
        exit (1);
     }
-    ptr = my_strtok (buf, TOKENS, fp, buf);
+    ptr = file_buffer.token(file_buffer.buffer_, TOKENS);
  }
 
  for (i=0;i<=6;i++) {
@@ -513,14 +506,14 @@ static void read_place_header (FILE *fp, char *net_file, char *arch_file,
     else {
        if (strcmp (ptr, line_two_names[i]) != 0) {
           printf ("Error on line %d, word %d:  \n"
-                  "Expected keyword %s, got %s.\n", linenum, i+1,
+                  "Expected keyword %s, got %s.\n", file_buffer.linenum_, i+1,
                   line_two_names[i], ptr);
           exit (1);
        }
     }
-    ptr = my_strtok (NULL, TOKENS, fp, buf);
+    ptr = file_buffer.token(NULL, TOKENS);
     if (ptr == NULL && i != 6) {
-       printf ("Error:  Unexpected end of line on line %d.\n", linenum);
+       printf ("Error:  Unexpected end of line on line %d.\n", file_buffer.linenum_);
        exit (1);
     }
  }

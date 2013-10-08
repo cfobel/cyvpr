@@ -994,13 +994,12 @@ static float starting_t (float *cost_ptr, float *bb_cost_ptr, float *timing_cost
 
 
 static int try_swap (float t, float *cost, float *bb_cost, float *timing_cost,
-		     float rlim, int *pins_on_block,
-		     int place_cost_type, float **old_region_occ_x,
-		     float **old_region_occ_y, int num_regions, boolean fixed_pins,
-		     enum e_place_algorithm place_algorithm, float timing_tradeoff,
-		     float inverse_prev_bb_cost, float inverse_prev_timing_cost,
-		     float *delay_cost) {
-
+                     float rlim, int *pins_on_block, int place_cost_type,
+                     float **old_region_occ_x, float **old_region_occ_y,
+                     int num_regions, boolean fixed_pins,
+                     enum e_place_algorithm place_algorithm,
+                     float timing_tradeoff, float inverse_prev_bb_cost,
+                     float inverse_prev_timing_cost, float *delay_cost) {
 /* Picks some block and moves it to another spot.  If this spot is   *
  * occupied, switch the blocks.  Assess the change in cost function  *
  * and accept or reject the move.  If rejected, return 0.  If        *
@@ -1152,7 +1151,7 @@ static int try_swap (float t, float *cost, float *bb_cost, float *timing_cost,
     *relation to 1*/
 
    comp_delta_td_cost(b_from, b_to, num_of_pins, &timing_delta_c,
-		      &delay_delta_c);
+                      &delay_delta_c);
 
    delta_c = (1-timing_tradeoff) * bb_delta_c * inverse_prev_bb_cost +
      timing_tradeoff * timing_delta_c * inverse_prev_timing_cost;
@@ -3208,12 +3207,26 @@ static void check_place (float bb_cost, float timing_cost, int place_cost_type,
 
 
 void read_place (char *place_file, char *net_file, char *arch_file,
-                 struct s_placer_opts placer_opts, struct s_router_opts router_opts,
-		 t_chan_width_dist chan_width_dist,
-		 struct s_det_routing_arch det_routing_arch,
-		 t_segment_inf *segment_inf, t_timing_inf timing_inf,
-		 t_subblock_data *subblock_data_ptr) {
+                 struct s_placer_opts placer_opts,
+                 struct s_router_opts router_opts,
+                 t_chan_width_dist chan_width_dist,
+                 struct s_det_routing_arch det_routing_arch,
+                 t_segment_inf *segment_inf, t_timing_inf timing_inf,
+                 t_subblock_data *subblock_data_ptr) {
+    FileBuffer buffer(place_file);
+    read_place(buffer, net_file, arch_file, placer_opts, router_opts,
+               chan_width_dist, det_routing_arch, segment_inf, timing_inf,
+               subblock_data_ptr);
+}
 
+
+void read_place (BufferBase &place_file_buffer, char *net_file,
+                 char *arch_file, struct s_placer_opts placer_opts,
+                 struct s_router_opts router_opts,
+                 t_chan_width_dist chan_width_dist,
+                 struct s_det_routing_arch det_routing_arch,
+                 t_segment_inf *segment_inf, t_timing_inf timing_inf,
+                 t_subblock_data *subblock_data_ptr) {
   /* Reads in a previously computed placement of the circuit.  It      *
    * checks that the placement corresponds to the current architecture *
    * and netlist file.                                                 */
@@ -3251,7 +3264,7 @@ void read_place (char *place_file, char *net_file, char *arch_file,
 
   /* First read in the placement.   */
 
-  parse_placement_file (place_file, net_file, arch_file);
+  parse_placement_file(place_file_buffer, net_file, arch_file);
 
   /* Load the channel occupancies and cost factors so that:   *
    * (1) the cost check will be OK, and                       *
@@ -3307,11 +3320,12 @@ void read_place (char *place_file, char *net_file, char *arch_file,
     delay_cost = 0;
     printf("Placement bb_cost is %g.\n", bb_cost);
   }
-  check_place (bb_cost, timing_cost, placer_opts.place_cost_type, placer_opts.num_regions,
-	       placer_opts.place_algorithm, delay_cost);
+  check_place(bb_cost, timing_cost, placer_opts.place_cost_type,
+              placer_opts.num_regions, placer_opts.place_algorithm,
+              delay_cost);
 
-  free_placement_structs (placer_opts.place_cost_type, placer_opts.num_regions,
-			  dummy_x, dummy_y, placer_opts);
+  free_placement_structs(placer_opts.place_cost_type, placer_opts.num_regions,
+                         dummy_x, dummy_y, placer_opts);
 
   if (placer_opts.place_algorithm == NET_TIMING_DRIVEN_PLACE ||
       placer_opts.place_algorithm == PATH_TIMING_DRIVEN_PLACE ||
@@ -3322,7 +3336,7 @@ void read_place (char *place_file, char *net_file, char *arch_file,
 
   init_draw_coords ((float) chan_width_factor);
 
-  sprintf (msg, "Placement from file %s.  bb_cost %g.", place_file,
-	   bb_cost);
+  //sprintf (msg, "Placement from file %s.  bb_cost %g.", place_file,
+  //bb_cost);
   update_screen (MAJOR, msg, PLACEMENT, FALSE);
 }

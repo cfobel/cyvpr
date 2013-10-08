@@ -1501,10 +1501,21 @@ int __main__ (int argc, char *argv[]) {
 
  fflush (stdout);
 
- place_and_route (operation, placer_opts, place_file, net_file, arch_file,
-    route_file, full_stats, verify_binary_search, annealing_sched, router_opts,
-    det_routing_arch, segment_inf, timing_inf, &subblock_data,
-    chan_width_dist);
+ BufferBase *buffer = NULL;
+ if (strcmp(place_file, "-") == 0) {
+    printf("Reading the placement from file %s.\n", place_file);
+ } else {
+    buffer = (BufferBase *)(new FileBuffer(place_file));
+    printf("Reading the placement from file %s.\n", place_file);
+ }
+ place_and_route(operation, placer_opts, *buffer, place_file, net_file,
+                 arch_file, route_file, full_stats, verify_binary_search,
+                 annealing_sched, router_opts, det_routing_arch, segment_inf,
+                 timing_inf, &subblock_data, chan_width_dist);
+
+ if(buffer != NULL) {
+     delete buffer;
+ }
 
  if (show_graphics)
     close_graphics();  /* Close down X Display */

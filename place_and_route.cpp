@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdexcept>
 #include "util.h"
 #include "vpr_types.h"
 #include "globals.h"
@@ -30,13 +31,17 @@ static float comp_width (t_chan *chan, float x, float separation);
 
 /************************* Subroutine Definitions ****************************/
 
-void place_and_route (enum e_operation operation, struct s_placer_opts
-   placer_opts, char *place_file, char *net_file, char *arch_file,
-   char *route_file, boolean full_stats, boolean verify_binary_search,
-   struct s_annealing_sched annealing_sched, struct s_router_opts router_opts,
-   struct s_det_routing_arch det_routing_arch, t_segment_inf
-   *segment_inf, t_timing_inf timing_inf, t_subblock_data
-   *subblock_data_ptr, t_chan_width_dist chan_width_dist) {
+void place_and_route (enum e_operation operation,
+                      struct s_placer_opts placer_opts, BufferBase &buffer,
+                      char *place_file, char *net_file, char *arch_file,
+                      char *route_file, boolean full_stats,
+                      boolean verify_binary_search,
+                      struct s_annealing_sched annealing_sched,
+                      struct s_router_opts router_opts,
+                      struct s_det_routing_arch det_routing_arch,
+                      t_segment_inf *segment_inf, t_timing_inf timing_inf,
+                      t_subblock_data *subblock_data_ptr,
+                      t_chan_width_dist chan_width_dist) {
 
 /* This routine controls the overall placement and routing of a circuit. */
 
@@ -47,11 +52,15 @@ void place_and_route (enum e_operation operation, struct s_placer_opts
  struct s_linked_vptr *net_delay_chunk_list_head;
  t_ivec **clb_opins_used_locally;  /* [0..num_blocks-1][0..num_class-1] */
 
+ if (placer_opts.place_freq != PLACE_NEVER && place_file == NULL) {
+     throw std::runtime_error("Must specify placement filepath if placement is"
+                              " to be performed.");
+ }
 
  if (placer_opts.place_freq == PLACE_NEVER) {
-    read_place (place_file, net_file, arch_file, placer_opts, router_opts,
-                chan_width_dist, det_routing_arch, segment_inf, timing_inf,
-                subblock_data_ptr);
+    read_place(buffer, net_file, arch_file, placer_opts, router_opts,
+               chan_width_dist, det_routing_arch, segment_inf, timing_inf,
+               subblock_data_ptr);
  }
 
  else if (placer_opts.place_freq == PLACE_ONCE) {
@@ -332,9 +341,9 @@ static int binary_search_place_and_route (struct s_placer_opts
  if (placer_opts.place_freq == PLACE_ALWAYS) {
     printf("Reading best placement back in.\n");
     placer_opts.place_chan_width = final;
-    read_place (place_file, net_file, arch_file, placer_opts, router_opts,
-                chan_width_dist, det_routing_arch, segment_inf, timing_inf,
-                subblock_data_ptr);
+    read_place(place_file, net_file, arch_file, placer_opts, router_opts,
+               chan_width_dist, det_routing_arch, segment_inf, timing_inf,
+               subblock_data_ptr);
  }
 
  free_rr_graph ();

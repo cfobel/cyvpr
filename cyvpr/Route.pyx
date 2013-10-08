@@ -220,9 +220,17 @@ def vpr_place(net_path, output_path, fast=True, seed=0):
     return vpr(args)
 
 
-def vpr_route(net_path, placed_path, output_path, fast=True):
+def vpr_route(net_path, placed_path, output_path, timing_driven=True, fast=False):
     args = [net_path, '/var/benchmarks/4lut_sanitized.arch', placed_path,
-            output_path, '-route_only', '-fast', '-nodisp']
+            output_path, '-route_only', '-nodisp', '-router_algorithm']
+    if timing_driven:
+        args += ['timing_driven']
+    else:
+        args += ['breadth_first']
+
+    if fast:
+        args += ['-fast']
+
     print '[vpr_route] args:', args
     try:
         vpr_data = vpr(args)
