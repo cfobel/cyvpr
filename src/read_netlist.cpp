@@ -314,8 +314,8 @@ static char *get_tok (char *buf, int doall, FILE *fp_net) {
     return (ptr);
  }
 
- printf ("Error in get_tok while parsing netlist file.\n");
- printf ("Line %d starts with an invalid token (%s).\n", linenum, ptr);
+ my_printf ("Error in get_tok while parsing netlist file.\n");
+ my_printf ("Line %d starts with an invalid token (%s).\n", linenum, ptr);
  exit (1);
 }
 
@@ -336,9 +336,9 @@ static int get_pin_number (char *ptr) {
  if (strncmp ("ble_", ptr, 4) == 0) {   /* "Hidden" pin (Subblock output) */
     val = my_atoi (ptr + 4);
     if (val < 0 || val >= max_subblocks_per_block) {
-       printf("Error in get_pin_number on line %d of netlist file.\n",
+       my_printf("Error in get_pin_number on line %d of netlist file.\n",
             linenum);
-       printf("Pin ble_%d is out of legal range (ble_%d to ble_%d).\n"
+       my_printf("Pin ble_%d is out of legal range (ble_%d to ble_%d).\n"
             "Aborting.\n\n", val, 0, max_subblocks_per_block - 1);
        exit (1);
     }
@@ -351,9 +351,9 @@ static int get_pin_number (char *ptr) {
  val = my_atoi (ptr);
 
  if (val < 0 || val >= pins_per_clb) {
-    printf("Error in get_pin_number on line %d of netlist file.\n",
+    my_printf("Error in get_pin_number on line %d of netlist file.\n",
          linenum);
-    printf("Pin %d is out of legal range (%d to %d).\nAborting.\n\n",
+    my_printf("Pin %d is out of legal range (%d to %d).\nAborting.\n\n",
          val, 0, pins_per_clb - 1);
     exit (1);
  }
@@ -377,9 +377,9 @@ static void load_subblock_array (int doall, FILE *fp_net,
  ptr = my_strtok(NULL,TOKENS,fp_net,temp_buf);
 
  if (ptr == NULL) {
-    printf("Error in load_subblock_array on line %d of netlist file.\n",
+    my_printf("Error in load_subblock_array on line %d of netlist file.\n",
              linenum);
-    printf("Subblock name is missing.\nAborting.\n\n");
+    my_printf("Subblock name is missing.\nAborting.\n\n");
     exit (1);
  }
 
@@ -412,11 +412,11 @@ static void load_subblock_array (int doall, FILE *fp_net,
  }
 
  if (ipin != subblock_lut_size + 2) {
-    printf("Error in load_subblock_array at line %d of netlist file.\n",
+    my_printf("Error in load_subblock_array at line %d of netlist file.\n",
             linenum);
-    printf("Subblock had %d pins, expected %d.\n", ipin,
+    my_printf("Subblock had %d pins, expected %d.\n", ipin,
             subblock_lut_size+2);
-    printf("Aborting.\n\n");
+    my_printf("Aborting.\n\n");
     exit (1);
  }
 }
@@ -470,11 +470,11 @@ static char *parse_subblocks (int doall, FILE *fp_net, char *buf,
  }   /* End infinite while */
 
  if (num_subblocks < 1 || num_subblocks > max_subblocks_per_block) {
-    printf("Error in parse_subblocks on line %d of netlist file.\n",
+    my_printf("Error in parse_subblocks on line %d of netlist file.\n",
          linenum);
-    printf("Block #%d has %d subblocks.  Out of range.\n",
+    my_printf("Block #%d has %d subblocks.  Out of range.\n",
          bnum, num_subblocks);
-    printf("Aborting.\n\n");
+    my_printf("Aborting.\n\n");
     exit (1);
  }
 
@@ -511,8 +511,8 @@ static char *add_clb (int doall, FILE *fp_net, char *buf) {
  while (ptr != NULL) {
     pin_index++;
     if (pin_index >= pins_per_clb) {
-       printf("Error in add_clb on line %d of netlist file.\n",linenum);
-       printf("Too many pins on this clb.  Expected %d.\n",pins_per_clb);
+       my_printf("Error in add_clb on line %d of netlist file.\n",linenum);
+       my_printf("Too many pins on this clb.  Expected %d.\n",pins_per_clb);
        exit (1);
     }
 
@@ -534,8 +534,8 @@ static char *add_clb (int doall, FILE *fp_net, char *buf) {
  }
 
  if (pin_index != pins_per_clb - 1) {
-    printf("Error in add_clb on line %d of netlist file.\n",linenum);
-    printf("Expected %d pins on clb, got %d.\n", pins_per_clb, pin_index + 1);
+    my_printf("Error in add_clb on line %d of netlist file.\n",linenum);
+    my_printf("Expected %d pins on clb, got %d.\n", pins_per_clb, pin_index + 1);
     exit (1);
  }
 
@@ -578,14 +578,14 @@ static void add_io (int doall, int block_type, FILE *fp_net, char *buf) {
  while (ptr != NULL) {
     pin_index++;
     if (pin_index >= 1) {
-       printf("Error in add_io on line %d of netlist file.\n",linenum);
-       printf("Too many pins on this io.  Expected 1.\n");
+       my_printf("Error in add_io on line %d of netlist file.\n",linenum);
+       my_printf("Too many pins on this io.  Expected 1.\n");
        exit (1);
     }
 
     if (strcmp(ptr,"open") == 0) {     /* Pin unconnected. */
-       printf("Error in add_io, line %d of netlist file.\n",linenum);
-       printf("Inputs and Outputs cannot have open pins.\n");
+       my_printf("Error in add_io, line %d of netlist file.\n",linenum);
+       my_printf("Inputs and Outputs cannot have open pins.\n");
        exit (1);
     }
 
@@ -602,8 +602,8 @@ static void add_io (int doall, int block_type, FILE *fp_net, char *buf) {
  }
 
  if (pin_index != 0) {
-    printf("Error in add_io on line %d of netlist file.\n",linenum);
-    printf("Expected 1 pin on pad, got %d.\n", pin_index + 1);
+    my_printf("Error in add_io on line %d of netlist file.\n",linenum);
+    my_printf("Expected 1 pin on pad, got %d.\n", pin_index + 1);
     exit (1);
  }
 
@@ -632,9 +632,9 @@ static void parse_name_and_pinlist (int doall, FILE *fp_net, char *buf) {
 
  ptr = my_strtok(NULL,TOKENS,fp_net,buf);
  if (ptr == NULL) {
-    printf("Error in parse_name_and_pinlist on line %d of netlist file.\n",
+    my_printf("Error in parse_name_and_pinlist on line %d of netlist file.\n",
        linenum);
-    printf(".clb, .input or .output line has no associated name.\n");
+    my_printf(".clb, .input or .output line has no associated name.\n");
     exit (1);
  }
 
@@ -647,9 +647,9 @@ static void parse_name_and_pinlist (int doall, FILE *fp_net, char *buf) {
 
  ptr = my_strtok (NULL,TOKENS,fp_net,buf);
  if (ptr != NULL) {
-    printf("Error in parse_name_and_pinlist on line %d of netlist file.\n",
+    my_printf("Error in parse_name_and_pinlist on line %d of netlist file.\n",
        linenum);
-    printf("Extra characters at end of line.\n");
+    my_printf("Extra characters at end of line.\n");
     exit (1);
  }
 
@@ -660,9 +660,9 @@ static void parse_name_and_pinlist (int doall, FILE *fp_net, char *buf) {
  do {
     ptr = my_fgets (buf, BUFSIZE, fp_net);
     if (ptr == NULL) {
-       printf("Error in parse_name_and_pinlist on line %d of netlist file.\n",
+       my_printf("Error in parse_name_and_pinlist on line %d of netlist file.\n",
           linenum);
-       printf("Missing pinlist: keyword.\n");
+       my_printf("Missing pinlist: keyword.\n");
        exit (1);
     }
 
@@ -670,9 +670,9 @@ static void parse_name_and_pinlist (int doall, FILE *fp_net, char *buf) {
  } while (ptr == NULL);
 
  if (strcmp (ptr, "pinlist:") != 0) {
-    printf("Error in parse_name_and_pinlist on line %d of netlist file.\n",
+    my_printf("Error in parse_name_and_pinlist on line %d of netlist file.\n",
        linenum);
-    printf("Expected pinlist: keyword, got %s.\n",ptr);
+    my_printf("Expected pinlist: keyword, got %s.\n",ptr);
     exit (1);
  }
 }
@@ -705,8 +705,8 @@ static void add_global (int doall, FILE *fp_net, char *buf) {
     h_ptr = get_hash_entry (hash_table, ptr);
 
     if (h_ptr == NULL) {        /* Net was not found in list! */
-       printf("Error in add_global on netlist file line %d.\n",linenum);
-       printf("Global signal %s does not exist.\n",ptr);
+       my_printf("Error in add_global on netlist file line %d.\n",linenum);
+       my_printf("Global signal %s does not exist.\n",ptr);
        exit(1);
     }
 
@@ -746,8 +746,8 @@ static int add_net (char *ptr, enum e_pin_type type, int bnum, int blk_pnum,
     nindex = h_ptr->index;
 
     if (h_ptr == NULL) {
-       printf("Error in add_net:  the second (load) pass found could not\n");
-       printf("find net %s in the symbol table.\n", ptr);
+       my_printf("Error in add_net:  the second (load) pass found could not\n");
+       my_printf("find net %s in the symbol table.\n", ptr);
        exit(1);
     }
 
@@ -763,9 +763,9 @@ static int add_net (char *ptr, enum e_pin_type type, int bnum, int blk_pnum,
     * should always be zero or 1 unless the netlist is bad.   */
 
        if (j >= temp_num_pins[nindex]) {
-          printf("Error:  Net #%d (%s) has no driver and will cause\n",
+          my_printf("Error:  Net #%d (%s) has no driver and will cause\n",
              nindex, ptr);
-          printf("memory corruption.\n");
+          my_printf("memory corruption.\n");
           exit(1);
        }
     }

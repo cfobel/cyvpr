@@ -84,7 +84,7 @@ boolean try_timing_driven_route (struct s_router_opts router_opts, float
          /* Impossible to route? (disconnected rr_graph) */
 
           if (!is_routable) {
-             printf ("Routing failed.\n");
+             my_printf ("Routing failed.\n");
              free_timing_driven_route_structs (pin_criticality, sink_order,
                           rt_node_of_sink);
              return (FALSE);
@@ -108,7 +108,7 @@ boolean try_timing_driven_route (struct s_router_opts router_opts, float
 
     success = feasible_routing ();
     if (success) {
-       printf("Successfully routed after %d routing iterations.\n", itry);
+       my_printf("Successfully routed after %d routing iterations.\n", itry);
        free_timing_driven_route_structs (pin_criticality, sink_order,
                      rt_node_of_sink);
 #ifdef DEBUG
@@ -131,11 +131,11 @@ boolean try_timing_driven_route (struct s_router_opts router_opts, float
 
     load_timing_graph_net_delays (net_delay);
     T_crit = load_net_slack (net_slack, 0);
-    printf ("T_crit: %g.\n", T_crit);
+    my_printf ("T_crit: %g.\n", T_crit);
     g_route_state.critical_path_delay = T_crit;
  }
 
- printf ("Routing failed.\n");
+ my_printf ("Routing failed.\n");
  free_timing_driven_route_structs (pin_criticality, sink_order,
                   rt_node_of_sink);
  return (FALSE);
@@ -216,7 +216,7 @@ boolean timing_driven_route_net (int inet, float pres_fac, float
 
 /* Rip-up any old routing. */
 
-/* printf ("\nRouting inet: %d\n", inet);  */
+/* my_printf ("\nRouting inet: %d\n", inet);  */
 
  pathfinder_update_one_cost (trace_head[inet], -1, pres_fac);
  free_traceback (inet);
@@ -244,7 +244,7 @@ boolean timing_driven_route_net (int inet, float pres_fac, float
     target_pin = sink_order[itarget];
     target_node = net_rr_terminals[inet][target_pin];
 
-/*    printf ("Target #%d, pin number %d, target_node: %d.\n",
+/*    my_printf ("Target #%d, pin number %d, target_node: %d.\n",
            itarget, target_pin, target_node);  */
 
     target_criticality = pin_criticality[target_pin];
@@ -646,7 +646,7 @@ static void timing_driven_check_net_delays (float **net_delay) {
     for (ipin=1;ipin<net[inet].num_pins;ipin++) {
        if (net_delay_check[inet][ipin] == 0.) { /* Should be only GLOBAL nets */
           if (net_delay_check[inet][ipin] != 0.) {
-             printf ("Error in timing_driven_check_net_delays: net %d pin %d."
+             my_printf ("Error in timing_driven_check_net_delays: net %d pin %d."
                      "\tIncremental calc. net_delay is %g, but from scratch "
                      "net delay is %g.\n", inet, ipin, net_delay[inet][ipin],
                      net_delay_check[inet][ipin]);
@@ -656,7 +656,7 @@ static void timing_driven_check_net_delays (float **net_delay) {
        else {
           if (fabs (1. - net_delay[inet][ipin] / net_delay_check[inet][ipin])
                           > ERROR_TOL) {
-             printf ("Error in timing_driven_check_net_delays: net %d pin %d."
+             my_printf ("Error in timing_driven_check_net_delays: net %d pin %d."
                      "\tIncremental calc. net_delay is %g, but from scratch "
                      "net delay is %g.\n", inet, ipin, net_delay[inet][ipin],
                      net_delay_check[inet][ipin]);
@@ -667,5 +667,5 @@ static void timing_driven_check_net_delays (float **net_delay) {
  }
 
  free_net_delay (net_delay_check, &ch_list_head_net_delay_check);
- printf ("Completed net delay value cross check successfully.\n");
+ my_printf ("Completed net delay value cross check successfully.\n");
 }

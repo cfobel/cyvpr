@@ -4,6 +4,9 @@ from libcpp.string cimport string
 from cyvpr.State cimport cStateBase, StateBase
 
 
+ctypedef unsigned int uint
+
+
 cdef extern from "time.h":
     struct timespec:
         long int tv_sec
@@ -27,6 +30,10 @@ cdef extern from "State.hpp":
         float total_logic_delay
         # Total net delay.
         float total_net_delay
+        vector[uint] bends
+        vector[uint] wire_lengths
+        vector[uint] segments
+
         string str()
         string csv()
         string csv_summary()
@@ -57,6 +64,9 @@ cdef datetime_from_timespec_tuple(timespec t)
 
 cdef class cRouteState(cStateBase):
     cdef RouteState *thisptr
+    cdef object _bends
+    cdef object _wire_lengths
+    cdef object _segments
 
     cdef inline init(self, RouteState state):
         self.thisptr.set(state)

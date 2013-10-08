@@ -81,7 +81,7 @@ cdef class cMain:
 
     def route(self, net_path, arch_file, placed_path, output_path,
               timing_driven=True, fast=False):
-        args = [net_path, '/var/benchmarks/4lut_sanitized.arch', placed_path,
+        args = [net_path, arch_file, placed_path,
                 output_path, '-route_only', '-nodisp', '-router_algorithm']
         if timing_driven:
             args += ['timing_driven']
@@ -96,6 +96,7 @@ cdef class cMain:
         return OrderedDict([
             ('result', self.most_recent_route_result()),
             ('states', self.most_recent_route_states()),
+            ('routed_net_info', self.routed_net_info()),
         ])
 
     property net_count:
@@ -133,3 +134,4 @@ cdef class cMain:
             state.init(g_route_states[i])
             states.append(state)
         return states
+

@@ -10,7 +10,8 @@ include_dirs = [path('cyvpr').abspath(), path('src').abspath(), ]
 sys.path += include_dirs
 
 cy_config = dict(include_dirs=include_dirs, language='c++',
-                 extra_compile_args=['-O3', '-Wfatal-errors'],
+                 extra_compile_args=['-O3', '-Wfatal-errors',
+                                     '-DIGNORE_PRINTF'],
                  libraries=['X11', 'm', 'rt'])
 c_files = map(str, path('src').abspath().files('*.c'))
 cpp_files = map(str, path('src').abspath().files('*.cpp'))

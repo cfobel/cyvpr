@@ -8,6 +8,16 @@
 #include "State.hpp"
 #include "Result.hpp"
 
+#ifdef IGNORE_PRINTF
+
+#define my_printf(fmt, ...) (0)
+
+#else
+
+#define my_printf(fmt, ...) printf(fmt, ...)
+
+#endif
+
 extern RouteState g_route_state;
 extern RouteResult g_route_result;
 extern std::vector<RouteState> g_route_states;

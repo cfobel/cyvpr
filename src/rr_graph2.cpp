@@ -332,7 +332,7 @@ int get_clb_opin_connections (int ***clb_opin_to_tracks, int ipin, int i, int
  }
 
  if (num_conn == 0) {
-    printf ("Error:  clb output pin %d at (%d,%d) does not connect to any "
+    my_printf ("Error:  clb output pin %d at (%d,%d) does not connect to any "
             "tracks.\n", ipin, i, j);
     exit (1);
  }
@@ -383,7 +383,7 @@ int get_pad_opin_connections (int **pads_to_tracks, int ipad, int i, int j,
     seg_details = seg_details_y;
  }
  else {
-    printf ("Error in get_pad_opin_connections:  requested IO block at "
+    my_printf ("Error in get_pad_opin_connections:  requested IO block at "
             "(%d,%d) does not exist.\n", i, j);
     exit (1);
  }
@@ -409,7 +409,7 @@ int get_pad_opin_connections (int **pads_to_tracks, int ipad, int i, int j,
  }
 
  if (num_conn == 0) {
-    printf ("Error:  INPAD %d at (%d,%d) does not connect to any "
+    my_printf ("Error:  INPAD %d at (%d,%d) does not connect to any "
             "tracks.\n", ipad, i, j);
     exit (1);
  }
@@ -483,7 +483,7 @@ int **alloc_and_load_rr_node_indices (int nodes_per_clb,
        }
 
        else if (clb[i][j].type != ILLEGAL) {
-          printf("Error in alloc_and_load_rr_node_indices.  Unexpected clb"
+          my_printf("Error in alloc_and_load_rr_node_indices.  Unexpected clb"
                  " type.\n");
           exit (1);
        }
@@ -643,7 +643,7 @@ int get_rr_node_index (int i, int j, t_rr_type rr_type, int ioff,
        return (index);
 
     default:
-       printf ("Error:  Bad rr_node passed to get_rr_node_index.\n"
+       my_printf ("Error:  Bad rr_node passed to get_rr_node_index.\n"
                "Request for type %d number %d at (%d, %d).\n", rr_type,
                ioff, i, j);
        exit (1);
@@ -686,7 +686,7 @@ int get_rr_node_index (int i, int j, t_rr_type rr_type, int ioff,
        return (index);
 
     default:
-       printf ("Error:  Bad rr_node passed to get_rr_node_index.\n"
+       my_printf ("Error:  Bad rr_node passed to get_rr_node_index.\n"
                "Request for type %d number %d at (%d, %d).\n", rr_type,
                ioff, i, j);
        exit (1);
@@ -694,7 +694,7 @@ int get_rr_node_index (int i, int j, t_rr_type rr_type, int ioff,
     break;
 
  default:
-    printf("Error in get_rr_node_index:  unexpected block type (%d) at "
+    my_printf("Error in get_rr_node_index:  unexpected block type (%d) at "
            "(%d, %d).\nrr_type: %d.\n", clb[i][j].type, i, j, rr_type);
     exit (1);
  }
@@ -749,7 +749,7 @@ int get_xtrack_to_clb_ipin_edges (int tr_istart, int tr_iend, int tr_j,
     clb_j = tr_j + 1;
  }
  else {
-    printf ("Error in get_xtrack_to_clb_ipin_edges:  Unknown iside: %d.\n",
+    my_printf ("Error in get_xtrack_to_clb_ipin_edges:  Unknown iside: %d.\n",
             iside);
     exit (1);
  }
@@ -797,7 +797,7 @@ int get_ytrack_to_clb_ipin_edges (int tr_jstart, int tr_jend, int tr_i,
     clb_i = tr_i + 1;
  }
  else {
-    printf ("Error in get_ytrack_to_clb_ipin_edges:  Unknown iside: %d.\n",
+    my_printf ("Error in get_ytrack_to_clb_ipin_edges:  Unknown iside: %d.\n",
             iside);
     exit (1);
  }

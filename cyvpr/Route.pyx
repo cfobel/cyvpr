@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from datetime import datetime
 import warnings
+import numpy as np
 
 from libcpp.vector cimport vector
 from libcpp.string cimport string
@@ -37,6 +38,9 @@ cdef class cRouteState(cStateBase):
     def __cinit__(self):
         self.thisptr = new RouteState()
         self.baseptr = <StateBase *>self.thisptr
+        self._bends = None
+        self._wire_lengths = None
+        self._segments = None
 
     def __reduce__(self):
         start = self.start
@@ -139,6 +143,24 @@ cdef class cRouteState(cStateBase):
 
     def __dealloc__(self):
         del self.thisptr
+
+    property bends:
+        def __get__(self):
+            if self._bends is None:
+                self._bends = np.asarray(self.thisptr.bends)
+            return self._bends
+
+    property wire_lengths:
+        def __get__(self):
+            if self._wire_lengths is None:
+                self._wire_lengths = np.asarray(self.thisptr.wire_lengths)
+            return self._wire_lengths
+
+    property segments:
+        def __get__(self):
+            if self._segments is None:
+                self._segments = np.asarray(self.thisptr.segments)
+            return self._segments
 
 
 cdef class cRouteResult(cStateBase):

@@ -51,7 +51,7 @@ boolean try_breadth_first_route (struct s_router_opts router_opts,
           /* Impossible to route? (disconnected rr_graph) */
 
           if (!is_routable) {
-             printf ("Routing failed.\n");
+             my_printf ("Routing failed.\n");
              return (FALSE);
           }
 
@@ -73,7 +73,7 @@ boolean try_breadth_first_route (struct s_router_opts router_opts,
 
     success = feasible_routing ();
     if (success) {
-       printf("Successfully routed after %d routing iterations.\n", itry);
+       my_printf("Successfully routed after %d routing iterations.\n", itry);
        return (TRUE);
     }
 
@@ -85,7 +85,7 @@ boolean try_breadth_first_route (struct s_router_opts router_opts,
     pathfinder_update_cost (pres_fac, router_opts.acc_fac);
  }
 
- printf ("Routing failed.\n");
+ my_printf ("Routing failed.\n");
  return (FALSE);
 }
 

@@ -18,6 +18,12 @@ cdef extern from "Main.h":
     vector[vector[uint]] extract_block_positions()
 
 
+cdef extern from "stats.h":
+    void get_num_bends_and_length(vector[uint] bends,
+                                  vector[uint] wire_lengths,
+                                  vector[uint] segments)
+
+
 cdef extern from "globals.h":
     vector[string] g_args
     RouteResult g_route_result

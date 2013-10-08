@@ -58,9 +58,9 @@ void routing_stats (boolean full_stats, enum e_route_type route_type,
 #ifdef PRINT_NET_SLACKS
        print_net_slack ("net_slack.echo", net_slack);
 #endif
-       printf ("\n");
+       my_printf ("\n");
        print_critical_path ("critical_path.echo");
-       printf ("Critical Path: %g (s)\n", T_crit);
+       my_printf ("Critical Path: %g (s)\n", T_crit);
     }
  }
 
@@ -103,20 +103,20 @@ static void get_length_and_bends_stats (void) {
  }
 
  av_bends = (float) total_bends / (float) (num_nets - num_globals);
- printf ("\nAverage number of bends per net: %#g  Maximum # of bends: %d\n\n",
+ my_printf ("\nAverage number of bends per net: %#g  Maximum # of bends: %d\n\n",
     av_bends, max_bends);
 
  av_length = (float) total_length / (float) (num_nets - num_globals);
- printf ("Wirelength results (all in units of 1 clb segments):\n");
- printf ("\tTotal wirelength: %d   Average net length: %#g\n", total_length,
+ my_printf ("Wirelength results (all in units of 1 clb segments):\n");
+ my_printf ("\tTotal wirelength: %d   Average net length: %#g\n", total_length,
        av_length);
- printf ("\tMaximum net length: %d\n\n", max_length);
+ my_printf ("\tMaximum net length: %d\n\n", max_length);
 
  av_segments = (float) total_segments / (float) (num_nets - num_globals);
- printf ("Wirelength results in terms of physical segments:\n");
- printf ("\tTotal wiring segments used: %d   Av. wire segments per net: "
+ my_printf ("Wirelength results in terms of physical segments:\n");
+ my_printf ("\tTotal wiring segments used: %d   Av. wire segments per net: "
          "%#g\n", total_segments, av_segments);
- printf ("\tMaximum segments used by a net: %d\n\n", max_segments);
+ my_printf ("\tMaximum segments used by a net: %d\n\n", max_segments);
 }
 
 
@@ -134,8 +134,8 @@ static void get_channel_occupancy_stats (void) {
  chany_occ = (int **) alloc_matrix (0, nx, 1, ny, sizeof(int));
  load_channel_occupancies (chanx_occ, chany_occ);
 
- printf("\nX - Directed channels:\n\n");
- printf("j\tmax occ\tav_occ\t\tcapacity\n");
+ my_printf("\nX - Directed channels:\n\n");
+ my_printf("j\tmax occ\tav_occ\t\tcapacity\n");
 
  total_x = 0;
 
@@ -149,12 +149,12 @@ static void get_channel_occupancy_stats (void) {
        av_occ += chanx_occ[i][j];
     }
     av_occ /= nx;
-    printf("%d\t%d\t%-#9g\t%d\n", j, max_occ, av_occ, chan_width_x[j]);
+    my_printf("%d\t%d\t%-#9g\t%d\n", j, max_occ, av_occ, chan_width_x[j]);
  }
 
 
- printf("\nY - Directed channels:\n\n");
- printf("i\tmax occ\tav_occ\t\tcapacity\n");
+ my_printf("\nY - Directed channels:\n\n");
+ my_printf("i\tmax occ\tav_occ\t\tcapacity\n");
 
  total_y = 0;
 
@@ -168,10 +168,10 @@ static void get_channel_occupancy_stats (void) {
        av_occ += chany_occ[i][j];
     }
     av_occ /= ny;
-    printf("%d\t%d\t%-#9g\t%d\n", i, max_occ, av_occ, chan_width_y[i]);
+    my_printf("%d\t%d\t%-#9g\t%d\n", i, max_occ, av_occ, chan_width_y[i]);
  }
 
- printf("\nTotal Tracks in X-direction: %d  in Y-direction: %d\n\n",
+ my_printf("\nTotal Tracks in X-direction: %d  in Y-direction: %d\n\n",
       total_x, total_y);
 
  free_matrix (chanx_occ, 1, nx, 0, sizeof(int));
@@ -251,7 +251,7 @@ static void get_num_bends_and_length (int inet, int *bends_ptr, int *len_ptr,
 
  prevptr = trace_head[inet];   /* Should always be SOURCE. */
  if (prevptr == NULL) {
-    printf ("Error in get_num_bends_and_length:  net #%d has no traceback.\n",
+    my_printf ("Error in get_num_bends_and_length:  net #%d has no traceback.\n",
             inet);
     exit (1);
  }
@@ -329,18 +329,18 @@ void print_wirelen_prob_dist (void) {
 
 /* Normalize so total probability is 1 and print out. */
 
- printf ("\nProbability distribution of 2-pin net lengths:\n\n");
- printf ("Length    p(Lenth)\n");
+ my_printf ("\nProbability distribution of 2-pin net lengths:\n\n");
+ my_printf ("Length    p(Lenth)\n");
 
  av_length = 0;
 
  for (index=0;index<nx+ny+3;index++) {
     prob_dist[index] /= norm_fac;
-    printf("%6d  %10.6f\n", index, prob_dist[index]);
+    my_printf("%6d  %10.6f\n", index, prob_dist[index]);
     av_length += prob_dist[index] * index;
  }
 
- printf("\nExpected value of 2-pin net length (R) is: %g\n",
+ my_printf("\nExpected value of 2-pin net length (R) is: %g\n",
        av_length);
 
  free ((void *) prob_dist);
@@ -373,5 +373,22 @@ void print_lambda (void) {
  }
 
  lambda = (float) num_inputs_used / (float) num_clbs;
- printf("Average lambda (input pins used per clb) is: %g\n", lambda);
+ my_printf("Average lambda (input pins used per clb) is: %g\n", lambda);
+}
+
+
+void get_num_bends_and_length(std::vector<unsigned int> &bends,
+                              std::vector<unsigned int> &wire_lengths,
+                              std::vector<unsigned int> &segments) {
+    size_t net_count = num_nets;
+    int bends_i;
+    int wire_length_i;
+    int segments_i;
+
+    for (int i = 0; i < net_count; i++) {
+        get_num_bends_and_length(i, &bends_i, &wire_length_i, &segments_i);
+        bends[i] = bends_i;
+        wire_lengths[i] = wire_length_i;
+        segments[i] = segments_i;
+    }
 }

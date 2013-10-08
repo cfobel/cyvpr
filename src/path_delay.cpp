@@ -188,7 +188,7 @@ float **alloc_and_load_timing_graph (t_timing_inf timing_inf, t_subblock_data
 /************* End of variable declarations ********************************/
 
  if (tedge_ch_list_head != NULL) {
-    printf ("Error in alloc_and_load_timing_graph:\n"
+    my_printf ("Error in alloc_and_load_timing_graph:\n"
             "\tAn old timing graph still exists.\n");
     exit (1);
  }
@@ -197,14 +197,14 @@ float **alloc_and_load_timing_graph (t_timing_inf timing_inf, t_subblock_data
  * tnode_descript to use ints instead of shorts for isubblk or ipin.        */
 
  if (subblock_data.max_subblocks_per_block > MAX_SHORT) {
-    printf ("Error in alloc_and_load_timing_graph: max_subblocks_per_block"
+    my_printf ("Error in alloc_and_load_timing_graph: max_subblocks_per_block"
             "\tis %d -- will cause short overflow in tnode_descript.\n",
             subblock_data.max_subblocks_per_block);
     exit (1);
  }
 
  if (pins_per_clb > MAX_SHORT) {
-    printf ("Error in alloc_and_load_timing_graph: pins_per_clb is %d."
+    my_printf ("Error in alloc_and_load_timing_graph: pins_per_clb is %d."
             "\tWill cause short overflow in tnode_descript.\n", pins_per_clb);
     exit (1);
  }
@@ -512,7 +512,7 @@ static void alloc_and_load_tnodes_and_net_mapping (int **num_uses_of_clb_ipin,
        break;
 
     default:
-       printf ("Error in alloc_and_load_tnodes_and_net_mapping:\n"
+       my_printf ("Error in alloc_and_load_tnodes_and_net_mapping:\n"
                "\tUnexpected block type (%d) for block %d (%s).\n",
                 block[iblk].type, iblk, block[iblk].name);
        exit (1);
@@ -966,7 +966,7 @@ void free_timing_graph (float **net_slack) {
 /* Frees the timing graph data. */
 
  if (tedge_ch_list_head == NULL) {
-    printf ("Error in free_timing_graph: No timing graph to free.\n");
+    my_printf ("Error in free_timing_graph: No timing graph to free.\n");
     exit (1);
  }
 
@@ -1240,10 +1240,10 @@ void print_critical_path (char *fname) {
  fprintf (fp, "Total logic delay: %g (s)  Total net delay: %g (s)\n",
           total_logic_delay, total_net_delay);
 
- printf ("Nets on crit. path: %d normal, %d global.\n",
+ my_printf ("Nets on crit. path: %d normal, %d global.\n",
           non_global_nets_on_crit_path, global_nets_on_crit_path);
 
- printf ("Total logic delay: %g (s)  Total net delay: %g (s)\n",
+ my_printf ("Total logic delay: %g (s)  Total net delay: %g (s)\n",
           total_logic_delay, total_net_delay);
 
     /* Tnodes on critical path. */
@@ -1360,9 +1360,9 @@ void do_constant_net_delay_timing_analysis (t_timing_inf timing_inf,
  load_timing_graph_net_delays (net_delay);
  T_crit = load_net_slack (net_slack, 0);
 
- printf ("\n");
+ my_printf ("\n");
  print_critical_path ("critical_path.echo");
- printf ("\nCritical Path: %g (s)\n", T_crit);
+ my_printf ("\nCritical Path: %g (s)\n", T_crit);
 
 /* print_timing_graph ("timing_graph.echo");
  print_net_slack ("net_slack.echo", net_slack);

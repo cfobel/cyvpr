@@ -62,36 +62,36 @@ void get_segment_usage_stats (int num_segment, t_segment_inf *segment_inf) {
     }
  }
 
- printf ("\nSegment usage by type (index):\n");
- printf ("Segment type       Fractional utilization\n");
- printf ("------------       ----------------------\n");
+ my_printf ("\nSegment usage by type (index):\n");
+ my_printf ("Segment type       Fractional utilization\n");
+ my_printf ("------------       ----------------------\n");
 
  for (seg_type=0;seg_type<num_segment;seg_type++) {
     if (seg_cap_by_type[seg_type] != 0) {
        utilization = (float) seg_occ_by_type[seg_type] /
                      (float) seg_cap_by_type[seg_type];
-       printf ("%8d                  %5.3g\n", seg_type, utilization);
+       my_printf ("%8d                  %5.3g\n", seg_type, utilization);
     }
  }
 
 
- printf ("\nSegment usage by length:\n");
- printf ("Segment length       Fractional utilization\n");
- printf ("--------------       ----------------------\n");
+ my_printf ("\nSegment usage by length:\n");
+ my_printf ("Segment length       Fractional utilization\n");
+ my_printf ("--------------       ----------------------\n");
 
 
  for (length=1;length<=max_segment_length;length++) {
     if (seg_cap_by_length[length] != 0) {
        utilization = (float) seg_occ_by_length[length] /
                      (float) seg_cap_by_length[length];
-       printf ("%9d                   %5.3g\n", length, utilization);
+       my_printf ("%9d                   %5.3g\n", length, utilization);
     }
  }
 
  if (seg_cap_by_length[LONGLINE] != 0) {
     utilization = (float) seg_occ_by_length[LONGLINE] /
                         (float) seg_cap_by_length[LONGLINE];
-       printf ("   longline                 %5.3g\n", utilization);
+       my_printf ("   longline                 %5.3g\n", utilization);
  }
 
 

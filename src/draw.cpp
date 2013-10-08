@@ -631,7 +631,7 @@ static void draw_rr (void) {
        break;
 
     default:
-       printf("Error in draw_rr:  Unexpected rr_node type: %d.\n",
+       my_printf("Error in draw_rr:  Unexpected rr_node type: %d.\n",
                rr_node[inode].type);
        exit (1);
     }
@@ -706,7 +706,7 @@ static void draw_rr_edges (int inode) {
           break;
 
        default:
-          printf("Error in draw_rr_edges:  node %d (type: %d) connects to \n"
+          my_printf("Error in draw_rr_edges:  node %d (type: %d) connects to \n"
              "node %d (type: %d).\n", inode, from_type, to_node, to_type);
           exit (1);
           break;
@@ -741,7 +741,7 @@ static void draw_rr_edges (int inode) {
           break;
 
        default:
-          printf("Error in draw_rr_edges:  node %d (type: %d) connects to \n"
+          my_printf("Error in draw_rr_edges:  node %d (type: %d) connects to \n"
              "node %d (type: %d).\n", inode, from_type, to_node, to_type);
           exit (1);
           break;
@@ -776,7 +776,7 @@ static void draw_rr_edges (int inode) {
           break;
 
        default:
-          printf("Error in draw_rr_edges:  node %d (type: %d) connects to \n"
+          my_printf("Error in draw_rr_edges:  node %d (type: %d) connects to \n"
              "node %d (type: %d).\n", inode, from_type, to_node, to_type);
           exit (1);
           break;
@@ -785,7 +785,7 @@ static void draw_rr_edges (int inode) {
 
 
     default:                     /* from_type */
-       printf("Error:  draw_rr_edges called with node %d of type %d.\n",
+       my_printf("Error:  draw_rr_edges called with node %d of type %d.\n",
                inode, from_type);
        exit (1);
        break;
@@ -847,7 +847,7 @@ static void draw_pin_to_chan_edge (int pin_node, int chan_node, int itrack,
     break;
 
  default:
-    printf ("Error in draw_pin_to_chan_edge:  invalid channel node %d.\n",
+    my_printf ("Error in draw_pin_to_chan_edge:  invalid channel node %d.\n",
             chan_node);
     exit (1);
  }
@@ -1184,7 +1184,7 @@ static void get_rr_pin_draw_coords (int inode, int iside, float *xcen,
      break;
 
   default:
-     printf ("Error in get_rr_pin_draw_coords:  Unexpected iside %d.\n",
+     my_printf ("Error in get_rr_pin_draw_coords:  Unexpected iside %d.\n",
              iside);
      exit (1);
      break;
@@ -1295,7 +1295,7 @@ static void drawroute (enum e_draw_net_type draw_net_type) {
              break;
 
           default:
-             printf ("Error in drawroute:  Unexpected connection from an \n"
+             my_printf ("Error in drawroute:  Unexpected connection from an \n"
                 "rr_node of type %d to one of type %d.\n", prev_type, rr_type);
              exit (1);
           }
@@ -1328,7 +1328,7 @@ static void drawroute (enum e_draw_net_type draw_net_type) {
              break;
 
           default:
-             printf ("Error in drawroute:  Unexpected connection from an \n"
+             my_printf ("Error in drawroute:  Unexpected connection from an \n"
                 "rr_node of type %d to one of type %d.\n", prev_type, rr_type);
              exit (1);
           }
@@ -1377,7 +1377,7 @@ static int get_track_num (int inode, int **chanx_track, int **chany_track) {
     return (chany_track[i][j]);
 
  default:
-    printf ("Error in get_track_num:  unexpected node type %d for node %d."
+    my_printf ("Error in get_track_num:  unexpected node type %d for node %d."
             "\n", rr_type, inode);
     exit (1);
  }

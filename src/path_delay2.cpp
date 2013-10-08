@@ -55,7 +55,7 @@ static int *alloc_and_load_tnode_fanin_and_check_edges (int *num_sinks_ptr) {
           to_node = tedge[iedge].to_node;
 
           if (to_node < 0 || to_node >= num_tnodes) {
-             printf ("Error in alloc_and_load_tnode_fanin_and_check_edges:\n"
+             my_printf ("Error in alloc_and_load_tnode_fanin_and_check_edges:\n"
                      "tnode #%d edge #%d goes to illegal node #%d.\n", inode,
                      iedge, to_node);
              error++;
@@ -70,7 +70,7 @@ static int *alloc_and_load_tnode_fanin_and_check_edges (int *num_sinks_ptr) {
     }
     
     else {
-       printf ("Error in alloc_and_load_tnode_fanin_and_check_edges: \n"
+       my_printf ("Error in alloc_and_load_tnode_fanin_and_check_edges: \n"
                "tnode #%d has %d edges.\n", inode, num_edges);
        error++;
     }
@@ -78,7 +78,7 @@ static int *alloc_and_load_tnode_fanin_and_check_edges (int *num_sinks_ptr) {
  }
 
  if (error != 0) {
-    printf ("Found %d Errors in the timing graph.  Aborting.\n", error);
+    my_printf ("Found %d Errors in the timing graph.  Aborting.\n", error);
     exit (1);
  }
 
@@ -185,21 +185,21 @@ void check_timing_graph (int num_const_gen, int num_ff, int num_sinks) {
     num_tnodes_check += tnodes_at_level[ilevel].nelem;
 
  if (num_tnodes_check != num_tnodes) {
-    printf ("Error in check_timing_graph: %d tnodes appear in the tnode level "
+    my_printf ("Error in check_timing_graph: %d tnodes appear in the tnode level "
             "structure.  Expected %d.\n", num_tnodes_check, num_tnodes);
-    printf ("Check the netlist for combinational cycles.\n");
+    my_printf ("Check the netlist for combinational cycles.\n");
     error++;
  }
 
  if (num_const_gen + num_p_inputs != tnodes_at_level[0].nelem) {
-    printf ("Error in check_timing_graph: %d tnodes are sources (have no "
+    my_printf ("Error in check_timing_graph: %d tnodes are sources (have no "
           "inputs -- expected %d.\n", tnodes_at_level[0].nelem, num_const_gen
           + num_p_inputs);
     error++;
  }
 
  if (num_sinks != num_p_outputs + num_ff) {
-    printf ("Error in check_timing_graph: %d tnodes are sinks (have no "
+    my_printf ("Error in check_timing_graph: %d tnodes are sinks (have no "
           "outputs -- expected %d.\n", num_sinks, num_ff + num_p_outputs);
     error++;
  }
@@ -207,7 +207,7 @@ void check_timing_graph (int num_const_gen, int num_ff, int num_sinks) {
  for (inet=0;inet<num_nets;inet++) {
     inode = net_to_driver_tnode[inet];
     if (inode < 0 || inode >= num_tnodes) {
-       printf ("Error in check_timing_graph:\n"
+       my_printf ("Error in check_timing_graph:\n"
              "\tdriver of net %d has a tnode mapping of %d (out of range).\n", 
              inet, inode);
        error++;
@@ -215,7 +215,7 @@ void check_timing_graph (int num_const_gen, int num_ff, int num_sinks) {
  }
 
  if (error != 0) {
-    printf ("Found %d Errors in the timing graph.  Aborting.\n", error);
+    my_printf ("Found %d Errors in the timing graph.  Aborting.\n", error);
     exit (1);
  }
 }

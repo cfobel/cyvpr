@@ -179,7 +179,7 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
              break;
 
           default:
-             printf ("Error in count_routing_transistors:  Unexpected \n"
+             my_printf ("Error in count_routing_transistors:  Unexpected \n"
                   "connection from node %d (type %d) to node %d (type %d).\n",
                   from_node, from_rr_type, to_node, to_rr_type);
              exit (1);
@@ -251,10 +251,10 @@ void count_routing_transistors (int num_switch, float R_minW_nmos,
  ntrans_sharing += input_cblock_trans;
  ntrans_no_sharing += input_cblock_trans;
 
- printf ("\nRouting area (in minimum width transistor areas):\n");
- printf ("Assuming no buffer sharing (pessimistic). Total: %#g  Per clb: "
+ my_printf ("\nRouting area (in minimum width transistor areas):\n");
+ my_printf ("Assuming no buffer sharing (pessimistic). Total: %#g  Per clb: "
          "%#g\n", ntrans_no_sharing, ntrans_no_sharing / (float) (nx * ny));
- printf ("Assuming buffer sharing (slightly optimistic). Total: %#g  Per clb: "
+ my_printf ("Assuming buffer sharing (slightly optimistic). Total: %#g  Per clb: "
           "%#g\n\n", ntrans_sharing, ntrans_sharing / (float) (nx * ny));
 }
 

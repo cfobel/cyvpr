@@ -124,7 +124,7 @@ void place_and_route (enum e_operation operation,
 
 
  if (success == FALSE) {
-    printf ("Circuit is unrouteable with a channel width factor of %d.\n\n",
+    my_printf ("Circuit is unrouteable with a channel width factor of %d.\n\n",
              width_fac);
     sprintf (msg,"Routing failed with a channel width factor of %d.  ILLEGAL "
                  "routing shown.", width_fac);
@@ -135,7 +135,7 @@ void place_and_route (enum e_operation operation,
                 clb_opins_used_locally);
     get_serial_num ();
 
-    printf("Circuit successfully routed with a channel width factor of %d."
+    my_printf("Circuit successfully routed with a channel width factor of %d."
            "\n\n", width_fac);
 
     routing_stats (full_stats, router_opts.route_type,
@@ -218,7 +218,7 @@ static int binary_search_place_and_route (struct s_placer_opts
  while (final == -1) {
     fflush (stdout);
 #ifdef VERBOSE
-    printf ("low, high, current %d %d %d\n",low,high,current);
+    my_printf ("low, high, current %d %d %d\n",low,high,current);
 #endif
 
 /* Check if the channel width is huge to avoid overflow.  Assume the *
@@ -226,9 +226,9 @@ static int binary_search_place_and_route (struct s_placer_opts
  * going to overflow.                                                */
 
     if (current > MAX_CHANNEL_WIDTH) {
-       printf("This circuit appears to be unroutable with the current "
+       my_printf("This circuit appears to be unroutable with the current "
          "router options.\n");
-       printf("Aborting routing procedure.\n");
+       my_printf("Aborting routing procedure.\n");
        exit (1);
     }
 
@@ -292,7 +292,7 @@ static int binary_search_place_and_route (struct s_placer_opts
 
  if (verify_binary_search) {
 
-    printf("\nVerifying that binary search found min. channel width ...\n");
+    my_printf("\nVerifying that binary search found min. channel width ...\n");
 
     prev_success = TRUE; /* Actually final - 1 failed, but this makes router */
                          /* try final-2 and final-3 even if both fail: safer */
@@ -339,7 +339,7 @@ static int binary_search_place_and_route (struct s_placer_opts
  init_chan (final, chan_width_dist);
 
  if (placer_opts.place_freq == PLACE_ALWAYS) {
-    printf("Reading best placement back in.\n");
+    my_printf("Reading best placement back in.\n");
     placer_opts.place_chan_width = final;
     read_place(place_file, net_file, arch_file, placer_opts, router_opts,
                chan_width_dist, det_routing_arch, segment_inf, timing_inf,
@@ -358,7 +358,7 @@ static int binary_search_place_and_route (struct s_placer_opts
               clb_opins_used_locally);
  get_serial_num ();
 
- printf("Best routing used a channel width factor of %d.\n\n",final);
+ my_printf("Best routing used a channel width factor of %d.\n\n",final);
  routing_stats (full_stats, router_opts.route_type,
            det_routing_arch.num_switch, segment_inf,
            det_routing_arch.num_segment, det_routing_arch.R_minW_nmos,
@@ -447,13 +447,13 @@ void init_chan (int cfactor, t_chan_width_dist chan_width_dist) {
  }
 
 #ifdef VERBOSE
-    printf("\nchan_width_x:\n");
+    my_printf("\nchan_width_x:\n");
     for (i=0;i<=ny;i++)
-       printf("%d  ",chan_width_x[i]);
-    printf("\n\nchan_width_y:\n");
+       my_printf("%d  ",chan_width_x[i]);
+    my_printf("\n\nchan_width_y:\n");
     for (i=0;i<=nx;i++)
-       printf("%d  ",chan_width_y[i]);
-    printf("\n\n");
+       my_printf("%d  ",chan_width_y[i]);
+    my_printf("\n\n");
 #endif
 
 }
@@ -502,7 +502,7 @@ static float comp_width (t_chan *chan, float x, float separation) {
     break;
 
  default:
-    printf("Error in comp_width:  Unknown channel type %d.\n",chan->type);
+    my_printf("Error in comp_width:  Unknown channel type %d.\n",chan->type);
     exit (1);
     break;
  }

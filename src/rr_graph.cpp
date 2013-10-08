@@ -330,9 +330,9 @@ static void alloc_and_load_rr_graph (int **rr_node_indices,
  * allocated as I fill in the graph.                                    */
 
  if (rr_mem_chunk_list_head != NULL) {
-    printf("Error in alloc_and_load_rr_graph:  rr_mem_chunk_list_head = %p.\n",
+    my_printf("Error in alloc_and_load_rr_graph:  rr_mem_chunk_list_head = %p.\n",
             rr_mem_chunk_list_head);
-    printf("Expected NULL.  It appears an old rr_graph has not been freed.\n");
+    my_printf("Expected NULL.  It appears an old rr_graph has not been freed.\n");
     exit (1);
  }
 
@@ -384,7 +384,7 @@ static void alloc_and_load_rr_graph (int **rr_node_indices,
        }
 
        else if (clb[i][j].type != ILLEGAL) {
-          printf ("Error in alloc_and_load_rr_graph.\n"
+          my_printf ("Error in alloc_and_load_rr_graph.\n"
                   "Block at (%d, %d) has unknown type (%d).\n", i, j,
                    clb[i][j].type);
           exit (1);
@@ -531,7 +531,7 @@ static int which_io_block (int iblk) {
 
 
  if (block[iblk].type != INPAD && block[iblk].type != OUTPAD) {
-    printf ("Error in which_io_block:  block %d is not an IO block.\n", iblk);
+    my_printf ("Error in which_io_block:  block %d is not an IO block.\n", iblk);
     exit (1);
  }
 
@@ -544,7 +544,7 @@ static int which_io_block (int iblk) {
  }
 
  if (ifound < 0) {
-    printf ("Error in which_io_block:  block %d not found in clb array.\n",
+    my_printf ("Error in which_io_block:  block %d not found in clb array.\n",
              iblk);
     exit (1);
  }
@@ -1193,9 +1193,9 @@ static int ***alloc_and_load_clb_pin_to_tracks (enum e_pin_type pin_type,
  step_size = (float) nodes_per_chan / (float) (Fc * num_phys_pins);
  if (step_size > 1.) {
     if (pin_type == DRIVER)
-       printf("Warning:  some tracks are never driven by clb outputs.\n");
+       my_printf("Warning:  some tracks are never driven by clb outputs.\n");
     else
-       printf("Warning:  some tracks cannot reach any inputs.\n");
+       my_printf("Warning:  some tracks cannot reach any inputs.\n");
  }
 
  if (perturb_switch_pattern) {
@@ -1330,13 +1330,13 @@ static void check_all_tracks_reach_pins (int ***tracks_connected_to_pin,
 
  for (itrack=0;itrack<nodes_per_chan;itrack++) {
     if (num_conns_to_track[itrack] <= 0) {
-       printf ("Warning (check_all_tracks_reach_pins):  track %d does not \n"
+       my_printf ("Warning (check_all_tracks_reach_pins):  track %d does not \n"
                "\tconnect to any CLB ", itrack);
 
        if (ipin_or_opin == DRIVER)
-          printf ("OPINs.\n");
+          my_printf ("OPINs.\n");
        else
-          printf ("IPINs.\n");
+          my_printf ("IPINs.\n");
     }
  }
 
@@ -1447,7 +1447,7 @@ static int track_side (int clb_side) {
     return (LEFT);
 
  default:
-    printf("Error:  unexpected clb_side (%d) in track_side.\n", clb_side);
+    my_printf("Error:  unexpected clb_side (%d) in track_side.\n", clb_side);
     exit (1);
  }
 }

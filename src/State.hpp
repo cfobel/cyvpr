@@ -123,6 +123,10 @@ public:
     /* Total net delay. */
     float total_net_delay;
 
+    std::vector<unsigned int> bends;
+    std::vector<unsigned int> wire_lengths;
+    std::vector<unsigned int> segments;
+
     virtual string label() const { return "RouteState"; }
 
     void set(RouteState const &other) {
@@ -136,6 +140,9 @@ public:
         this->global_nets_on_crit_path = other.global_nets_on_crit_path;
         this->total_logic_delay = other.total_logic_delay;
         this->total_net_delay = other.total_net_delay;
+        this->bends = other.bends;
+        this->wire_lengths = other.wire_lengths;
+        this->segments = other.segments;
     }
 
     virtual std::vector<std::pair<string, string> > fieldname_value_pairs() const {

@@ -281,7 +281,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
      else
        place_delay_value = delta_clb_to_clb[nx][ny];
 
-     printf("\nLower bound assuming delay of %g\n", place_delay_value);
+     my_printf("\nLower bound assuming delay of %g\n", place_delay_value);
 
      load_constant_net_delay (net_delay, place_delay_value);
      load_timing_graph_net_delays(net_delay);
@@ -336,7 +336,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
    compute_net_pin_index_values();
 
    num_connections = count_connections();
-   printf("\nThere are %d point to point connections in this circuit\n\n", num_connections);
+   my_printf("\nThere are %d point to point connections in this circuit\n\n", num_connections);
 
    if (placer_opts.place_algorithm == NET_TIMING_DRIVEN_PLACE) {
      for (inet = 0; inet<num_nets; inet++)
@@ -423,14 +423,14 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
 		 inverse_prev_bb_cost, inverse_prev_timing_cost, &delay_cost);
  tot_iter = 0;
  moves_since_cost_recompute = 0;
- printf("Initial Placement Cost: %g bb_cost: %g td_cost: %g delay_cost: %g\n\n",
+ my_printf("Initial Placement Cost: %g bb_cost: %g td_cost: %g delay_cost: %g\n\n",
 	cost, bb_cost, timing_cost, delay_cost);
 
 #ifndef SPEC
- printf("%11s  %10s %11s  %11s  %11s %11s  %11s %9s %8s  %7s  %7s  %10s  %7s\n", "T", "Cost", "Av. BB Cost",
+ my_printf("%11s  %10s %11s  %11s  %11s %11s  %11s %9s %8s  %7s  %7s  %10s  %7s\n", "T", "Cost", "Av. BB Cost",
 	"Av. TD Cost", "Av Tot Del", "P to P Del", "d_max", "Ac Rate", "Std Dev", "R limit", "Exp",
 	"Tot. Moves", "Alpha");
- printf("%11s  %10s %11s  %11s  %11s %11s  %11s %9s %8s  %7s  %7s  %10s  %7s\n", "--------", "----------",
+ my_printf("%11s  %10s %11s  %11s  %11s %11s  %11s %9s %8s  %7s  %7s  %10s  %7s\n", "--------", "----------",
 	"-----------", "-----------", "---------", "----------", "-----", "-------", "-------",  "-------",
 	 "-------","----------", "-----");
 #endif
@@ -460,7 +460,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
       if (outer_crit_iter_count >= placer_opts.recompute_crit_iter ||
 	  placer_opts.inner_loop_recompute_divider != 0) {
 #ifdef VERBOSE
-	printf("Outer Loop Recompute Criticalities\n");
+	my_printf("Outer Loop Recompute Criticalities\n");
 #endif
 	place_delay_value = delay_cost / num_connections;
 
@@ -509,7 +509,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
 
 	  inner_crit_iter_count = 0;
 #ifdef VERBOSE
-	  printf("Inner Loop Recompute Criticalities\n");
+	  my_printf("Inner Loop Recompute Criticalities\n");
 #endif
 	  if (placer_opts.place_algorithm == NET_TIMING_DRIVEN_PLACE) {
 	    place_delay_value = delay_cost / num_connections;
@@ -525,7 +525,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
       }
 
 #ifdef VERBOSE
-      printf("t = %g  cost = %g   bb_cost = %g timing_cost = %g move = %d dmax = %g\n",
+      my_printf("t = %g  cost = %g   bb_cost = %g timing_cost = %g move = %d dmax = %g\n",
 	     t, cost, bb_cost, timing_cost, inner_iter, d_max);
       if (fabs(bb_cost - comp_bb_cost(CHECK, placer_opts.place_cost_type,
 				      placer_opts.num_regions)) > bb_cost * ERROR_TOL)
@@ -543,7 +543,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
        new_bb_cost = recompute_bb_cost (placer_opts.place_cost_type,
                      placer_opts.num_regions);
        if (fabs(new_bb_cost - bb_cost) > bb_cost * ERROR_TOL) {
-          printf("Error in try_place:  new_bb_cost = %g, old bb_cost = %g.\n",
+          my_printf("Error in try_place:  new_bb_cost = %g, old bb_cost = %g.\n",
               new_bb_cost, bb_cost);
           exit (1);
        }
@@ -553,12 +553,12 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
            placer_opts.place_algorithm == PATH_TIMING_DRIVEN_PLACE) {
 	 comp_td_costs(&new_timing_cost, &new_delay_cost);
 	 if (fabs(new_timing_cost - timing_cost) > timing_cost * ERROR_TOL) {
-	   printf("Error in try_place:  new_timing_cost = %g, old timing_cost = %g.\n",
+	   my_printf("Error in try_place:  new_timing_cost = %g, old timing_cost = %g.\n",
 		  new_timing_cost, timing_cost);
 	   exit (1);
 	 }
 	 if (fabs(new_delay_cost - delay_cost) > delay_cost * ERROR_TOL) {
-	   printf("Error in try_place:  new_delay_cost = %g, old delay_cost = %g.\n",
+	   my_printf("Error in try_place:  new_delay_cost = %g, old delay_cost = %g.\n",
 		  new_delay_cost, delay_cost);
 	   exit (1);
 	 }
@@ -588,7 +588,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
     std_dev = get_std_dev (success_sum, sum_of_squares, av_cost);
 
 #ifndef SPEC
-    printf("%11.5g  %10.6g %11.6g  %11.6g  %11.6g %11.6g %11.4g %9.4g %8.3g  %7.4g  %7.4g  %10d  ",t, av_cost,
+    my_printf("%11.5g  %10.6g %11.6g  %11.6g  %11.6g %11.6g %11.4g %9.4g %8.3g  %7.4g  %7.4g  %10d  ",t, av_cost,
 	   av_bb_cost, av_timing_cost, av_delay_cost, place_delay_value, d_max, success_rat, std_dev,
 	   rlim, crit_exponent,tot_iter);
 #endif
@@ -597,7 +597,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
     update_t (&t, std_dev, rlim, success_rat, annealing_sched);
 
 #ifndef SPEC
-    printf("%7.4g\n",t/oldt);
+    my_printf("%7.4g\n",t/oldt);
 #endif
 
     sprintf(msg,"Cost: %g  BB Cost %g  TD Cost %g  Temperature: %g  d_max: %g",cost,
@@ -632,7 +632,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
        placer_opts.inner_loop_recompute_divider != 0) {
 
 #ifdef VERBOSE
-     printf("Outer Loop Recompute Criticalities\n");
+     my_printf("Outer Loop Recompute Criticalities\n");
 #endif
      place_delay_value = delay_cost / num_connections;
 
@@ -675,7 +675,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
 
 	   inner_crit_iter_count = 0;
 #ifdef VERBOSE
-	   printf("Inner Loop Recompute Criticalities\n");
+	   my_printf("Inner Loop Recompute Criticalities\n");
 #endif
 	   if (placer_opts.place_algorithm == NET_TIMING_DRIVEN_PLACE) {
 	     place_delay_value = delay_cost / num_connections;
@@ -691,7 +691,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
      }
    }
 #ifdef VERBOSE
-   printf("t = %g  cost = %g   move = %d\n",t, cost, tot_iter);
+   my_printf("t = %g  cost = %g   move = %d\n",t, cost, tot_iter);
 #endif
  }
  tot_iter += move_lim;
@@ -713,7 +713,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
 
 
 #ifndef SPEC
-    printf("%11.5g  %10.6g %11.6g  %11.6g  %11.6g %11.6g %11.4g %9.4g %8.3g  %7.4g  %7.4g  %10d  \n\n",t, av_cost,
+    my_printf("%11.5g  %10.6g %11.6g  %11.6g  %11.6g %11.6g %11.4g %9.4g %8.3g  %7.4g  %7.4g  %10d  \n\n",t, av_cost,
 	   av_bb_cost, av_timing_cost, av_delay_cost, place_delay_value, d_max, success_rat, std_dev,
 	   rlim, crit_exponent, tot_iter);
 
@@ -752,18 +752,18 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
 #ifdef PRINT_PLACE_CRIT_PATH
    print_critical_path("Placement_Crit_Path.echo");
 #endif
-   printf("Placement Estimated Crit Path Delay: %g\n\n", est_crit);
+   my_printf("Placement Estimated Crit Path Delay: %g\n\n", est_crit);
  }
 
 
  sprintf(msg,"Placement. Cost: %g  bb_cost: %g td_cost: %g Channel Factor: %d d_max: %g",
 	 cost, bb_cost, timing_cost, width_fac, d_max);
- printf("Placement. Cost: %g  bb_cost: %g  td_cost: %g  delay_cost: %g.\n",
+ my_printf("Placement. Cost: %g  bb_cost: %g  td_cost: %g  delay_cost: %g.\n",
 	cost, bb_cost, timing_cost,delay_cost);
  update_screen(MAJOR, msg, PLACEMENT, FALSE);
 
 #ifdef SPEC
- printf ("Total moves attempted: %d.0\n", tot_iter);
+ my_printf ("Total moves attempted: %d.0\n", tot_iter);
 #endif
 
  if (placer_opts.place_algorithm == NET_TIMING_DRIVEN_PLACE ||
@@ -978,13 +978,13 @@ static float starting_t (float *cost_ptr, float *bb_cost_ptr, float *timing_cost
 
 #ifdef DEBUG
  if (num_accepted != move_lim) {
-    printf("Warning:  Starting t: %d of %d configurations accepted.\n",
+    my_printf("Warning:  Starting t: %d of %d configurations accepted.\n",
         num_accepted, move_lim);
  }
 #endif
 
 #ifdef VERBOSE
-    printf("std_dev: %g, average cost: %g, starting temp: %g\n",
+    my_printf("std_dev: %g, average cost: %g, starting temp: %g\n",
         std_dev, av, 20. * std_dev);
 #endif
 
@@ -1357,7 +1357,7 @@ static int find_affected_nets (int *nets_to_update, int *net_block_moved,
 
 #ifdef DEBUG
           if (count > affected_index) {
-             printf("Error in find_affected_nets -- count = %d,"
+             my_printf("Error in find_affected_nets -- count = %d,"
               " affected index = %d.\n", count, affected_index);
              exit (1);
           }
@@ -1392,7 +1392,7 @@ static void find_to (int x_from, int y_from, int type, float rlim,
 
 #ifdef DEBUG
  if (rlx < 1 || rlx > nx) {
-    printf("Error in find_to: rlx = %d\n",rlx);
+    my_printf("Error in find_to: rlx = %d\n",rlx);
     exit(1);
  }
 #endif
@@ -1442,7 +1442,7 @@ static void find_to (int x_from, int y_from, int type, float rlim,
              *y_to = 0;
              break;
           default:
-             printf("Error in find_to.  Unexpected io swap location.\n");
+             my_printf("Error in find_to.  Unexpected io swap location.\n");
              exit (1);
           }
        }
@@ -1505,28 +1505,28 @@ static void find_to (int x_from, int y_from, int type, float rlim,
 
 #ifdef DEBUG
    if (*x_to < 0 || *x_to > nx+1 || *y_to < 0 || *y_to > ny+1) {
-      printf("Error in routine find_to:  (x_to,y_to) = (%d,%d)\n",
+      my_printf("Error in routine find_to:  (x_to,y_to) = (%d,%d)\n",
             *x_to, *y_to);
       exit(1);
    }
 
    if (type == CLB) {
      if (clb[*x_to][*y_to].type != CLB) {
-        printf("Error: Moving CLB to illegal type block at (%d,%d)\n",
+        my_printf("Error: Moving CLB to illegal type block at (%d,%d)\n",
           *x_to,*y_to);
         exit(1);
      }
    }
    else {
      if (clb[*x_to][*y_to].type != IO) {
-        printf("Error: Moving IO block to illegal type location at "
+        my_printf("Error: Moving IO block to illegal type location at "
               "(%d,%d)\n", *x_to, *y_to);
         exit(1);
      }
    }
 #endif
 
-/* printf("(%d,%d) moved to (%d,%d)\n",x_from,y_from,*x_to,*y_to); */
+/* my_printf("(%d,%d) moved to (%d,%d)\n",x_from,y_from,*x_to,*y_to); */
 }
 
 
@@ -1633,7 +1633,7 @@ static float comp_td_point_to_point_delay (int inet, int ipin) {
     else if (sink_type == OUTPAD)
       delay_source_to_sink = delta_clb_to_outpad[delta_x][delta_y];
     else {
-      printf("Error in comp_td_point_to_point_delay in place.c, bad sink_type\n");
+      my_printf("Error in comp_td_point_to_point_delay in place.c, bad sink_type\n");
       exit(1);
     }
   }
@@ -1643,21 +1643,21 @@ static float comp_td_point_to_point_delay (int inet, int ipin) {
     else if (sink_type == OUTPAD)
       delay_source_to_sink = delta_inpad_to_outpad[delta_x][delta_y];
     else {
-      printf("Error in comp_td_point_to_point_delay in place.c, bad sink_type\n");
+      my_printf("Error in comp_td_point_to_point_delay in place.c, bad sink_type\n");
       exit(1);
     }
   }
   else {
-    printf("Error in comp_td_point_to_point_delay in place.c, bad source_type\n");
+    my_printf("Error in comp_td_point_to_point_delay in place.c, bad source_type\n");
     exit(1);
   }
   if (delay_source_to_sink < 0) {
-    printf("Error in comp_td_point_to_point_delay in place.c, bad delay_source_to_sink value\n");
+    my_printf("Error in comp_td_point_to_point_delay in place.c, bad delay_source_to_sink value\n");
     exit(1);
   }
 
   if (delay_source_to_sink < 0.) {
-    printf("Error in comp_td_point_to_point_delay in place.c, delay is less than 0\n");
+    my_printf("Error in comp_td_point_to_point_delay in place.c, delay is less than 0\n");
     exit(1);
   }
 
@@ -2089,12 +2089,12 @@ static void update_region_occ (int inet, struct s_bb *coords,
 #ifdef DEBUG
 
        if (x_overlap < -0.001) {
-          printf ("Error in update_region_occ:  x_overlap < 0"
+          my_printf ("Error in update_region_occ:  x_overlap < 0"
                   "\n inet = %d, overlap = %g\n", inet, x_overlap);
        }
 
        if (y_overlap < -0.001) {
-          printf ("Error in update_region_occ:  y_overlap < 0"
+          my_printf ("Error in update_region_occ:  y_overlap < 0"
                   "\n inet = %d, overlap = %g\n", inet, y_overlap);
        }
 #endif
@@ -2979,7 +2979,7 @@ static void initial_placement (enum e_pad_loc_type pad_loc_type,
  }
 
 #ifdef VERBOSE
- printf("At end of initial_placement.\n");
+ my_printf("At end of initial_placement.\n");
  dump_clbs();
 #endif
 
@@ -3109,9 +3109,9 @@ static void check_place (float bb_cost, float timing_cost, int place_cost_type,
  float timing_cost_check, delay_cost_check;
 
  bb_cost_check = comp_bb_cost(CHECK, place_cost_type, num_regions);
- printf("bb_cost recomputed from scratch is %g.\n", bb_cost_check);
+ my_printf("bb_cost recomputed from scratch is %g.\n", bb_cost_check);
  if (fabs(bb_cost_check - bb_cost) > bb_cost * ERROR_TOL) {
-    printf("Error:  bb_cost_check: %g and bb_cost: %g differ in check_place.\n",
+    my_printf("Error:  bb_cost_check: %g and bb_cost: %g differ in check_place.\n",
       bb_cost_check, bb_cost);
     error++;
  }
@@ -3119,16 +3119,16 @@ static void check_place (float bb_cost, float timing_cost, int place_cost_type,
  if (place_algorithm == NET_TIMING_DRIVEN_PLACE ||
      place_algorithm == PATH_TIMING_DRIVEN_PLACE) {
    comp_td_costs(&timing_cost_check, &delay_cost_check);
-   printf("timing_cost recomputed from scratch is %g. \n", timing_cost_check);
+   my_printf("timing_cost recomputed from scratch is %g. \n", timing_cost_check);
    if (fabs(timing_cost_check - timing_cost) > timing_cost * ERROR_TOL) {
-     printf("Error:  timing_cost_check: %g and timing_cost: "
+     my_printf("Error:  timing_cost_check: %g and timing_cost: "
 	    "%g differ in check_place.\n",
 	    timing_cost_check,timing_cost);
      error++;
    }
-   printf("delay_cost recomputed from scratch is %g. \n", delay_cost_check);
+   my_printf("delay_cost recomputed from scratch is %g. \n", delay_cost_check);
    if (fabs(delay_cost_check - delay_cost) > delay_cost * ERROR_TOL) {
-     printf("Error:  delay_cost_check: %g and delay_cost: "
+     my_printf("Error:  delay_cost_check: %g and delay_cost: "
 	    "%g differ in check_place.\n",
 	    delay_cost_check,delay_cost);
      error++;
@@ -3145,17 +3145,17 @@ static void check_place (float bb_cost, float timing_cost, int place_cost_type,
        if (clb[i][j].type == CLB) {
           bnum = clb[i][j].u.block;
           if (block[bnum].type != CLB) {
-             printf("Error:  block %d type does not match clb(%d,%d) type.\n",
+             my_printf("Error:  block %d type does not match clb(%d,%d) type.\n",
                bnum,i,j);
              error++;
           }
           if ((block[bnum].x != i) || (block[bnum].y != j)) {
-             printf("Error:  block %d location conflicts with clb(%d,%d)"
+             my_printf("Error:  block %d location conflicts with clb(%d,%d)"
                 "data.\n", bnum, i, j);
              error++;
           }
           if (clb[i][j].occ > 1) {
-             printf("Error: clb(%d,%d) has occupancy of %d\n",
+             my_printf("Error: clb(%d,%d) has occupancy of %d\n",
                 i,j,clb[i][j].occ);
              error++;
           }
@@ -3163,19 +3163,19 @@ static void check_place (float bb_cost, float timing_cost, int place_cost_type,
        }
        else {  /* IO block */
           if (clb[i][j].occ > io_rat) {
-             printf("Error:  clb(%d,%d) has occupancy of %d\n",i,j,
+             my_printf("Error:  clb(%d,%d) has occupancy of %d\n",i,j,
                 clb[i][j].occ);
              error++;
           }
           for (k=0;k<clb[i][j].occ;k++) {
              bnum = clb[i][j].u.io_blocks[k];
              if ((block[bnum].type != INPAD) && block[bnum].type != OUTPAD) {
-               printf("Error:  block %d type does not match clb(%d,%d) type.\n",
+               my_printf("Error:  block %d type does not match clb(%d,%d) type.\n",
                  bnum,i,j);
                error++;
              }
              if ((block[bnum].x != i) || (block[bnum].y != j)) {
-                printf("Error:  block %d location conflicts with clb(%d,%d)"
+                my_printf("Error:  block %d location conflicts with clb(%d,%d)"
                   "data.\n", bnum, i, j);
                 error++;
              }
@@ -3188,19 +3188,19 @@ static void check_place (float bb_cost, float timing_cost, int place_cost_type,
 /* Check that every block exists in the clb and block arrays somewhere. */
  for (i=0;i<num_blocks;i++)
     if (bdone[i] != 1) {
-       printf("Error:  block %d listed %d times in data structures.\n",
+       my_printf("Error:  block %d listed %d times in data structures.\n",
           i,bdone[i]);
        error++;
     }
  free (bdone);
 
  if (error == 0) {
-    printf("\nCompleted placement consistency check successfully.\n\n");
+    my_printf("\nCompleted placement consistency check successfully.\n\n");
  }
  else {
-    printf("\nCompleted placement consistency check, %d Errors found.\n\n",
+    my_printf("\nCompleted placement consistency check, %d Errors found.\n\n",
        error);
-    printf("Aborting program.\n");
+    my_printf("Aborting program.\n");
     exit(1);
  }
 }
@@ -3302,7 +3302,7 @@ void read_place (BufferBase &place_file_buffer, char *net_file,
     load_timing_graph_net_delays(net_delay);
     est_crit = load_net_slack(net_slack, 0);
 
-    printf("Placement. bb_cost: %g  delay_cost: %g.\n\n",
+    my_printf("Placement. bb_cost: %g  delay_cost: %g.\n\n",
 	   bb_cost, delay_cost);
 #ifdef PRINT_SINK_DELAYS
     print_sink_delays("Placement_Sink_Delays.echo");
@@ -3313,12 +3313,12 @@ void read_place (BufferBase &place_file_buffer, char *net_file,
 #ifdef PRINT_PLACE_CRIT_PATH
    print_critical_path("Placement_Crit_Path.echo");
 #endif
-    printf("Placement Estimated Crit Path Delay: %g\n\n", est_crit);
+    my_printf("Placement Estimated Crit Path Delay: %g\n\n", est_crit);
   }
   else {
     timing_cost = 0;
     delay_cost = 0;
-    printf("Placement bb_cost is %g.\n", bb_cost);
+    my_printf("Placement bb_cost is %g.\n", bb_cost);
   }
   check_place(bb_cost, timing_cost, placer_opts.place_cost_type,
               placer_opts.num_regions, placer_opts.place_algorithm,

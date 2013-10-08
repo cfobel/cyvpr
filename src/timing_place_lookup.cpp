@@ -881,14 +881,14 @@ static void compute_delta_arrays (struct s_router_opts router_opts,
 				   t_timing_inf timing_inf, int longest_length) {
 
 
-  printf("Computing delta_clb_to_clb lookup matrix, may take a few seconds, please wait...\n");
+  my_printf("Computing delta_clb_to_clb lookup matrix, may take a few seconds, please wait...\n");
   compute_delta_clb_to_clb(router_opts, det_routing_arch, segment_inf,timing_inf,
 			   longest_length);
-  printf("Computing delta_inpad_to_clb lookup matrix, may take a few seconds, please wait...\n");
+  my_printf("Computing delta_inpad_to_clb lookup matrix, may take a few seconds, please wait...\n");
   compute_delta_inpad_to_clb(router_opts, det_routing_arch, segment_inf,timing_inf);
-  printf("Computing delta_clb_to_outpad lookup matrix, may take a few seconds, please wait...\n");
+  my_printf("Computing delta_clb_to_outpad lookup matrix, may take a few seconds, please wait...\n");
   compute_delta_clb_to_outpad(router_opts, det_routing_arch, segment_inf,timing_inf);
-  printf("Computing delta_inpad_to_outpad lookup matrix, may take a few seconds, please wait...\n");
+  my_printf("Computing delta_inpad_to_outpad lookup matrix, may take a few seconds, please wait...\n");
   compute_delta_inpad_to_outpad(router_opts, det_routing_arch, segment_inf,timing_inf);
 
 #ifdef PRINT_ARRAYS

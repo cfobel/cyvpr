@@ -400,7 +400,7 @@ void read_arch (char *arch_file, enum e_route_type route_type,
     }
 
 
-    printf ("Error:  unrecognized keyword (%s) on line %d.\n", ptr, linenum);
+    my_printf ("Error:  unrecognized keyword (%s) on line %d.\n", ptr, linenum);
     exit (1);
  }
 
@@ -485,9 +485,9 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
 
  for (i=0;i<num_class;i++) {
     if (pins_per_class[i] == 0) {
-       printf("\nError:  class index %d not used in architecture "
+       my_printf("\nError:  class index %d not used in architecture "
                "file.\n", i);
-       printf("          Specified class indices are not consecutive.\n");
+       my_printf("          Specified class indices are not consecutive.\n");
        exit (1);
     }
  }
@@ -525,7 +525,7 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
  }
 
  if (num_segment < 1) {
-    printf ("Error:  No segment information specified in architecture.\n");
+    my_printf ("Error:  No segment information specified in architecture.\n");
     exit (1);
  }
 
@@ -534,7 +534,7 @@ static void countpass (FILE *fp_arch, enum e_route_type route_type,
  det_routing_arch_ptr->num_segment = num_segment;
 
  if (num_switch < 1) {
-    printf ("Error:  No switch information specified in architecture.\n");
+    my_printf ("Error:  No switch information specified in architecture.\n");
     exit (1);
  }
 
@@ -565,14 +565,14 @@ static int get_class (FILE *fp_arch, char *buf) {
  ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
 
  if (ptr == NULL) {
-    printf("Error in get_class on line %d of architecture file.\n",linenum);
-    printf("Expected class: keyword.\n");
+    my_printf("Error in get_class on line %d of architecture file.\n",linenum);
+    my_printf("Expected class: keyword.\n");
     exit (1);
  }
 
  if (strcmp (ptr, "class:") != 0) {
-    printf("Error in get_class on line %d of architecture file.\n",linenum);
-    printf("Expected class: keyword.\n");
+    my_printf("Error in get_class on line %d of architecture file.\n",linenum);
+    my_printf("Expected class: keyword.\n");
     exit (1);
  }
 
@@ -580,15 +580,15 @@ static int get_class (FILE *fp_arch, char *buf) {
 
  ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
  if (ptr == NULL) {
-    printf("Error in get_class on line %d of architecture file.\n",linenum);
-    printf("Expected class number.\n");
+    my_printf("Error in get_class on line %d of architecture file.\n",linenum);
+    my_printf("Expected class number.\n");
     exit (1);
  }
 
  iclass = my_atoi (ptr);
  if (iclass < 0) {
-    printf("Error in get_class on line %d of architecture file.\n",linenum);
-    printf("Expected class number >= 0, got %d.\n", iclass);
+    my_printf("Error in get_class on line %d of architecture file.\n",linenum);
+    my_printf("Expected class number >= 0, got %d.\n", iclass);
     exit (1);
  }
 
@@ -612,9 +612,9 @@ static void get_pin (char *ptr, int pinnum, enum e_pin_type type,
  }
  else {
     if (class_inf[iclass].type != type) {
-       printf("Error in get_pin: architecture file, line %d.\n",
+       my_printf("Error in get_pin: architecture file, line %d.\n",
           linenum);
-       printf("Class %d contains both input and output pins.\n", iclass);
+       my_printf("Class %d contains both input and output pins.\n", iclass);
        exit (1);
     }
  }
@@ -627,7 +627,7 @@ static void get_pin (char *ptr, int pinnum, enum e_pin_type type,
 
  ptr = my_strtok(NULL,TOKENS,fp_arch,buf);
  if (ptr == NULL) {
-    printf("Error:  pin statement specifies no locations, line %d.\n",
+    my_printf("Error:  pin statement specifies no locations, line %d.\n",
        linenum);
     exit(1);
  }
@@ -636,7 +636,7 @@ static void get_pin (char *ptr, int pinnum, enum e_pin_type type,
     is_global_clb_pin[pinnum] = TRUE;
     ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
     if (ptr == NULL) {
-       printf("Error:  pin statement specifies no locations, line %d.\n",
+       my_printf("Error:  pin statement specifies no locations, line %d.\n",
           linenum);
        exit(1);
     }
@@ -655,7 +655,7 @@ static void get_pin (char *ptr, int pinnum, enum e_pin_type type,
        }
     }
     if (valid != 1) {
-       printf("Error:  bad pin location on line %d.\n", linenum);
+       my_printf("Error:  bad pin location on line %d.\n", linenum);
        exit(1);
     }
  } while((ptr = my_strtok(NULL,TOKENS,fp_arch,buf)) != NULL);
@@ -670,7 +670,7 @@ static enum e_Fc_type get_Fc_type (char *ptr, FILE *fp_arch, char *buf) {
 
  ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
  if (ptr == NULL) {
-    printf("Error:  missing Fc_type value on line %d of "
+    my_printf("Error:  missing Fc_type value on line %d of "
          "architecture file.\n", linenum);
     exit (1);
  }
@@ -682,14 +682,14 @@ static enum e_Fc_type get_Fc_type (char *ptr, FILE *fp_arch, char *buf) {
     Fc_type = FRACTIONAL;
  }
  else {
-    printf("Error:  Bad Fc_type value (%s) on line %d of "
+    my_printf("Error:  Bad Fc_type value (%s) on line %d of "
          "architecture file.\n", ptr, linenum);
     exit (1);
  }
 
  ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
  if (ptr != NULL) {
-    printf("Error:  extra characters at end of line %d.\n", linenum);
+    my_printf("Error:  extra characters at end of line %d.\n", linenum);
     exit (1);
  }
 
@@ -708,7 +708,7 @@ static enum e_switch_block_type get_switch_block_type (FILE *fp_arch,
 
  ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
  if (ptr == NULL) {
-    printf("Error:  missing switch_block_type value on line %d of "
+    my_printf("Error:  missing switch_block_type value on line %d of "
          "architecture file.\n", linenum);
     exit (1);
  }
@@ -723,14 +723,14 @@ static enum e_switch_block_type get_switch_block_type (FILE *fp_arch,
     sblock_type = UNIVERSAL;
  }
  else {
-    printf("Error:  Bad switch_block_type value (%s) on line %d of "
+    my_printf("Error:  Bad switch_block_type value (%s) on line %d of "
          "architecture file.\n", ptr, linenum);
     exit (1);
  }
 
  ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
  if (ptr != NULL) {
-    printf("Error:  extra characters at end of line %d.\n", linenum);
+    my_printf("Error:  extra characters at end of line %d.\n", linenum);
     exit (1);
  }
 
@@ -751,7 +751,7 @@ static void get_T_subblock (FILE *fp_arch, char *buf, t_T_subblock
  ptr = get_middle_token (fp_arch, buf);
  T_subblock->T_comb = atof (ptr);
  if (T_subblock->T_comb < 0.) {
-    printf ("Error on line %d:  T_comb value (%g) is negative.\n",
+    my_printf ("Error on line %d:  T_comb value (%g) is negative.\n",
              linenum, T_subblock->T_comb);
     exit (1);
  }
@@ -761,7 +761,7 @@ static void get_T_subblock (FILE *fp_arch, char *buf, t_T_subblock
  ptr = get_middle_token (fp_arch, buf);
  T_subblock->T_seq_in = atof (ptr);
  if (T_subblock->T_seq_in < 0.) {
-    printf ("Error on line %d:  T_seq_in value (%g) is negative.\n",
+    my_printf ("Error on line %d:  T_seq_in value (%g) is negative.\n",
              linenum, T_subblock->T_seq_in);
     exit (1);
  }
@@ -771,7 +771,7 @@ static void get_T_subblock (FILE *fp_arch, char *buf, t_T_subblock
  ptr = get_last_token (fp_arch, buf);
  T_subblock->T_seq_out = atof (ptr);
  if (T_subblock->T_seq_out < 0.) {
-    printf ("Error on line %d:  T_seq_out value (%g) is negative.\n",
+    my_printf ("Error on line %d:  T_seq_out value (%g) is negative.\n",
             linenum, T_subblock->T_seq_out);
     exit (1);
  }
@@ -800,7 +800,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
  ptr = get_middle_token (fp_arch, buf);
  seg_ptr->frequency = atof (ptr);
  if (seg_ptr->frequency <= 0. || seg_ptr->frequency > 1.) {
-    printf ("Error on line %d:  Frequency value (%g) is out of range.\n",
+    my_printf ("Error on line %d:  Frequency value (%g) is out of range.\n",
              linenum, seg_ptr->frequency);
     exit (1);
  }
@@ -816,7 +816,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
     seg_ptr->length = my_atoi (ptr);
     seg_ptr->longline = FALSE;
     if (seg_ptr->length < 1) {
-       printf ("Error on line %d:  Length value (%d) is less than 1.\n",
+       my_printf ("Error on line %d:  Length value (%d) is less than 1.\n",
                 linenum, seg_ptr->length);
        exit (1);
     }
@@ -831,7 +831,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
  * used in the architecture file.                                          */
 
  if (seg_ptr->wire_switch < 0 || seg_ptr->wire_switch >= num_switch - 2) {
-    printf ("Error on line %d:  wire_switch value (%d) is out of range.\n",
+    my_printf ("Error on line %d:  wire_switch value (%d) is out of range.\n",
              linenum, seg_ptr->wire_switch);
     exit (1);
  }
@@ -845,7 +845,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
  * used in the architecture file.                                          */
 
  if (seg_ptr->opin_switch < 0 || seg_ptr->opin_switch >= num_switch - 2) {
-    printf ("Error on line %d:  opin_switch value (%d) is out of range.\n",
+    my_printf ("Error on line %d:  opin_switch value (%d) is out of range.\n",
              linenum, seg_ptr->opin_switch);
     exit (1);
  }
@@ -856,7 +856,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
  ptr = get_middle_token (fp_arch, buf);
  seg_ptr->frac_cb = atof (ptr);
  if (seg_ptr->frac_cb < 0. || seg_ptr->frac_cb > 1.) {
-    printf ("Error on line %d:  Frac_cb value (%g) is out of range.\n",
+    my_printf ("Error on line %d:  Frac_cb value (%g) is out of range.\n",
              linenum, seg_ptr->frac_cb);
     exit (1);
  }
@@ -866,7 +866,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
  ptr = get_middle_token (fp_arch, buf);
  seg_ptr->frac_sb = atof (ptr);
  if (seg_ptr->frac_sb < 0. || seg_ptr->frac_sb > 1.) {
-    printf ("Error on line %d:  Frac_sb value (%g) is out of range.\n",
+    my_printf ("Error on line %d:  Frac_sb value (%g) is out of range.\n",
              linenum, seg_ptr->frac_sb);
     exit (1);
  }
@@ -879,7 +879,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
     num_sb = nint ((seg_ptr->length + 1) * seg_ptr->frac_sb);
 
     if (num_sb < 2) {
-       printf ("Error on line %d:  Frac_sb value results in only %d switch "
+       my_printf ("Error on line %d:  Frac_sb value results in only %d switch "
                "boxes.\n"
                "Minimum 2 switch boxes on non-longline segments.\n", linenum,
                num_sb);
@@ -892,7 +892,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
  ptr = get_middle_token (fp_arch, buf);
  seg_ptr->Rmetal = atof (ptr);
  if (seg_ptr->Rmetal < 0.) {
-    printf ("Error on line %d:  Rmetal value (%g) is out of range.\n",
+    my_printf ("Error on line %d:  Rmetal value (%g) is out of range.\n",
              linenum, seg_ptr->Rmetal);
     exit (1);
  }
@@ -902,7 +902,7 @@ static void get_segment_inf (FILE *fp_arch, char *buf, t_segment_inf *seg_ptr,
  ptr = get_last_token (fp_arch, buf);
  seg_ptr->Cmetal = atof (ptr);
  if (seg_ptr->Cmetal < 0.) {
-    printf ("Error on line %d:  Cmetal value (%g) is out of range.\n",
+    my_printf ("Error on line %d:  Cmetal value (%g) is out of range.\n",
              linenum, seg_ptr->Cmetal);
     exit (1);
  }
@@ -927,19 +927,19 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
  ptr = get_middle_token (fp_arch, buf);
  index = my_atoi (ptr);
  if (index < 0) {
-    printf ("Error on line %d:  switch number (%d) is out of range.\n",
+    my_printf ("Error on line %d:  switch number (%d) is out of range.\n",
         linenum, index);
     exit (1);
  }
 
  if (index >= num_switch) {
-    printf ("Error on line %d:  switch numbers are not consecutive or do \n"
+    my_printf ("Error on line %d:  switch numbers are not consecutive or do \n"
             "\tnot start at 0.\n", linenum);
     exit (1);
  }
 
  if (switch_inf[index].R >= 0.) {
-    printf ("Error on line %d:  switch %d properties already set.\n", linenum,
+    my_printf ("Error on line %d:  switch %d properties already set.\n", linenum,
         index);
     exit (1);
  }
@@ -954,7 +954,7 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
     switch_inf[index].buffered = FALSE;
  }
  else {
-    printf ("Error on line %d:  invalid buffered value: %s.\n", linenum, ptr);
+    my_printf ("Error on line %d:  invalid buffered value: %s.\n", linenum, ptr);
     exit (1);
  }
 
@@ -963,7 +963,7 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
  ptr = get_middle_token (fp_arch, buf);
  switch_inf[index].R = atof (ptr);
  if (switch_inf[index].R < 0) {
-    printf ("Error on line %d:  resistance value (%g) is negative.\n",
+    my_printf ("Error on line %d:  resistance value (%g) is negative.\n",
         linenum, switch_inf[index].R);
     exit (1);
  }
@@ -973,7 +973,7 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
  ptr = get_middle_token (fp_arch, buf);
  switch_inf[index].Cin = atof (ptr);
  if (switch_inf[index].Cin < 0) {
-    printf ("Error on line %d:  capacitance value (%g) is negative.\n",
+    my_printf ("Error on line %d:  capacitance value (%g) is negative.\n",
         linenum, switch_inf[index].Cin);
     exit (1);
  }
@@ -983,14 +983,14 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
  ptr = get_middle_token (fp_arch, buf);
  switch_inf[index].Cout = atof (ptr);
  if (switch_inf[index].Cout < 0) {
-    printf ("Error on line %d:  capacitance value (%g) is negative.\n",
+    my_printf ("Error on line %d:  capacitance value (%g) is negative.\n",
         linenum, switch_inf[index].Cout);
     exit (1);
  }
 
  if (switch_inf[index].buffered == FALSE && switch_inf[index].Cout
         != switch_inf[index].Cin) {
-    printf ("Error on line %d:  Cin (%g) and Cout (%g) differ for a "
+    my_printf ("Error on line %d:  Cin (%g) and Cout (%g) differ for a "
             "pass transitor (switch #%d).\n", linenum, switch_inf[index].Cin,
             switch_inf[index].Cout, index);
     exit (1);
@@ -1001,7 +1001,7 @@ static void get_switch_inf (FILE *fp_arch, char *buf, int num_switch,
  ptr = get_last_token (fp_arch, buf);
  switch_inf[index].Tdel = atof (ptr);
  if (switch_inf[index].Tdel < 0) {
-    printf ("Error on line %d:  delay value (%g) is negative.\n",
+    my_printf ("Error on line %d:  delay value (%g) is negative.\n",
         linenum, switch_inf[index].Tdel);
     exit (1);
  }
@@ -1061,7 +1061,7 @@ static void load_extra_switch_types (struct s_det_routing_arch *
 
  if (switch_inf[delayless_switch].R >= 0. ||
           switch_inf[wire_to_ipin_switch].R >= 0.) {
-    printf ("Error:  switch indices are not consecutive or do not start at 0."
+    my_printf ("Error:  switch indices are not consecutive or do not start at 0."
             "\n");
     exit (1);
  }
@@ -1089,7 +1089,7 @@ static void check_keyword (FILE *fp, char *buf, const char *keyword) {
 
  ptr = get_middle_token (fp, buf);
  if (strcmp (ptr, keyword) != 0) {
-    printf ("Error on line %d:  Expected keyword %s, got %s.\n", linenum,
+    my_printf ("Error on line %d:  Expected keyword %s, got %s.\n", linenum,
              keyword, ptr);
     exit (1);
  }
@@ -1105,7 +1105,7 @@ static char *get_middle_token (FILE *fp, char *buf) {
 
  ptr = my_strtok (NULL, TOKENS, fp, buf);
  if (ptr == NULL) {
-    printf("Error:  line %d is incomplete.\n", linenum);
+    my_printf("Error:  line %d is incomplete.\n", linenum);
     exit (1);
  }
  return (ptr);
@@ -1121,7 +1121,7 @@ static char *get_last_token (FILE *fp, char *buf) {
  ptr = get_middle_token (fp, buf);
  ptr2 = my_strtok (NULL, TOKENS, fp, buf);
  if (ptr2 != NULL) {
-    printf("Error:  Extra characters at end of line %d.\n", linenum);
+    my_printf("Error:  Extra characters at end of line %d.\n", linenum);
     exit (1);
  }
  return (ptr);
@@ -1138,20 +1138,20 @@ static int get_int (char *ptr, int inp_num, FILE *fp_arch, char *buf,
 
  ptr = my_strtok(NULL,TOKENS,fp_arch,buf);
  if (ptr == NULL) {
-    printf("Error:  missing %s value on line %d.\n",
+    my_printf("Error:  missing %s value on line %d.\n",
        names[inp_num],linenum);
     exit(1);
  }
  val = my_atoi(ptr);
  if (val < min_val) {
-    printf("Error:  Bad value.  %s = %d on line %d.\n",
+    my_printf("Error:  Bad value.  %s = %d on line %d.\n",
        names[inp_num],val,linenum);
     exit(1);
  }
 
  ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
  if (ptr != NULL) {
-    printf("Error:  extra characters at end of line %d.\n", linenum);
+    my_printf("Error:  extra characters at end of line %d.\n", linenum);
     exit (1);
  }
 
@@ -1173,7 +1173,7 @@ static float get_one_float (char *ptr, int inp_num, float low_lim,
 
  ptr = my_strtok (NULL, TOKENS, fp_arch, buf);
  if (ptr != NULL) {
-    printf("Error:  extra characters at end of line %d.\n", linenum);
+    my_printf("Error:  extra characters at end of line %d.\n", linenum);
     exit (1);
  }
 
@@ -1193,14 +1193,14 @@ static float get_float (char *ptr, int inp_num, float low_lim,
 
  ptr = my_strtok(NULL,TOKENS,fp_arch,buf);
  if (ptr == NULL) {
-    printf("Error:  missing %s value on line %d.\n",
+    my_printf("Error:  missing %s value on line %d.\n",
        names[inp_num],linenum);
     exit(1);
  }
 
  val = atof(ptr);
  if (val <= low_lim || val > upp_lim) {
-    printf("Error:  Bad value parsing %s. %g on line %d.\n",
+    my_printf("Error:  Bad value parsing %s. %g on line %d.\n",
        names[inp_num],val,linenum);
     exit(1);
  }
@@ -1225,7 +1225,7 @@ static void get_chan (char *ptr, t_chan *chan, int inp_num, FILE *fp_arch,
 
  ptr = my_strtok(NULL,TOKENS,fp_arch,buf);
  if (ptr == NULL) {
-    printf("Error:  missing %s value on line %d.\n",
+    my_printf("Error:  missing %s value on line %d.\n",
        names[inp_num],linenum);
     exit(1);
  }
@@ -1261,13 +1261,13 @@ static void get_chan (char *ptr, t_chan *chan, int inp_num, FILE *fp_arch,
  }
 
  if (isread[inp_num] == 0) {
-    printf("Error:  %s distribution keyword: %s unknown.\n",
+    my_printf("Error:  %s distribution keyword: %s unknown.\n",
        names[inp_num],ptr);
     exit(1);
  }
 
  if (my_strtok(NULL,TOKENS,fp_arch,buf) != NULL) {
-    printf("Error:  extra value for %s at end of line %d.\n",
+    my_printf("Error:  extra value for %s at end of line %d.\n",
        names[inp_num],linenum);
     exit(1);
  }
@@ -1322,7 +1322,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
 
     if (i == TIMING_START + 7) {   /* T_subblock lines */
        if (isread[i] < 1 || isread[i] != max_subblocks_per_block) {
-          printf ("Error: Got %d T_subblock lines -- expected %d.\n",
+          my_printf ("Error: Got %d T_subblock lines -- expected %d.\n",
               isread[i], max_subblocks_per_block);
           fatal = 1;
        }
@@ -1331,12 +1331,12 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
     else if (i != 4 && i != 5 && i != DETAILED_START + 5 && i !=
                       DETAILED_START + 6) {
        if (isread[i] == 0) {
-          printf("Error:  %s not set in file %s.\n",names[i],
+          my_printf("Error:  %s not set in file %s.\n",names[i],
              arch_file);
           fatal=1;
        }
        if (isread[i] > 1) {
-          printf("Error:  %s set %d times in file %s.\n",names[i],
+          my_printf("Error:  %s set %d times in file %s.\n",names[i],
               isread[i],arch_file);
           fatal = 1;
        }
@@ -1344,7 +1344,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
 
     else {    /* outpin, inpin, segment, or switch lines */
        if (isread[i] < 1) {
-          printf("Error:  in file %s.  Clb has %d %s(s).\n",arch_file,
+          my_printf("Error:  in file %s.  Clb has %d %s(s).\n",arch_file,
                   isread[i], names[i]);
           fatal = 1;
        }
@@ -1359,14 +1359,14 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
 
     opin_switch = segment_inf[i].opin_switch;
     if (switch_inf[opin_switch].buffered == FALSE) {
-       printf ("Error in check_arch:  opin_switch (#%d) of segment type #%d "
+       my_printf ("Error in check_arch:  opin_switch (#%d) of segment type #%d "
                "is not buffered.\n", opin_switch, i);
        exit (1);
     }
  }
 
  if (fabs (total_segment_freq - 1.) > 0.001) {
-    printf ("Error in check_arch:  Segment frequencies must sum to 1.\n"
+    my_printf ("Error in check_arch:  Segment frequencies must sum to 1.\n"
             "\tSum is %g.\n", total_segment_freq);
     fatal = 1;
  }
@@ -1384,7 +1384,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
     if (chan_x_dist.type != UNIFORM || chan_y_dist.type != UNIFORM ||
          chan_x_dist.peak != chan_y_dist.peak || chan_x_dist.peak !=
          chan_width_io) {
-       printf("Error in check_arch:  detailed routing currently only\n"
+       my_printf("Error in check_arch:  detailed routing currently only\n"
              "supported on FPGAs with all channels of equal width.\n");
        fatal = 1;
     }
@@ -1392,7 +1392,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
     if (det_routing_arch.Fc_type == ABSOLUTE) {
        if (det_routing_arch.Fc_output < 1 || det_routing_arch.Fc_input < 1
               || det_routing_arch.Fc_pad < 1) {
-          printf ("Error in check_arch:  Fc values must be >= 1 in absolute "
+          my_printf ("Error in check_arch:  Fc values must be >= 1 in absolute "
                   "mode.\n");
           fatal = 1;
        }
@@ -1400,7 +1400,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
     else {   /* FRACTIONAL mode */
        if (det_routing_arch.Fc_output > 1. || det_routing_arch.Fc_input > 1.
               || det_routing_arch.Fc_pad > 1.) {
-          printf ("Error in check_arch:  Fc values must be <= 1. in "
+          my_printf ("Error in check_arch:  Fc values must be <= 1. in "
                  "fractional mode.\n");
           fatal = 1;
        }
@@ -1414,7 +1414,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
        * on the output.  Hence largest R = 2 * largest_transistor_R.        */
 
           if (switch_inf[i].R > 2 * det_routing_arch.R_minW_nmos) {
-             printf ("Error in check_arch:  Switch %d R value (%g) is greater"
+             my_printf ("Error in check_arch:  Switch %d R value (%g) is greater"
                      " than 2 * R_minW_nmos (%g).\n", i, switch_inf[i].R,
                      2 * det_routing_arch.R_minW_nmos);
              exit (1);
@@ -1424,7 +1424,7 @@ static void check_arch (char *arch_file, enum e_route_type route_type,
        else {    /* Pass transistor switch */
 
           if (switch_inf[i].R > det_routing_arch.R_minW_nmos) {
-             printf ("Error in check_arch:  Switch %d R value (%g) is greater "
+             my_printf ("Error in check_arch:  Switch %d R value (%g) is greater "
                      "than R_minW_nmos (%g).\n", i, switch_inf[i].R,
                      det_routing_arch.R_minW_nmos);
              exit (1);
@@ -1596,7 +1596,7 @@ void init_arch (float aspect_ratio, boolean user_sized) {
  if (user_sized == TRUE) {
     if (num_clbs > nx * ny || num_p_inputs + num_p_outputs >
            2 * io_rat * (nx + ny)) {
-       printf ("Error:  User-specified size is too small for circuit.\n");
+       my_printf ("Error:  User-specified size is too small for circuit.\n");
        exit (1);
     }
  }
@@ -1622,10 +1622,10 @@ void init_arch (float aspect_ratio, boolean user_sized) {
  * instead.                                                            */
 
  if (nx == 1  && ny == 1 && num_clbs != 0) {
-    printf ("Error:\n");
-    printf ("Sorry, can't place a circuit with only one valid location\n");
-    printf ("for a logic block (clb).\n");
-    printf ("Try me with a more realistic circuit!\n");
+    my_printf ("Error:\n");
+    my_printf ("Sorry, can't place a circuit with only one valid location\n");
+    my_printf ("for a logic block (clb).\n");
+    my_printf ("Try me with a more realistic circuit!\n");
     exit (1);
  }
 
@@ -1633,9 +1633,9 @@ void init_arch (float aspect_ratio, boolean user_sized) {
  * be ints instead.  Used shorts to save memory.                      */
 
  if (nx > 32766 || ny > 32766) {
-    printf("Error:  nx and ny must be less than 32767, since the \n");
-    printf("router uses shorts (16-bit) to store coordinates.\n");
-    printf("nx: %d.  ny: %d.\n", nx, ny);
+    my_printf("Error:  nx and ny must be less than 32767, since the \n");
+    my_printf("router uses shorts (16-bit) to store coordinates.\n");
+    my_printf("nx: %d.  ny: %d.\n", nx, ny);
     exit (1);
  }
 

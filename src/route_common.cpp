@@ -11,6 +11,7 @@
 #include "place_and_route.h"
 #include "rr_graph.h"
 #include "path_delay.h"
+#include "stats.h"
 
 /***************** Variables shared only by route modules *******************/
 
@@ -206,7 +207,7 @@ void get_serial_num (void) {
        tptr = tptr->next;
     }
  }
- printf ("Serial number (magic cookie) for the routing is: %d\n",
+ my_printf ("Serial number (magic cookie) for the routing is: %d\n",
     serial_num);
 }
 
@@ -225,8 +226,8 @@ boolean try_route (int width_fac, struct s_router_opts router_opts, struct
 
  boolean success;
 
- printf("\nAttempting routing with a width factor (usually maximum channel ");
- printf("width) of %d.\n",width_fac);
+ my_printf("\nAttempting routing with a width factor (usually maximum channel ");
+ my_printf("width) of %d.\n",width_fac);
 
 /* Set the channel widths */
 
@@ -262,14 +263,16 @@ boolean try_route (int width_fac, struct s_router_opts router_opts, struct
  g_route_state.success = success;
  g_route_state.width_fac = width_fac;
 
- free_rr_node_route_structs ();
  if(success) {
     print_critical_path ("critical_path.echo");
     g_route_result.success_channel_widths.push_back(width_fac);
+    get_num_bends_and_length(g_route_state.bends, g_route_state.wire_lengths,
+                             g_route_state.segments);
  } else {
      g_route_result.failure_channel_widths.push_back(width_fac);
  }
  g_route_states.push_back(g_route_state);
+ free_rr_node_route_structs ();
  return (success);
 }
 
@@ -388,13 +391,13 @@ void init_route_structs (int bb_factor) {
  * really were.                                                           */
 
  if (rr_modified_head != NULL) {
-    printf ("Error in init_route_structs.  List of modified rr nodes is \n"
+    my_printf ("Error in init_route_structs.  List of modified rr nodes is \n"
             "not empty.\n");
     exit (1);
  }
 
  if (heap_tail != 1) {
-    printf ("Error in init_route_structs.  Heap is not empty.\n");
+    my_printf ("Error in init_route_structs.  Heap is not empty.\n");
     exit (1);
  }
 }
@@ -427,9 +430,9 @@ struct s_trace *update_traceback (struct s_heap *hptr, int inet) {
 #ifdef DEBUG
    rr_type = rr_node[inode].type;
    if (rr_type != SINK) {
-      printf("Error in update_traceback.  Expected type = SINK (%d).\n",
+      my_printf("Error in update_traceback.  Expected type = SINK (%d).\n",
          SINK);
-      printf("Got type = %d while tracing back net %d.\n", rr_type, inet);
+      my_printf("Got type = %d while tracing back net %d.\n", rr_type, inet);
       exit(1);
    }
 #endif
@@ -762,7 +765,7 @@ void alloc_and_load_rr_node_route_structs (void) {
  int inode;
 
  if (rr_node_route_inf != NULL) {
-    printf ("Error in alloc_and_load_rr_node_route_structs:  \n"
+    my_printf ("Error in alloc_and_load_rr_node_route_structs:  \n"
             "old rr_node_route_inf array exists.\n");
     exit (1);
  }
@@ -908,8 +911,8 @@ struct s_heap *get_heap_head (void) {
 
  do {
     if (heap_tail == 1) {    /* Empty heap. */
-       printf("Empty heap occurred in get_heap_head.\n");
-       printf("Some blocks are impossible to connect in this architecture.\n");
+       my_printf("Empty heap occurred in get_heap_head.\n");
+       my_printf("Some blocks are impossible to connect in this architecture.\n");
        return (NULL);
     }
 
@@ -1135,7 +1138,7 @@ void print_route (char *route_file) {
              break;
 
           default:
-             printf ("Error in print_route:  Unexpected traceback element "
+             my_printf ("Error in print_route:  Unexpected traceback element "
                      "type: %d (%s).\n", rr_type, name_type[rr_type]);
              exit (1);
              break;
