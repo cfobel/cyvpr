@@ -61,6 +61,7 @@ public:
     void init();
     void initialize_graphics();
     void do_place_and_route();
+    bool route(int width_fac);
     void do_read_place();
     ~Main();
 };

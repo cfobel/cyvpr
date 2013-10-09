@@ -24,6 +24,8 @@
 #include "md5.hpp"
 #include "SignalException.hpp"
 #include "Main.h"
+#include "route_export.h"
+#include "net_delay.h"
 
 using std::vector;
 using std::map;
@@ -1415,7 +1417,6 @@ void Main::run_default() {
 void Main::timing_analysis() {
     do_constant_net_delay_timing_analysis (timing_inf_, subblock_data_,
                     constant_net_delay_);
-    free_subblock_data(&subblock_data_);
     exit (0);
 }
 
@@ -1525,6 +1526,41 @@ void Main::do_place_and_route() {
                     timing_inf_, &subblock_data_, chan_width_dist_);
 }
 
+bool Main::route(int width_fac) {
+    /* Route (or try to route) once. */
+
+    t_ivec **clb_opins_used_locally;  /* [0..num_blocks-1][0..num_class-1] */
+    float **net_delay, **net_slack;
+    struct s_linked_vptr *net_delay_chunk_list_head;
+    bool success;
+
+   /* Allocate the major routing structures. */
+
+    clb_opins_used_locally = alloc_route_structs(subblock_data_);
+
+    if (timing_inf_.timing_analysis_enabled) {
+        net_slack = alloc_and_load_timing_graph(timing_inf_, subblock_data_);
+        net_delay = alloc_net_delay(&net_delay_chunk_list_head);
+    } else {
+        net_delay = NULL;    /* Defensive coding. */
+        net_slack = NULL;
+    }
+
+    /* Only needed to build timing graph and clb_opins_used_locally */
+
+    success = try_route(width_fac, router_opts_, det_routing_arch_,
+                        segment_inf_, timing_inf_, net_slack, net_delay,
+                        chan_width_dist_, clb_opins_used_locally);
+
+    if (timing_inf_.timing_analysis_enabled) {
+        free_timing_graph (net_slack);
+        free_net_delay (net_delay, &net_delay_chunk_list_head);
+    }
+
+    free_route_structs (clb_opins_used_locally);
+    return success;
+}
+
 void Main::do_read_place() {
     reset_buffer();
     parse_placement_file(*buffer_, net_file_, arch_file_);
@@ -1545,6 +1581,7 @@ Main::~Main() {
     if(buffer_ != NULL) {
         delete buffer_;
     }
+    free_subblock_data(&subblock_data_);
 }
 
 

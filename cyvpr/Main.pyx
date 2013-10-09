@@ -5,26 +5,17 @@ import os.path
 
 cdef class cMain:
     cdef Main *thisptr
+    cdef bint _initialized
 
     def __cinit__(self):
         self.thisptr = new Main()
+        self._initialized = False
 
     def read_placement(self, arch_file, net_file, place_file):
-        cdef vector[string] args_
+        args = ['./vpr', net_file, arch_file, place_file, 'routed.out',
+                '-place_only']
 
-        args_.push_back("./vpr")
-        args_.push_back(net_file)
-        args_.push_back(arch_file)
-        args_.push_back(place_file)
-        args_.push_back('routed.out')
-        args_.push_back('-place_only')
-
-        cdef int argc = args_.size()
-        cdef char **argv = <char **> malloc(argc * sizeof(char *))
-        cdef int i
-        for i in xrange(argc):
-            argv[i] = <char *>args_[i].c_str()
-        self.thisptr.init(argc, argv)
+        self.init(args)
         self.do_read_place()
         return self.extract_block_positions()
 
@@ -65,6 +56,7 @@ cdef class cMain:
         for i in xrange(args_.size()):
             argv[i] = <char *>args_[i].c_str()
         self.thisptr.init(argc, argv)
+        self._initialized = True
 
     def place(self, net_path, arch_file, output_path,
               place_algorithm='bounding_box', fast=True, seed=0):
@@ -79,14 +71,53 @@ cdef class cMain:
         self.thisptr.do_place_and_route()
         return self.extract_block_positions()
 
+    def set_router_opts(self, fast):
+        if fast:
+            self.thisptr.router_opts_.first_iter_pres_fac = 10000
+            self.thisptr.router_opts_.initial_pres_fac = 10000
+            self.thisptr.router_opts_.bb_factor = 0
+            self.thisptr.router_opts_.max_router_iterations = 10
+        else:
+            self.thisptr.router_opts_.first_iter_pres_fac = 0.5
+            self.thisptr.router_opts_.initial_pres_fac = 0.5
+            self.thisptr.router_opts_.bb_factor = 3
+            self.thisptr.router_opts_.max_router_iterations = 30
+
+    def route_again(self, int route_chan_width, fast=False):
+        if not self._initialized:
+            raise RuntimeError, '`init` method must be run first.'
+        self.set_router_opts(fast)
+        return self.thisptr.route(route_chan_width)
+
     def route(self, net_path, arch_file, placed_path, output_path,
-              timing_driven=True, fast=False):
+              timing_driven=True, fast=False, route_chan_width=None,
+              max_router_iterations=None):
+        '''
+        Router Options:
+            [-max_router_iterations <int>] [-bb_factor <int>]
+            [-initial_pres_fac <float>] [-pres_fac_mult <float>]
+            [-acc_fac <float>] [-first_iter_pres_fac <float>]
+            [-bend_cost <float>] [-route_type global | detailed]
+            [-verify_binary_search] [-route_chan_width <int>]
+            [-router_algorithm breadth_first | timing_driven]
+            [-base_cost_type intrinsic_delay | delay_normalized | demand_only]
+
+        Routing options valid only for timing-driven routing:
+            [-astar_fac <float>] [-max_criticality <float>]
+            [-criticality_exp <float>]
+        '''
         args = [net_path, arch_file, placed_path,
                 output_path, '-route_only', '-nodisp', '-router_algorithm']
         if timing_driven:
             args += ['timing_driven']
         else:
             args += ['breadth_first']
+
+        if route_chan_width is not None:
+            args += ['-route_chan_width', route_chan_width]
+
+        if max_router_iterations is not None:
+            args += ['-max_router_iterations', max_router_iterations]
 
         if fast:
             args += ['-fast']
@@ -114,6 +145,10 @@ cdef class cMain:
         def __get__(self):
             return self.thisptr.file_md5_
 
+    property pins_per_clb:
+        def __get__(self):
+            return pins_per_clb
+
     def most_recent_args(self):
         return g_args
 
@@ -133,4 +168,3 @@ cdef class cMain:
             state.init(g_route_states[i])
             states.append(state)
         return states
-
