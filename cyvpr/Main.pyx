@@ -11,8 +11,8 @@ cdef class cMain:
         self.thisptr = new Main()
         self._initialized = False
 
-    def read_placement(self, arch_file, net_file, place_file):
-        args = ['./vpr', net_file, arch_file, place_file, 'routed.out',
+    def read_placement(self, net_file, arch_file, place_file):
+        args = [net_file, arch_file, place_file, 'routed.out',
                 '-place_only']
 
         self.init(args)
