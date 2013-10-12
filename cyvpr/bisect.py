@@ -1,3 +1,4 @@
+import types
 import sys
 
 
@@ -44,6 +45,11 @@ class BoundFinderBase(object):
             self.evaluate = evaluate
         self.known_bad = known_bad
         self.known_good = known_good
+        self._good_found = None
+        self._iteration = 0
+        self.max_iterations = 50
+        self.good = None
+        self.bad = None
 
     def _starting_bad(self):
         return self.known_bad
@@ -61,7 +67,7 @@ class BoundFinderBase(object):
         self._iteration = 0
         self._good_found = False
 
-    def _run(self, start_value):
+    def _run_generator(self, start_value):
         '''
         Perform a recursive search to find the boundary of interest, by
         successively evaluating potential values.  After each evaluation, the
@@ -81,21 +87,35 @@ class BoundFinderBase(object):
         if self._iteration >= self.max_iterations:
             raise IndexError, ('Maximum number of iterations (%d) reached.' %
                                self._iteration)
-        if (self.bad is not None and self.bad == start_value):
+        if self.bad == start_value:
             # We have arrived back at the most-recently-failed value, so it's
             # time to stop, returning the lowest-successful value we found
             # along the way.
-            return self.good
+            yield self.good
         good = self.evaluate(start_value)
         if not good:
             self.bad = start_value
-            return self._run(self._next_after_bad(start_value))
+            yield self._run_generator(self._next_after_bad(start_value))
         else:
             self._good_found = True
             self.good = start_value
-            return self._run(self._next_after_good(start_value))
+            yield self._run_generator(self._next_after_good(start_value))
 
-    def start(self, start_value, max_iterations=50):
+    def _run(self, start_value, verbose=False):
+        '''
+        Follow any `generator` instances returned by the recursive
+        `_run_generator` method until we reach a final value.
+        '''
+        result = self._run_generator(start_value)
+        while isinstance(result, types.GeneratorType):
+            result = result.next()
+            if verbose:
+                print ('[bound-finder] i=%d, good=%s, bad=%s' %
+                       (self._iteration, self.good, self.bad))
+        return result
+
+    def start(self, start_value, max_iterations=50, verbose=False,
+              generator=False):
         '''
         Reset the state of the current instance to prepare for a new search and
         start the recursive search by calling the `_run` method.
@@ -106,7 +126,10 @@ class BoundFinderBase(object):
         '''
         self._iteration = 0
         self._reset(max_iterations)
-        return self._run(start_value)
+        if generator:
+            return self._run_generator(start_value)
+        else:
+            return self._run(start_value, verbose)
 
 
 class LowerBoundFinderBase(BoundFinderBase):
