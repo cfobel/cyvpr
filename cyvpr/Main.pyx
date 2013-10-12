@@ -1,3 +1,4 @@
+# cython: embedsignature=True
 from collections import OrderedDict
 import numpy as np
 import os.path
