@@ -265,26 +265,22 @@ class UpperBoundStepFinder(UpperBoundFinderBase):
 class BisectLowerBound(LowerBoundBisectFinder):
     def evaluate(self, value):
         result = (value >= self.known_good)
-        print '[evaluate] value=%s (%s)' % (value, result)
         return result
 
 
 class BisectUpperBound(UpperBoundBisectFinder):
     def evaluate(self, value):
         result = (value <= self.known_good)
-        print '[evaluate] value=%s (%s)' % (value, result)
         return result
 
 
 class StepLowerBound(LowerBoundStepFinder):
     def evaluate(self, value):
         result = (value > self.known_bad and value >= self.known_good)
-        print '[evaluate] value=%s (%s)' % (value, result)
         return result
 
 
 class StepUpperBound(UpperBoundStepFinder):
     def evaluate(self, value):
         result = (value >= self.known_good and value < self.known_bad)
-        print '[evaluate] value=%s (%s)' % (value, result)
         return result
