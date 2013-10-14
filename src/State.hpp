@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include "timing.hpp"
+#include "vpr_types.h"
 
 
 using std::string;
@@ -122,6 +123,7 @@ public:
     float total_logic_delay;
     /* Total net delay. */
     float total_net_delay;
+    s_router_opts router_opts;
 
     std::vector<unsigned int> bends;
     std::vector<unsigned int> wire_lengths;
@@ -143,6 +145,7 @@ public:
         this->bends = other.bends;
         this->wire_lengths = other.wire_lengths;
         this->segments = other.segments;
+        this->router_opts = other.router_opts;
     }
 
     virtual std::vector<std::pair<string, string> > fieldname_value_pairs() const {

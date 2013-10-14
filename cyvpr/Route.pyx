@@ -17,7 +17,9 @@ def unix_time(datetime_):
 
 
 cdef datetime_from_timespec_tuple(timespec t):
-    return datetime.fromtimestamp(t.tv_sec + t.tv_nsec / 1e9)
+    cdef double timestamp = t.tv_sec + <double>t.tv_nsec / 1e9
+    print '[datetime_from_timespec_tuple] timestamp = %.9f' % timestamp
+    return datetime.fromtimestamp(timestamp)
 
 
 def rebuild(data):
@@ -32,6 +34,55 @@ def rebuild_state(data):
     for k, v in data.iteritems():
         setattr(r, k, v)
     return r
+
+
+cdef class cRouterOpts:
+    def __cinit__(self, size_t data):
+        self.thisptr = <s_router_opts *>data
+
+    property first_iter_pres_fac:
+        def __get__(self):
+            return self.thisptr.first_iter_pres_fac
+
+    property initial_pres_fac:
+        def __get__(self):
+            return self.thisptr.initial_pres_fac
+
+    property pres_fac_mult:
+        def __get__(self):
+            return self.thisptr.pres_fac_mult
+
+    property acc_fac:
+        def __get__(self):
+            return self.thisptr.acc_fac
+
+    property bend_cost:
+        def __get__(self):
+            return self.thisptr.bend_cost
+
+    property max_router_iterations:
+        def __get__(self):
+            return self.thisptr.max_router_iterations
+
+    property bb_factor:
+        def __get__(self):
+            return self.thisptr.bb_factor
+
+    property fixed_channel_width:
+        def __get__(self):
+            return self.thisptr.fixed_channel_width
+
+    property astar_fac:
+        def __get__(self):
+            return self.thisptr.astar_fac
+
+    property max_criticality:
+        def __get__(self):
+            return self.thisptr.max_criticality
+
+    property criticality_exp:
+        def __get__(self):
+            return self.thisptr.criticality_exp
 
 
 cdef class cRouteState(cStateBase):
@@ -63,6 +114,10 @@ cdef class cRouteState(cStateBase):
 
     def csv_summary(self):
         return self.thisptr.csv_summary()
+
+    property router_opts:
+        def __get__(self):
+            return cRouterOpts(<size_t>&self.thisptr.router_opts)
 
     property start:
         def __get__(self):

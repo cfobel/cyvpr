@@ -271,6 +271,7 @@ boolean try_route (int width_fac, struct s_router_opts router_opts, struct
  } else {
      g_route_result.failure_channel_widths.push_back(width_fac);
  }
+ g_route_state.router_opts = router_opts;
  g_route_states.push_back(g_route_state);
  free_rr_node_route_structs ();
  return (success);

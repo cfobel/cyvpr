@@ -253,7 +253,10 @@ static void get_num_bends_and_length (int inet, int *bends_ptr, int *len_ptr,
  if (prevptr == NULL) {
     printf ("Error in get_num_bends_and_length:  net #%d has no traceback.\n",
             inet);
-    exit (1);
+    *bends_ptr = 0;
+    *len_ptr = 0;
+    *segments_ptr = 0;
+    return;
  }
  inode = prevptr->index;
  prev_type = rr_node[inode].type;

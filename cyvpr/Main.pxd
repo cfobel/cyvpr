@@ -7,7 +7,8 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.stdlib cimport malloc
 
-from cyvpr.Route cimport RouteState, RouteResult, cRouteResult, cRouteState
+from cyvpr.Route cimport (RouteState, cRouteState, RouteResult, cRouteResult,
+                          s_router_opts, cRouterOpts)
 
 
 ctypedef unsigned int uint
@@ -15,31 +16,13 @@ ctypedef unsigned int uint
 
 cdef extern from "Main.h":
     int __main__(int argc, char *argv[]) except +
-    vector[vector[uint]] extract_block_positions()
-
-
-cdef extern from "vpr_types.h":
-    struct s_router_opts:
-        float first_iter_pres_fac
-        float initial_pres_fac
-        float pres_fac_mult
-        float acc_fac
-        float bend_cost
-        int max_router_iterations
-        int bb_factor
-        int fixed_channel_width
-        float astar_fac
-        float max_criticality
-        float criticality_exp
-        #enum e_router_algorithm router_algorithm
-        #enum e_base_cost_type base_cost_type
-        #enum e_route_type route_type
+    vector[vector[uint]] extract_block_positions() except +
 
 
 cdef extern from "stats.h":
     void get_num_bends_and_length(vector[uint] bends,
                                   vector[uint] wire_lengths,
-                                  vector[uint] segments)
+                                  vector[uint] segments) except +
 
 
 cdef extern from "globals.h":
@@ -72,9 +55,9 @@ cdef extern from "Main.h":
         s_router_opts router_opts_
 
         Main()
-        void init(int argc, char **argv)
+        void init(int argc, char **argv) except +
         void do_place_and_route() except +
-        void do_read_place()
-        bint route(int width_fac)
+        void do_read_place() except +
+        bint route(int width_fac) except +
         size_t block_count()
         size_t net_count()

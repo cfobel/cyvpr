@@ -72,6 +72,10 @@ cdef class cMain:
         self.thisptr.do_place_and_route()
         return self.extract_block_positions()
 
+    property router_opts:
+        def __get__(self):
+            return cRouterOpts(<size_t>&self.thisptr.router_opts_)
+
     def set_router_opts(self, fast):
         if fast:
             self.thisptr.router_opts_.first_iter_pres_fac = 10000

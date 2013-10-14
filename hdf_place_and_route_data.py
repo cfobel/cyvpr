@@ -1,5 +1,4 @@
 import tables as ts
-from collections import OrderedDict
 
 from path import path
 from vpr_netfile_parser.VprNetParser import cVprNetFileParser
@@ -22,8 +21,35 @@ BLOCK_POSITIONS_TABLE_LAYOUT = {'id': ts.UInt64Col(pos=0),
                                     'y': ts.UInt32Col(pos=1),
                                     'slot_index':
                                     ts.UInt32Col(pos=2)}}
+ROUTE_TABLE_LAYOUT = {'id': ts.UInt64Col(pos=0),
+                      'net_file_id': ts.UInt64Col(pos=1),
+                      'placement_file_id': ts.UInt64Col(pos=2),
+                      'success': ts.BoolCol(pos=3),
+                      'width_fac': ts.UInt32Col(pos=4),
+                      'start': ts.Float64Col(pos=5),
+                      'end': ts.Float64Col(pos=6),
+                      'router_options': {'first_iter_pres_fac':
+                                         ts.Float32Col(pos=0),
+                                         'initial_pres_fac':
+                                         ts.Float32Col(pos=1),
+                                         'pres_fac_mult': ts.Float32Col(pos=2),
+                                         'acc_fac': ts.Float32Col(pos=3),
+                                         'bend_cost': ts.Float32Col(pos=4),
+                                         'bb_factor': ts.Int32Col(pos=5),
+                                         'astar_fac': ts.Float32Col(pos=6),
+                                         'max_criticality':
+                                         ts.Float32Col(pos=7),
+                                         'criticality_exp':
+                                         ts.Float32Col(pos=8), },
+                      'net_data_offset': ts.UInt64Col(pos=8),
+                      'net_count': ts.UInt32Col(pos=9)}
+ROUTE_NET_DATA_TABLE_LAYOUT = {'id': ts.UInt64Col(pos=0),
+                               'route_id': ts.UInt64Col(pos=1),
+                               'net_data': {'bends': ts.UInt32Col(pos=0),
+                                            'wire_length': ts.UInt32Col(pos=1),
+                                            'segments': ts.UInt32Col(pos=2)}}
 
-def main():
+def create_init_data():
     # Open a file in "w"rite mode
     filters = ts.Filters(complib='blosc', complevel=2)
     fileh = ts.openFile("place_and_route_data.h5", mode="w", filters=filters)
@@ -85,5 +111,22 @@ def main():
     fileh.close()
 
 
+def load_routed_data():
+    fileh = ts.openFile('place_and_route_data.h5', mode='r')
+
+    # Get the HDF5 root group
+    root = fileh.root
+    route_paths = list(path('../route_results').files('routed-*.dat'))
+    return fileh, root, [r.pickle_load() for r in route_paths[:2]]
+
 if __name__ == '__main__':
-    main()
+    fileh, root, data = load_routed_data()
+
+
+(getattr(s.router_options, attr) for attr in ('first_iter_pres_fac',
+                                              'initial_pres_fac',
+                                              'pres_fac_mult', 'acc_fac',
+                                              'bend_cost', 'bend_cost',
+                                              'bb_factor', 'astar_fac',
+                                              'max_criticality',
+                                              'criticality_exp',))

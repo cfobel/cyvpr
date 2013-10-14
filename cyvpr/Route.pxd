@@ -7,6 +7,24 @@ from cyvpr.State cimport cStateBase, StateBase
 ctypedef unsigned int uint
 
 
+cdef extern from "vpr_types.h":
+    struct s_router_opts:
+        float first_iter_pres_fac
+        float initial_pres_fac
+        float pres_fac_mult
+        float acc_fac
+        float bend_cost
+        int max_router_iterations
+        int bb_factor
+        int fixed_channel_width
+        float astar_fac
+        float max_criticality
+        float criticality_exp
+        #enum e_router_algorithm router_algorithm
+        #enum e_base_cost_type base_cost_type
+        #enum e_route_type route_type
+
+
 cdef extern from "time.h":
     struct timespec:
         long int tv_sec
@@ -33,6 +51,7 @@ cdef extern from "State.hpp":
         vector[uint] bends
         vector[uint] wire_lengths
         vector[uint] segments
+        s_router_opts router_opts
 
         string str()
         string csv()
@@ -77,3 +96,7 @@ cdef class cRouteResult(cStateBase):
 
     cdef inline set(self, RouteResult result):
         self.thisptr.set(result)
+
+
+cdef class cRouterOpts:
+    cdef s_router_opts *thisptr
