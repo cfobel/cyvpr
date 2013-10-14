@@ -1,6 +1,8 @@
+#include <stdexcept>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "Formatter.hpp"
 #include "util.h"
 
 /* This file contains utility functions widely used in *
@@ -22,9 +24,12 @@ FILE *my_fopen (char *fname, char *flag, int prompt) {
        scanf("%s",fname);
     if ((fp = fopen(fname,flag)) != NULL)
        break;
-    printf("Error opening file %s for %s access.\n",fname,flag);
-    if (!prompt)
-       exit(1);
+    if (!prompt) {
+        throw std::runtime_error(Formatter() << "Error opening file " << fname
+                                 << " for " << flag << " access.");
+    } else {
+        printf("Error opening file %s for %s access.\n",fname,flag);
+    }
     printf("Please enter another filename.\n");
  }
  return (fp);
@@ -49,8 +54,7 @@ void *my_calloc (size_t nelem, size_t size) {
  void *ret;
 
  if ((ret = calloc (nelem,size)) == NULL) {
-    fprintf(stderr,"Error:  Unable to calloc memory.  Aborting.\n");
-    exit (1);
+    throw std::runtime_error("Error:  Unable to calloc memory.  Aborting.");
  }
  return (ret);
 }
@@ -61,9 +65,7 @@ void *my_malloc (size_t size) {
  void *ret;
 
  if ((ret = malloc (size)) == NULL) {
-    fprintf(stderr,"Error:  Unable to malloc memory.  Aborting.\n");
-    abort ();
-    exit (1);
+    throw std::runtime_error("Error:  Unable to malloc memory.  Aborting.");
  }
  return (ret);
 }
@@ -71,12 +73,10 @@ void *my_malloc (size_t size) {
 
 
 void *my_realloc (void *ptr, size_t size) {
-
  void *ret;
 
  if ((ret = realloc (ptr,size)) == NULL) {
-    fprintf(stderr,"Error:  Unable to realloc memory.  Aborting.\n");
-    exit (1);
+     throw std::runtime_error("Error:  Unable to realloc memory.  Aborting.");
  }
  return (ret);
 }
@@ -262,9 +262,10 @@ void alloc_ivector_and_copy_int_list (t_linked_int **list_head_ptr,
     ivec->list = NULL;
 
     if (list_head != NULL) {
-       printf ("Error in alloc_ivector_and_copy_int_list:\n Copied %d "
-           "elements, but list at %p contains more.\n", num_items, list_head);
-       exit (1);
+       throw std::runtime_error(Formatter() << "Error in "
+                                "alloc_ivector_and_copy_int_list: \n"
+                                << "Copied " << num_items << " elements, but "
+                                   "list at " << list_head << " contains more.");
     }
     return;
  }
@@ -282,9 +283,10 @@ void alloc_ivector_and_copy_int_list (t_linked_int **list_head_ptr,
  list[num_items-1] = linked_int->data;
 
  if (linked_int->next != NULL) {
-    printf ("Error in alloc_ivector_and_copy_int_list:\n Copied %d elements, "
-            "but list at %p contains more.\n", num_items, list_head);
-    exit (1);
+    throw std::runtime_error(Formatter() << "Error in "
+                             "alloc_ivector_and_copy_int_list:\n Copied "
+                             << num_items << " elements, but list at "
+                             << list_head << " contains more.");
  }
 
  linked_int->next = *free_list_head_ptr;
@@ -315,11 +317,11 @@ char *my_fgets(char *buf, int max_size, FILE *fp) {
     if (buf[i] == '\n')
        break;
     if (buf[i] == '\0') {
-       printf("Error on line %d -- line is too long for input buffer.\n",
-          linenum);
-       printf("All lines must be at most %d characters long.\n",BUFSIZE-2);
-       printf("The problem could also be caused by a missing newline.\n");
-       exit (1);
+        throw std::runtime_error(Formatter() << "Error on line " << linenum
+                                 << " -- line is too long for input buffer.\n"
+                                 "All lines must be at most " << (BUFSIZE - 2)
+                                 << " characters long.\nThe problem could also "
+                                 "be caused by a missing newline.");
     }
  }
 
@@ -531,8 +533,8 @@ int my_irand (int imax) {
 
 #ifdef CHECK_RAND
  if ((ival < 0) || (ival > imax)) {
-    printf("Bad value in my_irand, imax = %d  ival = %d\n",imax,ival);
-    exit(1);
+    throw std::runtime_error(Formatter() << "Bad value in my_irand, imax = "
+                             << imax << "  ival = " << ival);
  }
 #endif
 
@@ -553,8 +555,8 @@ float my_frand (void) {
 
 #ifdef CHECK_RAND
  if ((fval < 0) || (fval > 1.)) {
-    printf("Bad value in my_frand, fval = %g\n",fval);
-    exit(1);
+    throw std::runtime_error(Formatter() << "Bad value in my_frand, fval = "
+                             << fval);
  }
 #endif
 
