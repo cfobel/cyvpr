@@ -125,7 +125,7 @@ def get_place_net_info(net_files, placed_results, net_paths, placement_md5,
 
 
 def do_route(route_database_path, paths_database_path, vpr_net_file_namebase,
-             architecture, fast=True):
+             architecture, clbs_per_pin_factor, fast=True):
     h5f = ts.openFile(route_database_path, mode='a')
     try:
         create_init_data(h5f, h5f.root)
@@ -152,7 +152,7 @@ def do_route(route_database_path, paths_database_path, vpr_net_file_namebase,
                           .where('md5 == "%s"' % placement_info['md5'])][0]
         print 'Routing %s' % placement_path
         m = prepare_for_route(net_file_path, architecture, placement_path)
-        m.route_again(2.5 * m.pins_per_clb, fast=fast)
+        m.route_again(clbs_per_pin_factor * m.pins_per_clb, fast=fast)
         states = m.most_recent_route_states()
         s = states[-1]
         append_route_state(routing_results.route_states,
@@ -165,15 +165,18 @@ def parse_args():
     """Parses arguments, returns (options, args)."""
     from argparse import ArgumentParser
     parser = ArgumentParser(description="""Run VPR route based on net-file namebase""")
+    parser.add_argument('-f', '--fast', action='store_true', default=False)
     parser.add_argument(dest='paths_database', type=path)
     parser.add_argument(dest='route_database', type=path)
     parser.add_argument(dest='architecture', type=path)
     parser.add_argument(dest='vpr_net_file_namebase')
+    parser.add_argument(dest='clbs_per_pin_factor', type=float)
     args = parser.parse_args()
     return args
 
 
 if __name__ == '__main__':
     args = parse_args()
-    do_route(args.route_database, args.paths_database,
-             args.vpr_net_file_namebase, args.architecture)
+    do_route(str(args.route_database), str(args.paths_database),
+             args.vpr_net_file_namebase, args.architecture,
+             args.clbs_per_pin_factor, fast=args.fast)

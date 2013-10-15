@@ -82,4 +82,4 @@ if __name__ == '__main__':
     args = parse_args()
     net_file_paths = [p for p in args.paths if p.ext == '.net']
     placement_paths = [p for p in args.paths if p.ext == '.out']
-    main(args.paths_database, net_file_paths, placement_paths, args.update)
+    main(str(args.paths_database), net_file_paths, placement_paths, args.update)
