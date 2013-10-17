@@ -31,7 +31,9 @@ __NB__ The program [`vitables`] [1] can be used to browse the output file.
 import hashlib
 from path import path
 from cyvpr.Main import cMain
-from cyvpr.manager.table_layouts import get_PLACEMENT_TABLE_LAYOUT
+from cyvpr.manager.table_layouts import (get_PLACEMENT_TABLE_LAYOUT,
+                                         get_VPR_PLACEMENT_STATS_TABLE_LAYOUT)
+from cyvpr.Route import unix_time
 import tables as ts
 
 
@@ -51,20 +53,24 @@ def place(net_path, arch_path, output_path=None, output_dir=None,
     # We just hard-code `placed.out` as the output path, since we aren't using
     # the output file.  Instead, the block-positions are returned from the
     # `place` method.
-    block_positions = vpr_main.place(net_path, arch_path, 'placed.out',
-                                     seed=seed, fast=fast)
+    place_state, block_positions = vpr_main.place(net_path, arch_path,
+                                                  'placed.out', seed=seed,
+                                                  fast=fast)
     # Use a hash of the block-positions to name the HDF file.
     block_positions_sha1 = hashlib.sha1(block_positions.data).hexdigest()
     filters = ts.Filters(complib='blosc', complevel=6)
     if output_path is not None:
         output_path = str(output_path)
     else:
-        output_file_name = '%s-%s.h5' % (net_path.namebase, block_positions_sha1)
+        output_file_name = 'placed-%s-s%d-%s.h5' % (net_path.namebase, seed,
+                                                    block_positions_sha1)
         if output_dir is not None:
             output_path = str(output_dir.joinpath(output_file_name))
         else:
             output_path = output_file_name
-    path(output_path).makedirs_p()
+    parent_dir = path(output_path).parent
+    if parent_dir and not parent_dir.isdir():
+        parent_dir.makedirs_p()
     print 'writing output to: %s' % output_path
 
     h5f = ts.openFile(output_file_name, mode='w', filters=filters)
@@ -76,19 +82,79 @@ def place(net_path, arch_path, output_path=None, output_dir=None,
                                           place_algorithm))
 
     placements = h5f.createTable(net_file_results, 'placements',
-                                 get_PLACEMENT_TABLE_LAYOUT(vpr_main.block_count),
+                                 get_PLACEMENT_TABLE_LAYOUT(vpr_main
+                                                            .block_count),
                                  title='Placements for %s VPR with args: %s' %
                                  (net_path.namebase,
                                   ' '.join(vpr_main.most_recent_args())))
+    placements.setAttr('net_file_namebase', net_path.namebase)
+
     placements.cols.block_positions_sha1.createIndex()
     row = placements.row
     row['net_file_md5'] = net_path.read_hexhash('md5')
     row['block_positions'] = block_positions
     row['block_positions_sha1'] = block_positions_sha1
     row['seed'] = seed
+    # Convert start-date-time to UTC unix timestamp
+    row['start'] = unix_time(place_state.start)
+    row['end'] = unix_time(place_state.end)
+
+    placer_opts = place_state.placer_opts
+    row['placer_options'] = (placer_opts.timing_tradeoff,
+                             placer_opts.block_dist,
+                             placer_opts.place_cost_exp,
+                             placer_opts.place_chan_width,
+                             placer_opts.num_regions,
+                             placer_opts.recompute_crit_iter,
+                             placer_opts.enable_timing_computations,
+                             placer_opts.inner_loop_recompute_divider,
+                             placer_opts.td_place_exp_first,
+                             placer_opts.td_place_exp_last,
+                             placer_opts.place_cost_type,
+                             placer_opts.place_algorithm)
     row.append()
     placements.flush()
+
+    stats_group = h5f.createGroup(net_file_results, 'placement_stats',
+                                  title='Placement statistics for each '
+                                  'outer-loop iteration of a VPR anneal for '
+                                  '%s with args: %s' %
+                                   (net_path.namebase,
+                                    ' '.join(vpr_main.most_recent_args())))
+
+    # Prefix `block_positions_sha1` with `P_` to ensure the table-name is
+    # compatible with Python natural-naming.  This is necessary since SHA1
+    # hashes may start with a number, in which case the name would not be a
+    # valid Python attribute name.
+    placement_stats = h5f.createTable(stats_group, 'P_' + block_positions_sha1,
+                                      get_VPR_PLACEMENT_STATS_TABLE_LAYOUT(),
+                                      title='Placement statistics for each '
+                                      'outer-loop iteration of a VPR anneal '
+                                      'for %s with args: `%s`, which produced '
+                                      'the block-positions with SHA1 hash `%s`'
+                                      % (net_path.namebase,
+                                         ' '.join(vpr_main.most_recent_args()),
+                                         block_positions_sha1))
+    placement_stats.setAttr('net_file_namebase', net_path.namebase)
+    placement_stats.setAttr('block_positions_sha1', block_positions_sha1)
+
+    for stats in place_state.stats:
+        stats_row = placement_stats.row
+        for field in ('temperature', 'mean_cost', 'mean_bounding_box_cost',
+                      'mean_timing_cost', 'mean_delay_cost',
+                      'place_delay_value', 'success_ratio', 'std_dev',
+                      'radius_limit', 'criticality_exponent',
+                      'total_iteration_count', ):
+            stats_row[field] = getattr(stats, field)
+            stats_row['start'] = (stats.start['tv_sec'] +
+                                  stats.start['tv_nsec'] * 1e-9)
+            stats_row['end'] = (stats.end['tv_sec'] + stats.end['tv_nsec'] *
+                                1e-9)
+        stats_row.append()
+    placement_stats.flush()
+
     h5f.close()
+    return place_state
 
 
 def parse_args():
@@ -118,6 +184,6 @@ if __name__ == '__main__':
     print args
     net_path = args.vpr_net_file
     arch_path = args.architecture_file
-    place(net_path, arch_path, output_path=args.output_path,
-          output_dir=args.output_dir, fast=args.fast,
-          place_algorithm=args.place_algorithm, seed=args.seed)
+    place_state = place(net_path, arch_path, output_path=args.output_path,
+                        output_dir=args.output_dir, fast=args.fast,
+                        place_algorithm=args.place_algorithm, seed=args.seed)

@@ -121,12 +121,3 @@ def load_routed_data():
 
 if __name__ == '__main__':
     fileh, root, data = load_routed_data()
-
-
-(getattr(s.router_options, attr) for attr in ('first_iter_pres_fac',
-                                              'initial_pres_fac',
-                                              'pres_fac_mult', 'acc_fac',
-                                              'bend_cost', 'bend_cost',
-                                              'bb_factor', 'astar_fac',
-                                              'max_criticality',
-                                              'criticality_exp',))

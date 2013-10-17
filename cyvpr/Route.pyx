@@ -7,19 +7,8 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.stdlib cimport malloc
 
-
-def unix_time(datetime_):
-    # Convert Python `datetime` instance to unix seconds-since-epoch.
-    # Taken from [here] [1].
-    #
-    # [1]: http://stackoverflow.com/questions/6999726/python-getting-millis-since-epoch-from-datetime/11111177#11111177
-    return (datetime_ - datetime.utcfromtimestamp(0)).total_seconds()
-
-
-cdef datetime_from_timespec_tuple(timespec t):
-    cdef double timestamp = t.tv_sec + <double>t.tv_nsec / 1e9
-    print '[datetime_from_timespec_tuple] timestamp = %.9f' % timestamp
-    return datetime.fromtimestamp(timestamp)
+from cyvpr.Place cimport datetime_from_timespec_tuple
+from cyvpr.Place import unix_time
 
 
 def rebuild(data):

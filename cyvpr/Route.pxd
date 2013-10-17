@@ -78,9 +78,6 @@ cdef extern from "Result.hpp":
         string csv_header()
 
 
-cdef datetime_from_timespec_tuple(timespec t)
-
-
 cdef class cRouteState(cStateBase):
     cdef RouteState *thisptr
     cdef object _bends

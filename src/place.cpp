@@ -12,6 +12,7 @@
 #include "path_delay.h"
 #include "timing_place_lookup.h"
 #include "timing_place.h"
+#include "State.hpp"
 
 
 /************** Types and defines local to place.c ***************************/
@@ -252,6 +253,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
  float crit_exponent;
  float first_rlim, final_rlim, inverse_delta_rlim;
  float **remember_net_delay_original_ptr; /*used to free net_delay if it is re-assigned*/
+ PlaceStats stats;
 
  remember_net_delay_original_ptr = NULL; /*prevents compiler warning*/
 
@@ -441,6 +443,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
  update_screen(MAJOR, msg, PLACEMENT, FALSE);
 
  while (exit_crit(t, cost, annealing_sched) == 0) {
+    clock_gettime(CLOCK_REALTIME, &stats.start);
 
    if (placer_opts.place_algorithm == NET_TIMING_DRIVEN_PLACE ||
        placer_opts.place_algorithm == PATH_TIMING_DRIVEN_PLACE) {
@@ -532,6 +535,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
 	exit(1);
 #endif
     }
+    clock_gettime(CLOCK_REALTIME, &stats.start);
 
 /* Lines below prevent too much round-off error from accumulating *
  * in the cost over many iterations.  This round-off can lead to  *
@@ -586,6 +590,24 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
        av_delay_cost /= success_sum;
     }
     std_dev = get_std_dev (success_sum, sum_of_squares, av_cost);
+
+    /* Save current statistics to `PlaceStats` instance. */
+    clock_gettime(CLOCK_REALTIME, &stats.end);
+
+    stats.temperature = t;
+    stats.mean_cost = av_cost;
+    stats.mean_bounding_box_cost = av_bb_cost;
+    stats.mean_timing_cost = av_timing_cost;
+    stats.mean_delay_cost = av_delay_cost;
+    stats.place_delay_value = place_delay_value;
+    stats.success_ratio = success_rat;
+    stats.std_dev = std_dev;
+    stats.radius_limit = rlim;
+    stats.criticality_exponent = crit_exponent;
+    stats.total_iteration_count = tot_iter;
+
+    // Append `PlaceStats` to running list _(i.e., `vector<PlaceStats>`)_.
+    g_place_state.stats.push_back(stats);
 
 #ifndef SPEC
     my_printf("%11.5g  %10.6g %11.6g  %11.6g  %11.6g %11.6g %11.4g %9.4g %8.3g  %7.4g  %7.4g  %10d  ",t, av_cost,
@@ -654,6 +676,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
 
  inner_crit_iter_count = 1;
 
+ clock_gettime(CLOCK_REALTIME, &stats.start);
  for (inner_iter=0; inner_iter < move_lim; inner_iter++) {
    if (try_swap(t, &cost, &bb_cost, &timing_cost,
 	  rlim, pins_on_block, placer_opts.place_cost_type,
@@ -718,6 +741,19 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
 	   rlim, crit_exponent, tot_iter);
 
 #endif
+ clock_gettime(CLOCK_REALTIME, &stats.end);
+ stats.temperature = t;
+ stats.mean_cost = av_cost;
+ stats.mean_bounding_box_cost = av_bb_cost;
+ stats.mean_timing_cost = av_timing_cost;
+ stats.mean_delay_cost = av_delay_cost;
+ stats.place_delay_value = place_delay_value;
+ stats.success_ratio = success_rat;
+ stats.std_dev = std_dev;
+ stats.radius_limit = rlim;
+ stats.criticality_exponent = crit_exponent;
+ stats.total_iteration_count = tot_iter;
+ g_place_state.stats.push_back(stats);
 
 #ifdef VERBOSE
  dump_clbs();

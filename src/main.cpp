@@ -26,6 +26,7 @@
 #include "Main.h"
 #include "route_export.h"
 #include "net_delay.h"
+#include "timing.hpp"
 
 using std::vector;
 using std::map;
@@ -34,6 +35,7 @@ using std::ifstream;
 
 /******************** Global variables ************************************/
 
+PlaceState g_place_state;
 RouteState g_route_state;
 RouteResult g_route_result;
 vector<RouteState> g_route_states;
@@ -1520,10 +1522,15 @@ void Main::do_place_and_route() {
     if (operation_ != PLACE_ONLY) {
         reset_buffer();
     }
+    // Start timer for placement
+    clock_gettime(CLOCK_REALTIME, &g_place_state.start);
+    g_place_state.placer_opts = placer_opts_;
     place_and_route(operation_, placer_opts_, *buffer_, place_file_, net_file_,
                     arch_file_, route_file_, full_stats_, verify_binary_search_,
                     annealing_sched_, router_opts_, det_routing_arch_, segment_inf_,
                     timing_inf_, &subblock_data_, chan_width_dist_);
+    // End timer for placement
+    clock_gettime(CLOCK_REALTIME, &g_place_state.end);
 }
 
 bool Main::route(int width_fac) {

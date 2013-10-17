@@ -186,4 +186,147 @@ public:
     }
 };
 
+
+class PlaceStats : public StateBase {
+public:
+    timespec start;
+    timespec end;
+
+    float temperature;
+    double mean_cost;
+    double mean_bounding_box_cost;
+    double mean_timing_cost;
+    double mean_delay_cost;
+    float place_delay_value;
+    float success_ratio;
+    double std_dev;
+    float radius_limit;
+    float criticality_exponent;
+    int total_iteration_count;
+
+    virtual string label() const { return "PlaceStats"; }
+
+    void set(PlaceStats const &other) {
+        this->start = other.start;
+        this->end = other.end;
+        this->temperature = other.temperature;
+        this->mean_cost = other.mean_cost;
+        this->mean_bounding_box_cost = other.mean_bounding_box_cost;
+        this->mean_timing_cost = other.mean_timing_cost;
+        this->mean_delay_cost = other.mean_delay_cost;
+        this->place_delay_value = other.place_delay_value;
+        this->success_ratio = other.success_ratio;
+        this->std_dev = other.std_dev;
+        this->radius_limit = other.radius_limit;
+        this->criticality_exponent = other.criticality_exponent;
+        this->total_iteration_count = other.total_iteration_count;
+    }
+
+    virtual std::vector<std::pair<string, string> > fieldname_value_pairs() const {
+        stringstream s;
+        s << std::fixed;
+
+        std::vector<std::pair<string, string> > field_value_pairs;
+
+        double start = this->start.tv_sec + (double)this->start.tv_nsec * 1e-9;
+        double end = this->end.tv_sec + (double)this->end.tv_nsec * 1e-9;
+
+        s.str("");
+        s << std::setprecision(9) << end;
+        field_value_pairs.push_back(std::make_pair("start", s.str()));
+
+        s.str("");
+        s << std::setprecision(9) << start;
+        field_value_pairs.push_back(std::make_pair("end", s.str()));
+
+        field_value_pairs.push_back(std::make_pair("end", s.str()));
+
+        s.str("");
+        s << temperature;
+        field_value_pairs.push_back(std::make_pair("temperature", s.str()));
+
+        s.str("");
+        s << mean_cost;
+        field_value_pairs.push_back(std::make_pair("mean_cost", s.str()));
+
+        s.str("");
+        s << mean_bounding_box_cost;
+        field_value_pairs.push_back(std::make_pair("mean_bounding_box_cost", s.str()));
+
+        s.str("");
+        s << mean_timing_cost;
+        field_value_pairs.push_back(std::make_pair("mean_timing_cost", s.str()));
+
+        s.str("");
+        s << mean_delay_cost;
+        field_value_pairs.push_back(std::make_pair("mean_delay_cost", s.str()));
+
+        s.str("");
+        s << place_delay_value;
+        field_value_pairs.push_back(std::make_pair("place_delay_value", s.str()));
+
+        s.str("");
+        s << success_ratio;
+        field_value_pairs.push_back(std::make_pair("success_ratio", s.str()));
+
+        s.str("");
+        s << std_dev;
+        field_value_pairs.push_back(std::make_pair("std_dev", s.str()));
+
+        s.str("");
+        s << radius_limit;
+        field_value_pairs.push_back(std::make_pair("radius_limit", s.str()));
+
+        s.str("");
+        s << criticality_exponent;
+        field_value_pairs.push_back(std::make_pair("criticality_exponent", s.str()));
+
+        s.str("");
+        s << total_iteration_count;
+        field_value_pairs.push_back(std::make_pair("total_iteration_count", s.str()));
+
+        return field_value_pairs;
+    }
+};
+
+
+class PlaceState : public StateBase {
+public:
+    timespec start;
+    timespec end;
+
+    s_placer_opts placer_opts;
+    std::vector<PlaceStats> stats;
+
+    virtual string label() const { return "PlaceState"; }
+
+    void set(PlaceState const &other) {
+        this->start = other.start;
+        this->end = other.end;
+        this->placer_opts = other.placer_opts;
+        this->stats = other.stats;
+    }
+
+    virtual std::vector<std::pair<string, string> > fieldname_value_pairs() const {
+        stringstream s;
+        s << std::fixed;
+
+        std::vector<std::pair<string, string> > field_value_pairs;
+
+        double start = this->start.tv_sec + (double)this->start.tv_nsec * 1e-9;
+        double end = this->end.tv_sec + (double)this->end.tv_nsec * 1e-9;
+
+        s.str("");
+        s << std::setprecision(9) << end;
+        field_value_pairs.push_back(std::make_pair("start", s.str()));
+
+        s.str("");
+        s << std::setprecision(9) << start;
+        field_value_pairs.push_back(std::make_pair("end", s.str()));
+
+        return field_value_pairs;
+    }
+};
+
+
 #endif  // ___STATE__HPP___
