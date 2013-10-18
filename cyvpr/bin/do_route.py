@@ -1,9 +1,12 @@
+import hashlib
+
 from cyvpr.Main import cMain
 from cyvpr.Route import unix_time
 import tables as ts
 from path import path
 from hdf_place_and_route_data import (ROUTE_TABLE_LAYOUT,
                                       ROUTE_NET_DATA_TABLE_LAYOUT)
+from cyvpr.manager.table_layouts import get_ROUTE_TABLE_LAYOUT
 
 def create_init_data(h5f, root):
     routings = h5f.createGroup(root, 'routings')
@@ -122,6 +125,111 @@ def get_place_net_info(net_files, placed_results, net_paths, placement_md5,
     net_path = net_paths[net_file_md5]
     return net_path, net_file_id
 
+
+
+def route(net_path, arch_path, placement_path, output_path=None,
+          output_dir=None, fast=True, clbs_per_pin_factor=None,
+          channel_width=None, timing_driven=True, max_router_iterations=None):
+    '''
+    Perform VPR routing and write result to HDF file with the following
+    structure:
+
+        <net-file_namebase _(e.g., `ex5p`, `clma`, etc.)_> (Group)
+            \--> `placements` (Table)
+
+    The intention here is to structure the results such that they can be merged
+    together with the results from other routings.
+    '''
+    net_path = path(net_path)
+    arch_path = path(arch_path)
+    placement_path = path(placement_path)
+    vpr_main = cMain()
+    # We just hard-code `routed.out` as the output path, since we aren't using
+    # the output file.  Instead, the routing results and states are returned
+    # from the `route` method, as an `OrderedDict` with the keys `result` and
+    # `states`.
+    route_results = vpr_main.route(net_path, arch_path, placement_path,
+                                   'routed.out', timing_driven=timing_driven,
+                                   fast=fast, route_chan_width=channel_width,
+                                   max_router_iterations=max_router_iterations)
+
+    # Use a hash of the block-positions to name the HDF file.
+    filters = ts.Filters(complib='blosc', complevel=6)
+    if output_path is not None:
+        output_path = str(output_path)
+    else:
+        if 'placed' in placement_path.namebase:
+            output_file_name = (placement_path.namebase.replace('placed',
+                                                                'routed') +
+                                '.h5')
+        else:
+            raise ValueError, ('Cannot infer output filename from placement '
+                               'filename.')
+        if output_dir is not None:
+            output_path = str(output_dir.joinpath(output_file_name))
+        else:
+            output_path = output_file_name
+    parent_dir = path(output_path).parent
+    if parent_dir and not parent_dir.isdir():
+        parent_dir.makedirs_p()
+    print 'writing output to: %s' % output_path
+
+    h5f = ts.openFile(output_file_name, mode='w', filters=filters)
+
+    net_file_results = h5f.createGroup(h5f.root, net_path.namebase,
+                                       title='Routing results for %s VPR '
+                                       'with `fast`=%s, `timing_driven`=%s, '
+                                       'with `route_chan_width`=%s, '
+                                       '`max_router_iterations`=%s'
+                                       % (net_path.namebase, fast,
+                                          timing_driven, channel_width,
+                                          max_router_iterations))
+
+    # TODO: Finish modifying this function for route _(instead of placement)_.
+    route_states = h5f.createTable(net_file_results, 'route_states',
+                                   get_ROUTE_TABLE_LAYOUT(vpr_main.net_count),
+                                   title='Routings for %s VPR with args: %s' %
+                                   (net_path.namebase,
+                                    ' '.join(vpr_main.most_recent_args())))
+    route_states.setAttr('net_file_namebase', net_path.namebase)
+
+    # Index some columns for fast look-up.
+    route_states.cols.block_positions_sha1.createIndex()
+    route_states.cols.success.createIndex()
+    route_states.cols.width_fac.createCSIndex()
+
+    route_state_id = len(route_states)
+
+    block_positions = vpr_main.extract_block_positions()
+    block_positions_sha1 = hashlib.sha1(block_positions.data).hexdigest()
+    for i, route_state in enumerate(route_results['states']):
+        state_row = route_states.row
+        state_row['id'] = route_state_id + i
+        state_row['block_positions_sha1'] = block_positions_sha1
+        state_row['success'] = route_state.success
+        state_row['width_fac'] = route_state.width_fac
+        # Convert start-date-time to UTC unix timestamp
+        state_row['start'] = unix_time(route_state.start)
+        state_row['end'] = unix_time(route_state.end)
+
+        state_row['router_options'] = tuple(getattr(route_state.router_opts,
+                                                    attr) for attr in
+                                            ('first_iter_pres_fac',
+                                             'initial_pres_fac',
+                                             'pres_fac_mult', 'acc_fac',
+                                             'bend_cost', 'bb_factor',
+                                             'astar_fac', 'max_criticality',
+                                             'criticality_exp'))
+
+        if len(route_state.bends) > 0:
+            state_row['net_data'][0][:] = route_state.bends[:]
+            state_row['net_data'][1][:] = route_state.wire_lengths[:]
+            state_row['net_data'][2][:] = route_state.segments[:]
+        state_row.append()
+    route_states.flush()
+
+    h5f.close()
+    return route_results
 
 
 def do_route(route_database_path, paths_database_path, vpr_net_file_namebase,
