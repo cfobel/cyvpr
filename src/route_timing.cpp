@@ -106,7 +106,17 @@ boolean try_timing_driven_route (struct s_router_opts router_opts, float
   /* Pathfinder guys quit after finding a feasible route. I may want to keep *
    * going longer, trying to improve timing.  Think about this some.         */
 
+
+   /* Update slack values by doing another timing analysis.                 *
+    * Timing_driven_route_net updated the net delay values.                 */
+
+    load_timing_graph_net_delays (net_delay);
+    T_crit = load_net_slack (net_slack, 0);
+    my_printf ("T_crit: %g.\n", T_crit);
+    g_route_state.critical_path_delay = T_crit;
+
     success = feasible_routing ();
+
     if (success) {
        my_printf("Successfully routed after %d routing iterations.\n", itry);
        free_timing_driven_route_structs (pin_criticality, sink_order,
@@ -125,14 +135,6 @@ boolean try_timing_driven_route (struct s_router_opts router_opts, float
        pres_fac *= router_opts.pres_fac_mult;
        pathfinder_update_cost (pres_fac, router_opts.acc_fac);
     }
-
-   /* Update slack values by doing another timing analysis.                 *
-    * Timing_driven_route_net updated the net delay values.                 */
-
-    load_timing_graph_net_delays (net_delay);
-    T_crit = load_net_slack (net_slack, 0);
-    my_printf ("T_crit: %g.\n", T_crit);
-    g_route_state.critical_path_delay = T_crit;
  }
 
  my_printf ("Routing failed.\n");
