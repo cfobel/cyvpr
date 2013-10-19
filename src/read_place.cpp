@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <vector>
 #include <stdio.h>
 #include <string.h>
@@ -6,6 +7,7 @@
 #include "globals.h"
 #include "hash.h"
 #include "read_place.h"
+#include "Formatter.hpp"
 
 
 static int get_subblock (int i, int j, int bnum);
@@ -518,10 +520,14 @@ static void read_place_header(BufferBase &file_buffer, char *net_file,
     }
  }
 
- if (nx_check != nx || ny_check != ny) {
-    printf ("Error:  placement file assumes an array size of %d x %d.\n",
-             nx_check, ny_check);
-    my_printf ("Current size is %d x %d.\n", nx, ny);
-    exit (1);
+ if (nx_check > nx || ny_check > ny) {
+     throw std::runtime_error(Formatter() << "Placement file assumes an "
+                              "array size of " << nx_check << " x " << ny_check
+                              << ".\n Current size is " << nx << " x " << ny
+                              << ".");
+ } else if (nx_check < nx && ny_check < ny) {
+    printf ("[warning] Placement file assumes an array size of %d x %d.\n",
+            nx_check, ny_check);
+    printf ("Current size is %d x %d.\n", nx, ny);
  }
 }

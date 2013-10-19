@@ -40,7 +40,7 @@ import tables as ts
 from vpr_netfile_parser.VprNetParser import cVprNetFileParser
 
 
-def vpr_placed_lines(vpr_net_path, block_positions):
+def vpr_placed_lines(vpr_net_path, block_positions, extents=None):
     parser = cVprNetFileParser(vpr_net_path)
     header = '''\
 Netlist file: %(vpr_net_path)s   Architecture file: /var/benchmarks/4lut_sanitized.arch
@@ -49,8 +49,11 @@ Array size: %(extent_x)d x %(extent_y)d logic blocks
 #block name	x	y	subblk	block number
 #----------	--	--	------	------------'''
     clb_positions = block_positions[parser.block_ids_by_type()['.clb']]
-    extents = tuple(clb_positions[:, :2].max(axis=0) -
-                    clb_positions[:, :2].min(axis=0))
+    if extents is None:
+        extents = tuple(clb_positions[:, :2].max(axis=0) -
+                        clb_positions[:, :2].min(axis=0))
+    else:
+        extents = tuple(extents)
     yield header % {'vpr_net_path': vpr_net_path, 'extent_x': extents[0],
                     'extent_y': extents[1], }
     for i, (label, slot_position) in enumerate(zip(parser.block_labels,
@@ -59,17 +62,19 @@ Array size: %(extent_x)d x %(extent_y)d logic blocks
                                        slot_position[1], slot_position[2], i)
 
 
-def write_vpr_placed_output(vpr_net_path, block_positions, out=sys.stdout):
-    for line in vpr_placed_lines(vpr_net_path, block_positions):
+def write_vpr_placed_output(vpr_net_path, block_positions, out=sys.stdout, extents=None):
+    for line in vpr_placed_lines(vpr_net_path, block_positions,
+                                 extents=extents):
         print >> out, line
 
 
-def create_placement_file(vpr_net_path, block_positions, suffix='',
-                          prefix='tmp', dir=None):
+def create_placement_file(vpr_net_path, block_positions, extents=None,
+                          suffix='', prefix='tmp', dir=None):
     output_dir = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
     output_path = path(output_dir).joinpath('placed.out')
     with open(output_path, 'wb') as output_file:
-        write_vpr_placed_output(vpr_net_path, block_positions, output_file)
+        write_vpr_placed_output(vpr_net_path, block_positions, output_file,
+                                extents)
     return output_path
 
 

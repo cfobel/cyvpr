@@ -26,7 +26,6 @@ def unix_time(datetime_):
 
 cdef datetime_from_timespec_tuple(timespec t):
     cdef double timestamp = t.tv_sec + <double>t.tv_nsec / 1e9
-    print '[datetime_from_timespec_tuple] timestamp = %.9f' % timestamp
     return datetime.fromtimestamp(timestamp)
 
 

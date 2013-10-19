@@ -1,3 +1,4 @@
+import tempfile
 import hashlib
 
 from cyvpr.Main import cMain
@@ -15,7 +16,7 @@ def route(net_path, arch_path, placement_path, output_path=None,
     structure:
 
         <net-file_namebase _(e.g., `ex5p`, `clma`, etc.)_> (Group)
-            \--> `placements` (Table)
+            \--> `route_states` (Table)
 
     The intention here is to structure the results such that they can be merged
     together with the results from other routings.
@@ -24,14 +25,21 @@ def route(net_path, arch_path, placement_path, output_path=None,
     arch_path = path(arch_path)
     placement_path = path(placement_path)
     vpr_main = cMain()
-    # We just hard-code `routed.out` as the output path, since we aren't using
-    # the output file.  Instead, the routing results and states are returned
-    # from the `route` method, as an `OrderedDict` with the keys `result` and
-    # `states`.
-    route_results = vpr_main.route(net_path, arch_path, placement_path,
-                                   'routed.out', timing_driven=timing_driven,
-                                   fast=fast, route_chan_width=channel_width,
-                                   max_router_iterations=max_router_iterations)
+
+    routed_temp_dir = path(tempfile.mkdtemp(prefix='routed-'))
+    try:
+        routed_path = routed_temp_dir.joinpath('routed.out')
+
+        # We just hard-code `routed.out` as the output path, since we aren't using
+        # the output file.  Instead, the routing results and states are returned
+        # from the `route` method, as an `OrderedDict` with the keys `result` and
+        # `states`.
+        route_results = vpr_main.route(net_path, arch_path, placement_path,
+                                    routed_path, timing_driven=timing_driven,
+                                    fast=fast, route_chan_width=channel_width,
+                                    max_router_iterations=max_router_iterations)
+    finally:
+        routed_temp_dir.rmtree()
 
     block_positions = vpr_main.extract_block_positions()
     block_positions_sha1 = hashlib.sha1(block_positions.data).hexdigest()
@@ -92,8 +100,6 @@ def route(net_path, arch_path, placement_path, output_path=None,
     route_states.cols.success.createIndex()
     route_states.cols.width_fac.createCSIndex()
 
-    route_state_id = len(route_states)
-
     for i, route_state in enumerate(route_results['states']):
         state_row = route_states.row
         state_row['block_positions_sha1'] = block_positions_sha1
@@ -149,7 +155,6 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    print args
 
     route(args.net_path, args.arch_path, args.placement_path,
           output_path=args.output_path, output_dir=args.output_dir,
@@ -157,6 +162,3 @@ if __name__ == '__main__':
           channel_width=args.channel_width,
           timing_driven=(not args.breadth_first),
           max_router_iterations=args.max_router_iterations)
-    #do_route(str(args.route_database), str(args.paths_database),
-             #args.vpr_net_file_namebase, args.architecture,
-             #args.clbs_per_pin_factor, fast=args.fast)
