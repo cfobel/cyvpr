@@ -83,19 +83,20 @@ def get_ROUTE_TABLE_LAYOUT(net_count):
             'width_fac': ts.UInt32Col(pos=4),
             'start': ts.Float64Col(pos=5),
             'end': ts.Float64Col(pos=6),
-            'router_options': {'first_iter_pres_fac':
-                                ts.Float32Col(pos=0),
-                                'initial_pres_fac':
+            'router_options': {'max_router_iterations': ts.Int32Col(pos=0),
+                                'first_iter_pres_fac':
                                 ts.Float32Col(pos=1),
-                                'pres_fac_mult': ts.Float32Col(pos=2),
-                                'acc_fac': ts.Float32Col(pos=3),
-                                'bend_cost': ts.Float32Col(pos=4),
-                                'bb_factor': ts.Int32Col(pos=5),
-                                'astar_fac': ts.Float32Col(pos=6),
+                                'initial_pres_fac':
+                                ts.Float32Col(pos=2),
+                                'pres_fac_mult': ts.Float32Col(pos=3),
+                                'acc_fac': ts.Float32Col(pos=4),
+                                'bend_cost': ts.Float32Col(pos=5),
+                                'bb_factor': ts.Int32Col(pos=6),
+                                'astar_fac': ts.Float32Col(pos=7),
                                 'max_criticality':
-                                ts.Float32Col(pos=7),
+                                ts.Float32Col(pos=8),
                                 'criticality_exp':
-                                ts.Float32Col(pos=8), },
+                                ts.Float32Col(pos=9), },
             'net_data': {'bends': ts.UInt32Col(pos=0, shape=(net_count, )),
                         'wire_length': ts.UInt32Col(pos=1, shape=(net_count, )),
                         'segments': ts.UInt32Col(pos=2, shape=(net_count, ))}}

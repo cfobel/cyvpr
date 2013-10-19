@@ -153,18 +153,31 @@ def route(net_path, arch_path, placement_path, output_path=None,
                                    fast=fast, route_chan_width=channel_width,
                                    max_router_iterations=max_router_iterations)
 
+    block_positions = vpr_main.extract_block_positions()
+    block_positions_sha1 = hashlib.sha1(block_positions.data).hexdigest()
+
     # Use a hash of the block-positions to name the HDF file.
     filters = ts.Filters(complib='blosc', complevel=6)
     if output_path is not None:
         output_path = str(output_path)
     else:
-        if 'placed' in placement_path.namebase:
-            output_file_name = (placement_path.namebase.replace('placed',
-                                                                'routed') +
-                                '.h5')
+        output_file_name = 'routed-%s' % block_positions_sha1
+        if fast:
+            output_file_name += '-fast'
+
+        if timing_driven:
+            output_file_name += '-timing_driven'
         else:
-            raise ValueError, ('Cannot infer output filename from placement '
-                               'filename.')
+            output_file_name += '-breadth_first'
+
+        if channel_width:
+            output_file_name += '-w%d' % channel_width
+
+        if max_router_iterations:
+            output_file_name += '-m%d' % max_router_iterations
+
+        output_file_name += '.h5'
+
         if output_dir is not None:
             output_path = str(output_dir.joinpath(output_file_name))
         else:
@@ -174,7 +187,7 @@ def route(net_path, arch_path, placement_path, output_path=None,
         parent_dir.makedirs_p()
     print 'writing output to: %s' % output_path
 
-    h5f = ts.openFile(output_file_name, mode='w', filters=filters)
+    h5f = ts.openFile(output_path, mode='w', filters=filters)
 
     net_file_results = h5f.createGroup(h5f.root, net_path.namebase,
                                        title='Routing results for %s VPR '
@@ -200,8 +213,6 @@ def route(net_path, arch_path, placement_path, output_path=None,
 
     route_state_id = len(route_states)
 
-    block_positions = vpr_main.extract_block_positions()
-    block_positions_sha1 = hashlib.sha1(block_positions.data).hexdigest()
     for i, route_state in enumerate(route_results['states']):
         state_row = route_states.row
         state_row['block_positions_sha1'] = block_positions_sha1
@@ -213,7 +224,8 @@ def route(net_path, arch_path, placement_path, output_path=None,
 
         state_row['router_options'] = tuple(getattr(route_state.router_opts,
                                                     attr) for attr in
-                                            ('first_iter_pres_fac',
+                                            ('max_router_iterations',
+                                             'first_iter_pres_fac',
                                              'initial_pres_fac',
                                              'pres_fac_mult', 'acc_fac',
                                              'bend_cost', 'bb_factor',
@@ -272,18 +284,35 @@ def parse_args():
     """Parses arguments, returns (options, args)."""
     from argparse import ArgumentParser
     parser = ArgumentParser(description="""Run VPR route based on net-file namebase""")
+
     parser.add_argument('-f', '--fast', action='store_true', default=False)
-    parser.add_argument(dest='paths_database', type=path)
-    parser.add_argument(dest='route_database', type=path)
-    parser.add_argument(dest='architecture', type=path)
-    parser.add_argument(dest='vpr_net_file_namebase')
-    parser.add_argument(dest='clbs_per_pin_factor', type=float)
+    parser.add_argument(dest='net_path', type=path)
+    parser.add_argument(dest='arch_path', type=path)
+    parser.add_argument(dest='placement_path', type=path)
+    parser.add_argument('-o', '--output_path', type=path)
+    parser.add_argument('-D', '--output_dir', type=path)
+    parser.add_argument('-m', '--max_router_iterations', type=int)
+    mutex_group1 = parser.add_mutually_exclusive_group()
+    mutex_group1.add_argument('-b', '--breadth_first', action='store_true', default=False)
+    mutex_group1.add_argument('-t', '--timing_driven', action='store_true', default=True)
+    mutex_group2 = parser.add_mutually_exclusive_group()
+    mutex_group2.add_argument('-w', '--channel_width', type=int)
+    mutex_group2.add_argument('-c', '--clbs_per_pin_factor', type=float)
+
     args = parser.parse_args()
     return args
 
 
 if __name__ == '__main__':
     args = parse_args()
-    do_route(str(args.route_database), str(args.paths_database),
-             args.vpr_net_file_namebase, args.architecture,
-             args.clbs_per_pin_factor, fast=args.fast)
+    print args
+
+    route(args.net_path, args.arch_path, args.placement_path,
+          output_path=args.output_path, output_dir=args.output_dir,
+          fast=args.fast, clbs_per_pin_factor=args.clbs_per_pin_factor,
+          channel_width=args.channel_width,
+          timing_driven=(not args.breadth_first),
+          max_router_iterations=args.max_router_iterations)
+    #do_route(str(args.route_database), str(args.paths_database),
+             #args.vpr_net_file_namebase, args.architecture,
+             #args.clbs_per_pin_factor, fast=args.fast)
