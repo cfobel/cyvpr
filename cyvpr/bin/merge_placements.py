@@ -44,6 +44,12 @@ def main(combined_output_path, input_paths):
 
     h5fs = [ts.open_file(str(h), mode='r') for h in h5_paths]
 
+    # Iterate through all input HDF files and append the records from all
+    # tables found into the table at the corresponding path in the combined,
+    # output-file, provided there is not already an entry in the combined table
+    # with the same `block_positions_sha1` value..  If the table doesn't
+    # already exist in the output file, copy the entire table from the input
+    # HDF file.
     for h in h5fs:
         for n in h.walk_nodes(h.root, 'Table'):
             try:
@@ -76,6 +82,8 @@ def main(combined_output_path, input_paths):
                                               createparents=True)
                 h.copy_node(n, parent, recursive=True)
                 table = h5f.get_node(n._v_pathname)
+            # Create an index on the `seed` column of the placements table _(if
+            # it doesn't already exist)_.
             if table.cols.seed.index is None:
                 table.cols.seed.create_csindex(filters=n._v_parent._v_filters)
         h.close()
