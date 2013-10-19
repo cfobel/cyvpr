@@ -161,7 +161,8 @@ def route(net_path, arch_path, placement_path, output_path=None,
     if output_path is not None:
         output_path = str(output_path)
     else:
-        output_file_name = 'routed-%s' % block_positions_sha1
+        output_file_name = 'routed-%s-%s' % (net_path.namebase,
+                                             block_positions_sha1)
         if fast:
             output_file_name += '-fast'
 
