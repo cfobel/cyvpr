@@ -78,8 +78,7 @@ def get_VPR_PLACEMENT_STATS_TABLE_LAYOUT():
 
 
 def get_ROUTE_TABLE_LAYOUT(net_count):
-    return {'id': ts.UInt32Col(pos=0),
-            'block_positions_sha1': ts.StringCol(40, pos=2),
+    return {'block_positions_sha1': ts.StringCol(40, pos=2),
             'success': ts.BoolCol(pos=3),
             'width_fac': ts.UInt32Col(pos=4),
             'start': ts.Float64Col(pos=5),

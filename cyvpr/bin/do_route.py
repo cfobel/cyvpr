@@ -73,7 +73,7 @@ def prepare_for_route(net_path, arch_path, placed_path):
     m = cMain()
     m.init([net_path, arch_path, placed_path, 'routed.out', '-nodisp',
             '-route_only'])
-    m.read_placement(net_path, arch_path, placed_path)
+    m.do_read_place()
     return m
 
 
@@ -204,7 +204,6 @@ def route(net_path, arch_path, placement_path, output_path=None,
     block_positions_sha1 = hashlib.sha1(block_positions.data).hexdigest()
     for i, route_state in enumerate(route_results['states']):
         state_row = route_states.row
-        state_row['id'] = route_state_id + i
         state_row['block_positions_sha1'] = block_positions_sha1
         state_row['success'] = route_state.success
         state_row['width_fac'] = route_state.width_fac

@@ -1298,13 +1298,26 @@ t_linked_int *allocate_and_load_critical_path (void) {
     min_slack = HUGE_FLOAT;
 
     for (iedge=0;iedge<num_edges;iedge++) {
-       to_node = tedge[iedge].to_node;
-       slack = tnode[to_node].T_req - tnode[to_node].T_arr;
+        to_node = tedge[iedge].to_node;
 
-       if (slack < min_slack) {
-          crit_node = to_node;
-          min_slack = slack;
-       }
+#if 0
+        /* Throw exception in case of endless loop in the case where `slack` is
+         * `NaN`.  This seems to occur when there is no logic-delay calculation
+         * that has taken place, which seems to be the case when a very large
+         * channel width is specified. */
+        if (slack != slack) {
+            printf("[warning] invalid timing data: tnode[%d].T_req=%.2f, "
+                    "tnode[%d].T_arr=%.2f\n", to_node, tnode[to_node].T_req,
+                    to_node, tnode[to_node].T_arr);
+            slack = 0;
+        }
+#endif
+        slack = tnode[to_node].T_req - tnode[to_node].T_arr;
+
+        if (slack < min_slack) {
+            crit_node = to_node;
+            min_slack = slack;
+        }
     }
 
     curr_crit_node->data = crit_node;
