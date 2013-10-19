@@ -18,6 +18,7 @@
 
 #endif
 
+extern PlaceState g_place_state;
 extern RouteState g_route_state;
 extern RouteResult g_route_result;
 extern std::vector<RouteState> g_route_states;

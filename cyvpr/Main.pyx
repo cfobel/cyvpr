@@ -70,7 +70,7 @@ cdef class cMain:
 
         self.init(args)
         self.thisptr.do_place_and_route()
-        return self.extract_block_positions()
+        return self.most_recent_place_state(), self.extract_block_positions()
 
     property router_opts:
         def __get__(self):
@@ -161,6 +161,13 @@ cdef class cMain:
         cy_result = cRouteResult()
         cy_result.set(g_route_result)
         return cy_result
+
+    def most_recent_place_state(self):
+        cdef cPlaceState state
+
+        state = cPlaceState()
+        state.init(g_place_state)
+        return state
 
     def most_recent_route_states(self):
         states = []

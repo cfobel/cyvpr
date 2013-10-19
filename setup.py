@@ -18,7 +18,7 @@ cpp_files = map(str, path('src').abspath().files('*.cpp'))
 vpr_ext = Extension('cyvpr.Main',  ['cyvpr/Main.pyx'] + c_files + cpp_files,
                     **cy_config)
 cy_exts = [Extension('cyvpr.%s' % v, ['cyvpr/%s.pyx' % v], **cy_config)
-           for v in ('State', 'Route')]
+           for v in ('State', 'Place', 'Route')]
 
 
 setup(name = "cyvpr",

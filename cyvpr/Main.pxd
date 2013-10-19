@@ -7,6 +7,7 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.stdlib cimport malloc
 
+from cyvpr.Place cimport PlaceState, cPlaceState
 from cyvpr.Route cimport (RouteState, cRouteState, RouteResult, cRouteResult,
                           s_router_opts, cRouterOpts)
 
@@ -28,6 +29,7 @@ cdef extern from "stats.h":
 cdef extern from "globals.h":
     vector[string] g_args
     RouteResult g_route_result
+    PlaceState g_place_state
     vector[RouteState] g_route_states
     int pins_per_clb
 
