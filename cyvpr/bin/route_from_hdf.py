@@ -26,6 +26,7 @@ def route_from_hdf(net_file_paths, arch_path, h5f, block_positions_sha1,
 
     perform a run of the VPR router using the provided parameters.
     '''
+    matches = []
 
     # Look for a table of placements containing an entry matching the specified
     # `block_positions_sha1` value.
@@ -34,7 +35,8 @@ def route_from_hdf(net_file_paths, arch_path, h5f, block_positions_sha1,
             matches = [m for m in table.readWhere('block_positions_sha1 == '
                                                   '"%s"' %
                                                   block_positions_sha1)]
-            break
+            if matches:
+                break
 
     if not matches:
         raise KeyError, ('No placement found with block_positions_sha1="%s"' %
