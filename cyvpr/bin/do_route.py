@@ -105,6 +105,15 @@ def route(net_path, arch_path, placement_path, output_path=None,
         state_row['block_positions_sha1'] = block_positions_sha1
         state_row['success'] = route_state.success
         state_row['width_fac'] = route_state.width_fac
+        state_row['critical_path_delay'] = route_state.critical_path_delay
+        state_row['total_logic_delay'] = route_state.total_logic_delay
+        state_row['total_net_delay'] = route_state.total_net_delay
+        state_row['tnodes_on_crit_path'] = route_state.tnodes_on_crit_path
+        state_row['non_global_nets_on_crit_path'] = (
+                route_state.non_global_nets_on_crit_path)
+        state_row['global_nets_on_crit_path'] = (route_state
+                                                 .global_nets_on_crit_path)
+
         # Convert start-date-time to UTC unix timestamp
         state_row['start'] = unix_time(route_state.start)
         state_row['end'] = unix_time(route_state.end)

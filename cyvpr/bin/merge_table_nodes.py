@@ -105,7 +105,7 @@ def append_tables(combined_output_path, input_paths, assess_row=None):
                 else:
                     print ('[warning]: skipping `%s` row %d since `assess_row`'
                            ' returned `False`' % (n._v_pathname, i))
-            table.flush()
+                table.flush()
         h.close()
     h5f.close()
 

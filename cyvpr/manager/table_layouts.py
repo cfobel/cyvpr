@@ -78,11 +78,20 @@ def get_VPR_PLACEMENT_STATS_TABLE_LAYOUT():
 
 
 def get_ROUTE_TABLE_LAYOUT(net_count):
-    return {'block_positions_sha1': ts.StringCol(40, pos=2),
-            'success': ts.BoolCol(pos=3),
-            'width_fac': ts.UInt32Col(pos=4),
-            'start': ts.Float64Col(pos=5),
-            'end': ts.Float64Col(pos=6),
+    return {'block_positions_sha1': ts.StringCol(40, pos=1),
+            'success': ts.BoolCol(pos=2),
+            'width_fac': ts.UInt32Col(pos=3),
+            'critical_path_delay': ts.Float64Col(pos=4),
+            'total_logic_delay': ts.Float64Col(pos=5),
+            'total_net_delay': ts.Float64Col(pos=6),
+            'tnodes_on_crit_path': ts.Int32Col(pos=7),
+            'non_global_nets_on_crit_path': ts.Int32Col(pos=8),
+            'global_nets_on_crit_path': ts.Int32Col(pos=9),
+            'net_data': {'bends': ts.UInt32Col(pos=0, shape=(net_count, )),
+                        'wire_length': ts.UInt32Col(pos=1, shape=(net_count, )),
+                        'segments': ts.UInt32Col(pos=2, shape=(net_count, ))},
+            'start': ts.Float64Col(pos=11),
+            'end': ts.Float64Col(pos=12),
             'router_options': {'max_router_iterations': ts.Int32Col(pos=0),
                                 'first_iter_pres_fac':
                                 ts.Float32Col(pos=1),
@@ -96,7 +105,4 @@ def get_ROUTE_TABLE_LAYOUT(net_count):
                                 'max_criticality':
                                 ts.Float32Col(pos=8),
                                 'criticality_exp':
-                                ts.Float32Col(pos=9), },
-            'net_data': {'bends': ts.UInt32Col(pos=0, shape=(net_count, )),
-                        'wire_length': ts.UInt32Col(pos=1, shape=(net_count, )),
-                        'segments': ts.UInt32Col(pos=2, shape=(net_count, ))}}
+                                ts.Float32Col(pos=9), }}
