@@ -9,15 +9,15 @@ The input (and output) HDF file have the following structure:
 
 For example:
 
-              root
-            /  |   \
-           /   |    \
-          /    |     \
-         /     |      \
-        /      |       \
-      ex5p    clma    tseng
-       |       ...      |
- route_states  ...   route_states
+                 root
+               /  |   \
+              /   |    \
+             /    |     \
+            /     |      \
+           /      |       \
+         ex5p    clma    tseng
+          |       ...      |
+    route_states  ...   route_states
 
 
 where `ex5p`, `clma`, `tseng` in the above hierarchy represent groups
