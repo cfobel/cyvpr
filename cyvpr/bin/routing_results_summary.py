@@ -1,4 +1,5 @@
-from pprint import pprint
+from pprint import pformat
+import cStringIO as StringIO
 
 from path import path
 import numpy as np
@@ -10,41 +11,68 @@ from ..result.routing_pandas import (max_failed_data, min_success_data,
 
 
 def main(routing_hdf_path, net_file_namebase):
+    format_opts = dict(((k, pd.get_option(k)) for k in ('float_format',
+                                                        'column_space')))
+    # Format floats to:
+    #
+    #   * Avoid small float values being displayed as zero _(e.g.,
+    #     critical-path-delay)_.
+    #   * Use engineering postfix to make it easier to compare values
+    #     at-a-glance _(e.g., `u` for micro, `n` for nano, etc.)_.
+    pd.set_eng_float_format(accuracy=3, use_eng_prefix=True)
     h5f = ts.open_file(str(routing_hdf_path), 'r')
 
     # In our case, we need to first load the data from our `route_states` table
     # from the HDF file into a `pandas.DataFrame` instance.
+    net_file_routings = getattr(h5f.root, net_file_namebase)
     data = np.array([v.fetch_all_fields()
-                     for v in getattr(h5f.root,
-                                      net_file_namebase).route_states],
-                    dtype=h5f.root.tseng.route_states.dtype)
+                     for v in net_file_routings.route_states],
+                    dtype=net_file_routings.route_states.dtype)
     routing_results = pd.DataFrame(data)
     h5f.close()
 
-    _min_success_data = min_success_data(routing_results)
-    min_success_summary = _min_success_data.describe()
-    print '# Minimum routable channel-width summary #\n'
-    print min_success_summary
+    string_io = StringIO.StringIO()
 
-    print '\n' + 70 * '-' + '\n'
+    print >> string_io, '# [%s] Routing results summary #\n' % net_file_namebase
+    _min_success_data = min_success_data(routing_results)
+    if len(_min_success_data) > 1:
+        min_success_summary = _min_success_data.describe()
+    elif len(_min_success_data) == 1:
+        min_success_summary = _min_success_data.iloc[0]
+    print >> string_io, '## Minimum routable channel-width summary ##\n'
+    print >> string_io, min_success_summary
+
+    print >> string_io, '\n' + 70 * '-' + '\n'
 
     _max_failed_data = max_failed_data(routing_results)
-    max_failed_summary = _max_failed_data.describe().astype('i')
-    print '# Maximum unroutable channel-width summary #\n'
-    print max_failed_summary
+    if len(_min_success_data) > 1:
+    #max_failed_summary = _max_failed_data.describe().astype('i')
+        max_failed_summary = _max_failed_data.describe()
+    elif len(_min_success_data) == 1:
+        max_failed_summary = _max_failed_data.iloc[0]
+    print >> string_io, '## Maximum unroutable channel-width summary ##\n'
+    print >> string_io, max_failed_summary
 
     incomplete_routing_searches = np.where(
         min_success_max_failed_channel_width_diff(routing_results) != 1)
     if len(incomplete_routing_searches[0]):
-        print 'Incomplete routings:'
-        pprint([routing_results['block_positions_sha1'][i] for i in
-                                       incomplete_routing_searches[0]])
+        print >> string_io, 'Incomplete routings:'
+        print >> string_io, pformat([routing_results['block_positions_sha1'][i]
+                                     for i in incomplete_routing_searches[0]])
 
-    print '\n' + 70 * '-' + '\n'
+    print >> string_io, '\n' + 70 * '-' + '\n'
 
-    print '# Missing routability result routing configurations #\n'
-    pprint(missing_routability_result_configs(routing_results))
-    return routing_results
+    print >> string_io, ('## Missing routability result routing configurations'
+                         ' ##\n')
+    print >> string_io, pformat(missing_routability_result_configs(
+                                routing_results))
+
+    print >> string_io, '\n' + 70 * '=' + '\n\n'
+
+    for k, v in format_opts.iteritems():
+        if v is not None:
+            pd.set_option(k, v)
+    return string_io.getvalue(), routing_results
 
 
 def parse_args():
@@ -53,12 +81,25 @@ def parse_args():
     parser = ArgumentParser(description='Display a summary of the routing '
                             'results for a single net-file from a HDF results '
                             'file')
+    parser.add_argument('-c', '--csv_channel_width', action='store_true',
+                        default=False)
     parser.add_argument(dest='routing_hdf_path', type=path)
-    parser.add_argument(dest='net_file_namebase')
+    parser.add_argument(nargs='*', dest='net_file_namebase')
     args = parser.parse_args()
     return args
 
 
 if __name__ == '__main__':
     args = parse_args()
-    routing_results = main(args.routing_hdf_path, args.net_file_namebase)
+    if not args.net_file_namebase:
+        h5f = ts.open_file(str(args.routing_hdf_path), 'r')
+        args.net_file_namebase = [g._v_name for g in h5f.root]
+        h5f.close()
+    for net_file_namebase in args.net_file_namebase:
+        summary, routing_results = main(args.routing_hdf_path,
+                                        net_file_namebase)
+        if args.csv_channel_width:
+            for result in missing_routability_result_configs(routing_results):
+                print ','.join(map(str, result))
+        else:
+            print summary
