@@ -98,7 +98,8 @@ def place(net_path, arch_path, output_path=None, output_dir=None,
                                                   'placed.out', seed=seed,
                                                   fast=fast)
     # Use a hash of the block-positions to name the HDF file.
-    block_positions_sha1 = hashlib.sha1(block_positions.data).hexdigest()
+    block_positions_sha1 = hashlib.sha1(block_positions
+                                        .astype('uint32').data).hexdigest()
     filters = ts.Filters(complib='blosc', complevel=6)
     if output_path is not None:
         output_path = str(output_path)

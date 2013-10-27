@@ -42,7 +42,8 @@ def route(net_path, arch_path, placement_path, output_path=None,
         routed_temp_dir.rmtree()
 
     block_positions = vpr_main.extract_block_positions()
-    block_positions_sha1 = hashlib.sha1(block_positions.data).hexdigest()
+    block_positions_sha1 = hashlib.sha1(block_positions
+                                        .astype('uint32').data).hexdigest()
 
     # Use a hash of the block-positions to name the HDF file.
     filters = ts.Filters(complib='blosc', complevel=6)
