@@ -265,11 +265,13 @@ def parse_args():
     return args
 
 
-def print_wilcoxon_compare_summary(result):
+def print_wilcoxon_compare_summary(result, net_file_namebase):
     output = sys.stdout
 
     print >> output, '# Wilcoxon signed-rank test results #'
-    print >> output, '## `%s` vs `%s` ##' % tuple(args.label)
+    print >> output, '## [%s] `%s` vs `%s` ##' % tuple([net_file_namebase, ] +
+                                                       result.values()[0][1]
+                                                       .keys())
 
     for k, v in result.iteritems():
         print >> output, '\n' + 70 * '-' + '\n'
@@ -291,4 +293,4 @@ if __name__ == '__main__':
     else:
         func = main
     result = func(*func_args)
-    print_wilcoxon_compare_summary(result)
+    print_wilcoxon_compare_summary(result, args.vpr_net_file_namebase)
