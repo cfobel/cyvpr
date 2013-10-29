@@ -10,6 +10,10 @@ from ..result.routing_pandas import (max_failed_data, min_success_data,
                                      missing_routability_result_configs)
 
 
+def prefix_lines(obj, prefix):
+    return '\n'.join([prefix + s for s in str(obj).splitlines()])
+
+
 def main(routing_hdf_path, net_file_namebase):
     format_opts = dict(((k, pd.get_option(k)) for k in ('float_format',
                                                         'column_space')))
@@ -32,6 +36,7 @@ def main(routing_hdf_path, net_file_namebase):
     h5f.close()
 
     string_io = StringIO.StringIO()
+    indent = 4 * ' '
 
     print >> string_io, '# [%s] Routing results summary #\n' % net_file_namebase
     _min_success_data = min_success_data(routing_results)
@@ -40,7 +45,7 @@ def main(routing_hdf_path, net_file_namebase):
     elif len(_min_success_data) == 1:
         min_success_summary = _min_success_data.iloc[0]
     print >> string_io, '## Minimum routable channel-width summary ##\n'
-    print >> string_io, min_success_summary
+    print >> string_io, prefix_lines(min_success_summary, indent)
 
     print >> string_io, '\n' + 70 * '-' + '\n'
 
@@ -51,23 +56,26 @@ def main(routing_hdf_path, net_file_namebase):
     elif len(_min_success_data) == 1:
         max_failed_summary = _max_failed_data.iloc[0]
     print >> string_io, '## Maximum unroutable channel-width summary ##\n'
-    print >> string_io, max_failed_summary
+    print >> string_io, prefix_lines(max_failed_summary, indent)
 
     incomplete_routing_searches = np.where(
         min_success_max_failed_channel_width_diff(routing_results) != 1)
     if len(incomplete_routing_searches[0]):
         print >> string_io, 'Incomplete routings:'
-        print >> string_io, pformat([routing_results['block_positions_sha1'][i]
+        print >> string_io, '\n'.join(['  * `%s`' %
+                                       pformat(routing_results
+                                               ['block_positions_sha1'][i])
                                      for i in incomplete_routing_searches[0]])
 
     print >> string_io, '\n' + 70 * '-' + '\n'
 
     print >> string_io, ('## Missing routability result routing configurations'
                          ' ##\n')
-    print >> string_io, pformat(missing_routability_result_configs(
-                                routing_results))
+    print >> string_io, '\n'.join(['  * `%s`' % pformat(v) for v in
+                                   missing_routability_result_configs
+                                   (routing_results)])
 
-    print >> string_io, '\n' + 70 * '=' + '\n\n'
+    print >> string_io, '\n' + 70 * '-' + '\n\n'
 
     for k, v in format_opts.iteritems():
         if v is not None:
