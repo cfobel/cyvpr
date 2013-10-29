@@ -102,7 +102,29 @@ def get_placement_stats_frame(h5f, net_file_namebase):
     return pd.DataFrame(data)
 
 
-def placement_stats_tables(placement_stats_frame):
+def cyplace_placement_stats_tables(placement_stats_frame,
+                                   stats=('temperature', 'cost',
+                                          'radius_limit', 'success_ratio',
+                                          'total_move_count')):
+    '''
+    Call `placement_stats_tables` with default placement-stats fields for a
+    cyplace place operation.
+    '''
+    return placement_stats_tables(placement_stats_frame, stats)
+
+
+def vpr_placement_stats_tables(placement_stats_frame,
+                               stats=('temperature', 'mean_cost',
+                                      'radius_limit', 'success_ratio',
+                                      'total_iteration_count')):
+    '''
+    Call `placement_stats_tables` with default placement-stats fields for a VPR
+    place operation.
+    '''
+    return placement_stats_tables(placement_stats_frame, stats)
+
+
+def placement_stats_tables(placement_stats_frame, stats):
     '''
     Since multiple trials are run for each placer configuration, it is useful
     to summarize the data across all trials to evaluate the performance of the
@@ -134,17 +156,13 @@ def placement_stats_tables(placement_stats_frame):
     stats_tables = {}
 
     for aggfunc in ('mean', 'min', 'max', 'std'):
-        stats = pd.pivot_table(placement_stats_frame,
-                               values=['temperature', 'mean_cost',
-                                       'radius_limit',
-                                       'total_iteration_count'],
-                               rows=['i'], aggfunc=getattr(np, aggfunc))
-        stats_tables[aggfunc] = stats
+        stats_table = pd.pivot_table(placement_stats_frame, values=list(stats),
+                                     rows=['i'], aggfunc=getattr(np, aggfunc))
+        stats_tables[aggfunc] = stats_table
     return stats_tables
 
 
-def plot_stats_tables(stats_tables, stats=('temperature', 'mean_cost',
-                                           'radius_limit')):
+def plot_stats_tables(stats_tables, stats, label_prefix=''):
     '''
     Given a set of placement-stats pivot-tables, we can, for example, plot the
     mean values of each stat, for each outer-loop iteration, showing the trend of
@@ -155,14 +173,14 @@ def plot_stats_tables(stats_tables, stats=('temperature', 'mean_cost',
     '''
     import matplotlib.pyplot as plt
 
-    #plt.title('[%s] %s' % (place_config_label, net_file_namebase))
     for stat in stats:
         mean_data = stats_tables['mean'][stat]
         min_data = stats_tables['min'][stat]
         max_data = stats_tables['max'][stat]
         max_mean = mean_data.max()
         plt.errorbar(range(len(mean_data)), mean_data / max_mean,
-                     label='%s (%s - %s)' % (stat, mean_data.min(), max_mean),
+                     label='%s%s (%s - %s)' % (label_prefix, stat,
+                                               mean_data.min(), max_mean),
                      yerr=((mean_data - min_data) / max_mean,
                            (max_data - mean_data) / max_mean))
     plt.legend()
