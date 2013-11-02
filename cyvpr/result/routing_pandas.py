@@ -1,4 +1,4 @@
-'''
+r'''
 # Overview #
 
 Recall that routing results are stored in an HDF file with the following
@@ -40,6 +40,12 @@ from pprint import pprint
 import tables as ts
 import numpy as np
 import pandas as pd
+
+
+def get_routing_data_frame(hdf_route_states):
+    data = np.array([v.fetch_all_fields() for v in hdf_route_states],
+                    dtype=hdf_route_states.dtype)
+    return pd.DataFrame(data.copy())
 
 
 def min_success_data(routing_data_frame):
