@@ -107,12 +107,24 @@ def main(args):
 
         matplotlib.rcParams.update({'font.size': args.figure_font_size})
 
+    def extract_label_h5f_pair(p):
+        p_parts = p.split('::')
+        if not p_parts or len(p_parts) > 2:
+            raise ValueError, ('H5F path description must have _at most_ one '
+                               'occurrence of `::`')
+        elif len(p_parts) == 1:
+            p_parts.insert(0, path(p_parts[0]).namebase)
+        return p_parts[0], path(p_parts[1])
+    label_h5f_pairs = map(extract_label_h5f_pair, args.hdf5_placements_file)
+
     if args.h5f_label_lambda is None:
-        h5f_label_lambda = lambda p: ('%s...%s' % (p.namebase[:8], p.namebase[-8:]))
+        h5f_label_lambda = lambda label, p: label
     else:
-        h5f_label_lambda = eval('lambda p: %s' % args.h5f_label_lambda)
-    h5fs = OrderedDict([(h5f_label_lambda(p), ts.open_file(str(p), mode='r'))
-                        for p in args.hdf5_placements_file])
+        h5f_label_lambda = eval('lambda label, p: %s' % args.h5f_label_lambda)
+
+    h5fs = OrderedDict([(h5f_label_lambda(label, p),
+                         ts.open_file(str(p), mode='r'))
+                        for label, p in label_h5f_pairs])
     figure_attrs = {}
     for attr, value_expr in [a.split(':') for a in args.figure_attr]:
         figure_attrs[attr] = eval(value_expr)
@@ -143,8 +155,9 @@ def main(args):
 
         figure_attrs.update(dict(figsize=figsize, dpi=args.dpi))
         for i in xrange(page_count):
-            figure = plot_h5fs(dict(h5fs.items()[i * figures_per_page:
-                                                 (i + 1) * figures_per_page]),
+            figure = plot_h5fs(OrderedDict(h5fs.items()
+                                           [i * figures_per_page:
+                                            (i + 1) * figures_per_page]),
                                args.net_file_namebase, args.figures_per_row,
                                enable_legend=args.plot_legend,
                                figure_kwargs=figure_attrs,
@@ -181,7 +194,7 @@ def parse_args():
     parser.add_argument('-b', '--block_positions_sha1')
     parser.add_argument('--h5f-label-lambda', type=str)
     parser.add_argument(dest='net_file_namebase', type=path)
-    parser.add_argument(nargs='+', dest='hdf5_placements_file', type=path)
+    parser.add_argument(nargs='+', dest='hdf5_placements_file')
 
     args = parser.parse_args()
     return args
