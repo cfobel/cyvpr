@@ -153,6 +153,10 @@ def main(args):
         print 'file count:', len(h5fs)
         print 'figures_per_page:', figures_per_page
 
+        if args.plot_linewidth is None:
+            linewidth = matplotlib.rcParams.get('lines.linewidth', 1.)
+        else:
+            linewidth = args.plot_linewidth
         figure_attrs.update(dict(figsize=figsize, dpi=args.dpi))
         for i in xrange(page_count):
             figure = plot_h5fs(OrderedDict(h5fs.items()
@@ -162,7 +166,7 @@ def main(args):
                                enable_legend=args.plot_legend,
                                figure_kwargs=figure_attrs,
                                subplot_kwargs=subplot_attrs,
-                               linewidth=args.plot_linewidth,
+                               linewidth=linewidth,
                                errorevery=args.error_every)
             figures.append(figure)
         if args.pdf_path is not None:
