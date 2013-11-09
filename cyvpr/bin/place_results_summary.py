@@ -162,28 +162,30 @@ def placement_stats_tables(placement_stats_frame, stats):
     return stats_tables
 
 
-def plot_stats_tables(stats_tables, stats, label_prefix=''):
+def plot_stats_tables(plot_context, stats_tables, stats, label_prefix='',
+                      **kwargs):
     '''
-    Given a set of placement-stats pivot-tables, we can, for example, plot the
-    mean values of each stat, for each outer-loop iteration, showing the trend of
-    each stat throughout the place process.
+    Given a set of placement-stats pivot-tables, plot the mean values of each
+    stat, for each outer-loop iteration, showing the trend of each stat
+    throughout the place process.
 
-    __NB__ The error-bars are used to show the range of values across the trials
-    at each point of the curve _(i.e., at each outer-loop iteration)_.
+    __NB__ The error-bars are used to show the range of values _(i.e.,
+    _minimum_ to _maximum_)_ across the trials, at each point of the curve
+    _(i.e., at each outer-loop iteration)_.
     '''
-    import matplotlib.pyplot as plt
-
     for stat in stats:
         mean_data = stats_tables['mean'][stat]
         min_data = stats_tables['min'][stat]
         max_data = stats_tables['max'][stat]
         max_mean = mean_data.max()
-        plt.errorbar(range(len(mean_data)), mean_data / max_mean,
-                     label='%s%s (%s - %s)' % (label_prefix, stat,
-                                               mean_data.min(), max_mean),
-                     yerr=((mean_data - min_data) / max_mean,
-                           (max_data - mean_data) / max_mean))
-    plt.legend()
+        plot_context.errorbar(range(len(mean_data)), mean_data / max_mean,
+                              #label='%s%s (%s - %s)' % (label_prefix, stat,
+                                                        #mean_data.min(),
+                                                        #max_mean),
+                              label='%s%s' % (label_prefix, stat),
+                              yerr=((mean_data - min_data) / max_mean,
+                                    (max_data - mean_data) / max_mean),
+                              **kwargs)
 
 
 def wilcoxon_signed_rank_compare(placement_stats,
