@@ -53,11 +53,51 @@ def plot_single_place_stats(plot_ctx, stats_table, stats=None, normalize=True,
 
 
 def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
-              figure_kwargs={}, subplot_kwargs={}, **kwargs):
+              stat_boxplot_mode=None, figure_kwargs={}, subplot_kwargs={},
+              **kwargs):
     '''
     Create a plot for each labelled HDF place-results file, showing the trends
     of stats for each of the placement stats tables corresponding to the
     provided net-file-namebase and each of the HDF file.
+
+
+    The `stat_boxplot_mode` _may_ be set to one of `top`, `bottom`, `left`, or
+    `right` to plot a box-plot for each place-stat.  See below for positioning
+    corresponding to each box-plot mode:
+
+    `top`
+    =====
+        _____________
+        |  |  |  |  |
+        | S| T| A| T|
+        |__|__|__|__|
+        |           |
+        |   trends  |
+        |___________|
+
+    `bottom`
+    ========
+        _____________
+        |           |
+        |   trends  |
+        |___________|
+        |  |  |  |  |
+        | S| T| A| T|
+        |__|__|__|__|
+
+    `left`
+    ======
+        _________________________
+        |  |  |  |  |           |
+        | S| T| A| T|   trends  |
+        |__|__|__|__|___________|
+
+    `right`
+    =======
+        _________________________
+        |           |  |  |  |  |
+        |   trends  | S| T| A| T|
+        |___________|__|__|__|__|
 
     See also:  `plot_single_place_stats` and `plot_place_stats`.
     '''
@@ -67,13 +107,14 @@ def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
     stats_tables = {}
     stats_types = {}
     figure = plt.figure(**figure_kwargs)
-    row_count = math.ceil(len(h5fs) / float(figures_per_row))
+    row_count = int(math.ceil(len(h5fs) / float(figures_per_row)))
+
+    if stat_boxplot_mode in ('top', 'bottom'):
+        row_count *= 2
+
     axes = []
 
     for i, (label, h5f) in enumerate(h5fs.iteritems()):
-        axis = figure.add_subplot(row_count, figures_per_row, i + 1,
-                                  **subplot_kwargs)
-        axis.set_title('[%s] %s' % (label, net_file_namebase))
         stats_frame = get_placement_stats_frame(h5f,
                                                 net_file_namebase)
         if 'mean_cost' in stats_frame:
@@ -88,15 +129,56 @@ def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
                     stats_frame)
             stats_types[label] = ('temperature', 'cost',
                                   'radius_limit', 'success_ratio')
-        plot_stats_tables(axis, stats_tables[label],
+        stat_count = len(stats_types[label])
+        column_count = figures_per_row
+        if stat_boxplot_mode is not None:
+            column_count *= stat_count
+        if stat_boxplot_mode in ('left', 'right'):
+            column_count *= 2
+        column_index = i % figures_per_row
+        row_index = int(i / figures_per_row)
+        shape = (row_count, column_count)
+
+        if stat_boxplot_mode in ('left', ):
+            trend_loc = (row_index, (2 * column_index + 1) * stat_count)
+        elif stat_boxplot_mode in ('right', ):
+            trend_loc = (row_index, 2 * column_index * stat_count)
+        elif stat_boxplot_mode in ('top', ):
+            trend_loc = (2 * row_index + 1, column_index * stat_count)
+        elif stat_boxplot_mode in ('bottom', ):
+            trend_loc = (2 * row_index, column_index * stat_count)
+        elif stat_boxplot_mode is None:
+            trend_loc = (row_index, column_index * stat_count)
+        else:
+            raise ValueError, ('Invalid boxplot mode: %s.  Must be one of: '
+                               '`top`, `bottom`, `left`, or `right`.')
+        column_span = stat_count
+        print shape, trend_loc, column_span
+
+        trend_axis = plt.subplot2grid(shape, trend_loc, colspan=column_span,
+                                      **subplot_kwargs)
+        trend_axis.set_title('[%s] %s' % (label, net_file_namebase))
+        plot_stats_tables(trend_axis, stats_tables[label],
                           stats=stats_types[label], **kwargs)
+        if stat_boxplot_mode is not None:
+            for j, stat_type in enumerate(stats_types[label]):
+                if stat_boxplot_mode in ('left', ):
+                    stat_loc = (row_index, 2 * column_index * stat_count + j)
+                elif stat_boxplot_mode in ('right', ):
+                    stat_loc = (row_index, (2 * column_index + 1) * stat_count + j)
+                elif stat_boxplot_mode in ('top', ):
+                    stat_loc = (2 * row_index, column_index * stat_count + j)
+                elif stat_boxplot_mode in ('bottom', ):
+                    stat_loc = (2 * row_index + 1, column_index * stat_count + j)
+                print '  ', stat_loc
+                stat_axis = plt.subplot2grid(shape, stat_loc)
+                stat_axis.boxplot(stats_tables[label]['mean'][stat_type])
+                stat_axis.set_xlabel(stat_type)
         iteration_count = len(stats_tables[label].values()[0])
-        axes.append((iteration_count, axis))
+        axes.append((iteration_count, trend_axis))
     max_iterations = max((iteration_count for iteration_count, axis in axes))
     for iteration_count, axis in axes:
-        axis.set_xlim(0, max_iterations)
-    if enable_legend:
-        for iteration_count, axis in axes:
+        if enable_legend:
             axis.legend()
     return figure
 
@@ -163,6 +245,7 @@ def main(args):
                                            [i * figures_per_page:
                                             (i + 1) * figures_per_page]),
                                args.net_file_namebase, args.figures_per_row,
+                               stat_boxplot_mode=args.stat_boxplot_mode,
                                enable_legend=args.plot_legend,
                                figure_kwargs=figure_attrs,
                                subplot_kwargs=subplot_attrs,
@@ -197,6 +280,8 @@ def parse_args():
                         'iteration. (default=%(default)s)')
     parser.add_argument('-b', '--block_positions_sha1')
     parser.add_argument('--h5f-label-lambda', type=str)
+    parser.add_argument('--stat-boxplot-mode', choices=('top', 'bottom',
+                                                        'left', 'right'))
     parser.add_argument(dest='net_file_namebase', type=path)
     parser.add_argument(nargs='+', dest='hdf5_placements_file')
 
