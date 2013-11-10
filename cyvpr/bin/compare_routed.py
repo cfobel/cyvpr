@@ -7,7 +7,8 @@ from scipy.stats import wilcoxon
 from path import path
 
 from cyvpr.result.routing_pandas import (get_max_min_channel_widths,
-                                          get_routing_data_frames)
+                                         get_routing_data_frames)
+from pandas_helpers.stats import significance_comparison
 
 
 def parse_args():
@@ -58,39 +59,11 @@ def boxplot_route_state_frames(data_frames, net_file_nambase, column):
     return fig, ax, data_vectors
 
 
-def significance_comparison(data_frames, net_file_nambase, column):
-    data_vectors = [df[net_file_nambase][1][column][:]
-                    for placer, df in data_frames.iteritems()]
-
-    # Perform pairwise Wilcoxon sign-rank test on each paired combination of
-    # placer algorithms.
-    wilcoxon_results = []
-    for (k1, v1), (k2, v2) in itertools.combinations(zip(data_frames.keys(),
-                                                        data_vectors), 2):
-        min_atoms = min(len(v1), len(v2))
-        max_atoms = max(len(v1), len(v2))
-
-        # Require at least $N$ elements in each vector, where $N = 5$.
-        # TODO: $N$ should likely be configurable...
-        N = 5
-        if min_atoms < N:
-            raise ValueError, ('At least %d elements are required in each '
-                               'vector. (%s has %d, %s has %d)' %
-                               (N, k1, len(v1), k2, len(v2)))
-        if len(v1) > min_atoms:
-            print ('[warning] %s has more elements than %s.  Only using first '
-                   '%d elements from %s' % (k1, k2, min_atoms, k1))
-            v1 = v1[:min_atoms]
-        elif len(v2) > min_atoms:
-            print ('[warning] %s has more elements than %s.  Only using first '
-                   '%d elements from %s' % (k2, k1, min_atoms, k2))
-            v2 = v2[:min_atoms]
-        p_value = wilcoxon(v1, v2)[-1]
-        wilcoxon_results.append((k1, k2, p_value, p_value < 0.05))
-
-    p_values = pd.DataFrame(wilcoxon_results, columns=('A', 'B', 'p-value',
-                                                       'significant'))
-    return p_values
+def route_data_frames_significance_comparison(data_frames, net_file_nambase,
+                                              column):
+    data_vectors = OrderedDict([(placer, df[net_file_nambase][1][column][:])
+                                for placer, df in data_frames.iteritems()])
+    return significance_comparison(data_vectors)
 
 
 if __name__ == '__main__':

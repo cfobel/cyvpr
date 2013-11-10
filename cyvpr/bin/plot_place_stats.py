@@ -175,9 +175,8 @@ def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
                 stat_axis.boxplot(stats_tables[label]['mean'][stat_type])
                 stat_axis.set_xlabel(stat_type)
         iteration_count = len(stats_tables[label].values()[0])
-        axes.append((iteration_count, trend_axis))
-    max_iterations = max((iteration_count for iteration_count, axis in axes))
-    for iteration_count, axis in axes:
+        axes.append(trend_axis)
+    for axis in axes:
         if enable_legend:
             axis.legend()
     return figure
