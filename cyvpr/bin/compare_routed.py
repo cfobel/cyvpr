@@ -1,14 +1,12 @@
 from collections import OrderedDict
-import itertools
 
 import tables as ts
-import pandas as pd
-from scipy.stats import wilcoxon
+from pyplot_helpers.plot import significance_boxplot
+from pandas_helpers.stats import significance_comparison
 from path import path
 
 from cyvpr.result.routing_pandas import (get_max_min_channel_widths,
                                          get_routing_data_frames)
-from pandas_helpers.stats import significance_comparison
 
 
 def parse_args():
@@ -32,38 +30,64 @@ def main(results_dir, labels):
     return data_frames
 
 
-def boxplot_route_state_frames(data_frames, net_file_nambase, column):
-    import matplotlib.pyplot as plt
+def route_data_frames_extract_net_file_namebase_column(data_frames,
+                                                       net_file_namebase,
+                                                       column):
+    '''
+    Return an `OrderedDict` object, where the _keys_ are the same as the keys
+    of the provided `data_frames` dictionary-like object, and the _value_ for
+    each _key_ is a vector of values corresponding to the specified
+    `net_file_namebase` and `column` for the respective data-frame.
+    '''
+    # `data_frames` is a dictionary-like object, where each value is a `tuple`.
+    # The _first_ element in each tuple is the _channel-width_ of the routing,
+    # while the _second_ element is the routing-results `pandas.DataFrame`.
+    #
+    # For statistical comparison, we are only concerned with comparing one of
+    # the columns from each data-frame, so iterate through and extract the
+    # relevant column from each data-frame, labeled using the data-frame
+    # tuple's label.
+    return OrderedDict([(label, df[net_file_namebase][1][column][:])
+                        for label, df in data_frames.iteritems()])
 
-    data_vectors = [df[net_file_nambase][1][column][:]
-                    for placer, df in data_frames.iteritems()]
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    pd.set_eng_float_format(accuracy=3, use_eng_prefix=True)
-    #for i in range(3):
-        #ax.annotate(str(data_vectors[i].describe()),
-                    #xy=((i + 1.2), (data_vectors[i].describe()['75%'] -
-                                    #data_vectors[i].describe()['25%'])
-                        #/ 8 + data_vectors[i].describe()['25%']))
-    #ax2 = fig.add_subplot(122)
-    ax.boxplot(data_vectors)
+def significance_boxplot_route_state_frames(ax, data_frames, net_file_namebase,
+                                            column):
+    '''
+    Extract the specified column of values corresponding to the specified
+    net-file-namebase from each of the provided data-frames, and plot the
+    resulting vectors of values in a significance-box-plot for comparison.
+
+    See also: `pyplot_helpers.plot.significance_boxplot`
+    '''
+    data_vectors_by_label = (
+        route_data_frames_extract_net_file_namebase_column(data_frames,
+                                                           net_file_namebase,
+                                                           column))
+    compare_results = significance_boxplot(ax, data_vectors_by_label)
+
+    pretty_column = column.replace('_', ' ')
+    ax.set_title('[%s] %s' % (net_file_namebase, pretty_column))
+    ax.set_ylabel(pretty_column)
     ax.set_xticklabels(data_frames.keys())
-    ax.set_title('[%s] %s' % (net_file_nambase, column.replace('-', ' ')))
-    ax.set_ylabel('%s' % column.replace('-', ' '))
-    ax.set_xlabel('placer algorithm')
-    ax.annotate('', xy=(1.2, data_vectors[0].mean()), xycoords='data',
-                xytext=(1.8, data_vectors[1].mean()), textcoords='data',
-                arrowprops={'arrowstyle': '<->'})
-    #return fig, ax, ax2, data_vectors
-    return fig, ax, data_vectors
+
+    return compare_results
 
 
-def route_data_frames_significance_comparison(data_frames, net_file_nambase,
+def route_data_frames_significance_comparison(data_frames, net_file_namebase,
                                               column):
-    data_vectors = OrderedDict([(placer, df[net_file_nambase][1][column][:])
-                                for placer, df in data_frames.iteritems()])
-    return significance_comparison(data_vectors)
+    '''
+    Extract the specified column of values corresponding to the specified
+    net-file-namebase from each of the provided data-frames, and return a
+    `panda.DataFrame` containing the results from pair-wise Wilcoxon
+    signed-rank comparisons between the resulting vectors of values.
+
+    See also: `pandas_helpers.stats.significance_comparison`
+    '''
+    return significance_comparison(
+        route_data_frames_extract_net_file_namebase_column(data_frames,
+                                                           net_file_namebase,
+                                                           column))
 
 
 if __name__ == '__main__':

@@ -153,7 +153,7 @@ def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
             raise ValueError, ('Invalid boxplot mode: %s.  Must be one of: '
                                '`top`, `bottom`, `left`, or `right`.')
         column_span = stat_count
-        print shape, trend_loc, column_span
+        #print shape, trend_loc, column_span
 
         trend_axis = plt.subplot2grid(shape, trend_loc, colspan=column_span,
                                       **subplot_kwargs)
@@ -170,11 +170,10 @@ def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
                     stat_loc = (2 * row_index, column_index * stat_count + j)
                 elif stat_boxplot_mode in ('bottom', ):
                     stat_loc = (2 * row_index + 1, column_index * stat_count + j)
-                print '  ', stat_loc
+                #print '  ', stat_loc
                 stat_axis = plt.subplot2grid(shape, stat_loc)
                 stat_axis.boxplot(stats_tables[label]['mean'][stat_type])
                 stat_axis.set_xlabel(stat_type)
-        iteration_count = len(stats_tables[label].values()[0])
         axes.append(trend_axis)
     for axis in axes:
         if enable_legend:
