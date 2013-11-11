@@ -1,5 +1,6 @@
 import math
 from collections import OrderedDict
+from itertools import izip
 
 import tables as ts
 from path import path
@@ -53,14 +54,58 @@ def plot_single_place_stats(plot_ctx, stats_table, stats=None, normalize=True,
     return plot_objects
 
 
-def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
-              stat_boxplot_mode=None, figure_kwargs={}, subplot_kwargs={},
-              **kwargs):
+def place_extract_stats_types_and_tables(h5fs, net_file_namebase):
+    '''
+    Extract the aggregate placement stats for the specified _net-file-namebase_
+    from each of the specified HDF placement-results files, grouped by HDF-file
+    label.
+
+    Return two `OrderedDict` objects:
+
+      * `stats_tables_by_label`:
+        * Two-level `OrderedDict`:
+          * _Keys_ of _first_ level correspond to labels from `h5fs`.
+          * _Keys_ of _second_ level are `('mean', 'min', 'max', 'std')`,
+            corresponding to the respective aggregation of the underlying
+            placement stats.
+      * `stats_types_by_label`:
+        * _Keys_ correspond to the labels of the placement-stats available for
+          the respective HDF file.
+          * For VPR results files, the keys include:
+
+              `('temperature', 'mean_cost', 'radius_limit', 'success_ratio')
+
+          * For `cyplace.bin.run_anneal` results files, the keys include:
+
+              `('temperature', 'cost', 'radius_limit', 'success_ratio')
+    '''
+    stats_tables_by_label = OrderedDict()
+    stats_types_by_label = OrderedDict()
+    for i, (label, h5f) in enumerate(h5fs.iteritems()):
+        stats_frame = get_placement_stats_frame(h5f,
+                                                net_file_namebase)
+        if 'mean_cost' in stats_frame:
+            # Assume VPR, so use `vpr_placement_stats_tables`
+            stats_tables_by_label[label] = vpr_placement_stats_tables(
+                    stats_frame)
+            stats_types_by_label[label] = ('temperature', 'mean_cost',
+                                           'radius_limit', 'success_ratio')
+        else:
+            # Assume `cyplace`, so use `cyplace_placement_stats_tables`.
+            stats_tables_by_label[label] = cyplace_placement_stats_tables(
+                    stats_frame)
+            stats_types_by_label[label] = ('temperature', 'cost',
+                                           'radius_limit', 'success_ratio')
+    return stats_tables_by_label, stats_types_by_label
+
+
+def plot_h5fs(h5fs, net_file_namebase, title_format='[%(label)s]',
+              figures_per_row=1, enable_legend=False, stat_boxplot_mode=None,
+              figure_kwargs={}, subplot_kwargs={}, **kwargs):
     '''
     Create a plot for each labelled HDF place-results file, showing the trends
     of stats for each of the placement stats tables corresponding to the
     provided net-file-namebase and each of the HDF file.
-
 
     The `stat_boxplot_mode` _may_ be set to one of `top`, `bottom`, `left`, or
     `right` to plot a box-plot for each place-stat.  See below for positioning
@@ -139,33 +184,24 @@ def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
         stat_index = 0
     trend_grid = GridSpecFromSubplotSpec(len(h5fs), 1,
                                          subplot_spec=root_grid[trend_index])
-    for i, (label, h5f) in enumerate(h5fs.iteritems()):
-        stats_frame = get_placement_stats_frame(h5f,
-                                                net_file_namebase)
-        if 'mean_cost' in stats_frame:
-            # Assume VPR, so use `vpr_placement_stats_tables`
-            stats_tables[label] = vpr_placement_stats_tables(
-                    stats_frame)
-            stats_types[label] = ('temperature', 'mean_cost',
-                                  'radius_limit', 'success_ratio')
-        else:
-            # Assume `cyplace`, so use `cyplace_placement_stats_tables`.
-            stats_tables[label] = cyplace_placement_stats_tables(
-                    stats_frame)
-            stats_types[label] = ('temperature', 'cost',
-                                  'radius_limit', 'success_ratio')
-        stat_count = len(stats_types[label])
+    stats_tables_by_label, stats_types_by_label = (
+            place_extract_stats_types_and_tables(h5fs, net_file_namebase))
+    for i, ((label, stats_tables), (label2, stats_types)) in enumerate(izip(
+            stats_tables_by_label.iteritems(),
+            stats_types_by_label.iteritems())):
+        assert(label == label2)
+        stat_count = len(stats_types)
         trend_axis = figure.add_subplot(trend_grid[i], **subplot_kwargs)
-        trend_axis.set_title('[%s] %s' % (label, net_file_namebase))
-        plot_stats_tables(trend_axis, stats_tables[label],
-                          stats=stats_types[label], **kwargs)
+        trend_axis.set_title(title_format % dict(label=label))
+        plot_stats_tables(trend_axis, stats_tables, stats=stats_types,
+                          **kwargs)
         stat_boxplot_grid = GridSpecFromSubplotSpec(len(h5fs), stat_count,
                                                     subplot_spec=
                                                     root_grid[stat_index])
         if stat_boxplot_mode is not None:
-            for j, stat_type in enumerate(stats_types[label]):
+            for j, stat_type in enumerate(stats_types):
                 stat_axis = figure.add_subplot(stat_boxplot_grid[i, j])
-                stat_axis.boxplot(stats_tables[label]['mean'][stat_type])
+                stat_axis.boxplot(stats_tables['mean'][stat_type])
                 stat_axis.set_xticklabels([stat_type])
         axes.append(trend_axis)
     for axis in axes:
