@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 import tables as ts
 from path import path
+from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from pyplot_helpers.arg_parsers import pdf_pages_params_args_parser
 
 from cyvpr.bin.place_results_summary import (
@@ -113,7 +114,31 @@ def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
         row_count *= 2
 
     axes = []
+    if stat_boxplot_mode in ('left', 'right'):
+        root_grid = GridSpec(1, 2)
+    elif stat_boxplot_mode in ('top', 'bottom'):
+        root_grid = GridSpec(2, 1)
+    elif stat_boxplot_mode is None:
+        root_grid = GridSpec(1, 1)
+    else:
+        raise ValueError, ('Invalid boxplot mode: %s.  Must be one of: '
+                           '`top`, `bottom`, `left`, or `right`.' %
+                           stat_boxplot_mode)
 
+    if stat_boxplot_mode in (None, 'right'):
+        trend_index = 0
+        stat_index = 1
+    elif stat_boxplot_mode in ('left', ):
+        trend_index = 1
+        stat_index = 0
+    elif stat_boxplot_mode in ('bottom', ):
+        trend_index = 0
+        stat_index = 1
+    else:
+        trend_index = 1
+        stat_index = 0
+    trend_grid = GridSpecFromSubplotSpec(len(h5fs), 1,
+                                         subplot_spec=root_grid[trend_index])
     for i, (label, h5f) in enumerate(h5fs.iteritems()):
         stats_frame = get_placement_stats_frame(h5f,
                                                 net_file_namebase)
@@ -130,50 +155,18 @@ def plot_h5fs(h5fs, net_file_namebase, figures_per_row=1, enable_legend=False,
             stats_types[label] = ('temperature', 'cost',
                                   'radius_limit', 'success_ratio')
         stat_count = len(stats_types[label])
-        column_count = figures_per_row
-        if stat_boxplot_mode is not None:
-            column_count *= stat_count
-        if stat_boxplot_mode in ('left', 'right'):
-            column_count *= 2
-        column_index = i % figures_per_row
-        row_index = int(i / figures_per_row)
-        shape = (row_count, column_count)
-
-        if stat_boxplot_mode in ('left', ):
-            trend_loc = (row_index, (2 * column_index + 1) * stat_count)
-        elif stat_boxplot_mode in ('right', ):
-            trend_loc = (row_index, 2 * column_index * stat_count)
-        elif stat_boxplot_mode in ('top', ):
-            trend_loc = (2 * row_index + 1, column_index * stat_count)
-        elif stat_boxplot_mode in ('bottom', ):
-            trend_loc = (2 * row_index, column_index * stat_count)
-        elif stat_boxplot_mode is None:
-            trend_loc = (row_index, column_index * stat_count)
-        else:
-            raise ValueError, ('Invalid boxplot mode: %s.  Must be one of: '
-                               '`top`, `bottom`, `left`, or `right`.')
-        column_span = stat_count
-        #print shape, trend_loc, column_span
-
-        trend_axis = plt.subplot2grid(shape, trend_loc, colspan=column_span,
-                                      **subplot_kwargs)
+        trend_axis = figure.add_subplot(trend_grid[i], **subplot_kwargs)
         trend_axis.set_title('[%s] %s' % (label, net_file_namebase))
         plot_stats_tables(trend_axis, stats_tables[label],
                           stats=stats_types[label], **kwargs)
+        stat_boxplot_grid = GridSpecFromSubplotSpec(len(h5fs), stat_count,
+                                                    subplot_spec=
+                                                    root_grid[stat_index])
         if stat_boxplot_mode is not None:
             for j, stat_type in enumerate(stats_types[label]):
-                if stat_boxplot_mode in ('left', ):
-                    stat_loc = (row_index, 2 * column_index * stat_count + j)
-                elif stat_boxplot_mode in ('right', ):
-                    stat_loc = (row_index, (2 * column_index + 1) * stat_count + j)
-                elif stat_boxplot_mode in ('top', ):
-                    stat_loc = (2 * row_index, column_index * stat_count + j)
-                elif stat_boxplot_mode in ('bottom', ):
-                    stat_loc = (2 * row_index + 1, column_index * stat_count + j)
-                #print '  ', stat_loc
-                stat_axis = plt.subplot2grid(shape, stat_loc)
+                stat_axis = figure.add_subplot(stat_boxplot_grid[i, j])
                 stat_axis.boxplot(stats_tables[label]['mean'][stat_type])
-                stat_axis.set_xlabel(stat_type)
+                stat_axis.set_xticklabels([stat_type])
         axes.append(trend_axis)
     for axis in axes:
         if enable_legend:
