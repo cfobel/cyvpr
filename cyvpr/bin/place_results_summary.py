@@ -162,8 +162,8 @@ def placement_stats_tables(placement_stats_frame, stats):
     return stats_tables
 
 
-def plot_stats_tables(plot_context, stats_tables, stats, label_prefix='',
-                      **kwargs):
+def plot_stats_tables_trends(plot_context, stats_tables, stats,
+                             label_prefix='', **kwargs):
     '''
     Given a set of placement-stats pivot-tables, plot the mean values of each
     stat, for each outer-loop iteration, showing the trend of each stat

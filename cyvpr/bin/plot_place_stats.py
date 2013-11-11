@@ -9,7 +9,7 @@ from pyplot_helpers.arg_parsers import pdf_pages_params_args_parser
 
 from cyvpr.bin.place_results_summary import (
         get_placement_stats_frame, cyplace_placement_stats_tables,
-        vpr_placement_stats_tables, plot_stats_tables)
+        vpr_placement_stats_tables, plot_stats_tables_trends)
 
 
 def plot_place_stats(plot_ctx, stats_table, stats=None, normalize=True,
@@ -99,13 +99,88 @@ def place_extract_stats_types_and_tables(h5fs, net_file_namebase):
     return stats_tables_by_label, stats_types_by_label
 
 
-def plot_h5fs(h5fs, net_file_namebase, title_format='[%(label)s]',
-              figures_per_row=1, enable_legend=False, stat_boxplot_mode=None,
-              figure_kwargs={}, subplot_kwargs={}, **kwargs):
+def plot_h5fs(h5fs, net_file_namebase, figure_kwargs={}, **kwargs):
+    import matplotlib.pyplot as plt
+
+    stats_tables_by_label, stats_types_by_label = (
+        place_extract_stats_types_and_tables(h5fs, net_file_namebase))
+    figure = plt.figure(**figure_kwargs)
+    return plot_stats_tables(figure, stats_tables_by_label,
+                             stats_types_by_label, **kwargs)
+
+
+def root_grid_spec_config(mode=None):
     '''
-    Create a plot for each labelled HDF place-results file, showing the trends
-    of stats for each of the placement stats tables corresponding to the
-    provided net-file-namebase and each of the HDF file.
+    The `mode` _may_ be set to one of `top`, `bottom`, `left`, or `right` to
+    configure the grid-spec to contain _two_ cells in one of the following
+    configurations:
+
+    `top`
+    =====
+        _____________
+        |           |
+        |   other   |
+        |___________|
+        |           |
+        |   main    |
+        |___________|
+
+    `bottom`
+    ========
+        _____________
+        |           |
+        |   main    |
+        |___________|
+        |           |
+        |   other   |
+        |___________|
+
+    `left`
+    ======
+        _________________________
+        |           |           |
+        |   other   |   main    |
+        |___________|___________|
+
+    `right`
+    =======
+        _________________________
+        |           |           |
+        |   main    |   other   |
+        |___________|___________|
+    '''
+    if mode in ('left', 'right'):
+        root_grid = GridSpec(1, 2)
+    elif mode in ('top', 'bottom'):
+        root_grid = GridSpec(2, 1)
+    elif mode is None:
+        root_grid = GridSpec(1, 1)
+    else:
+        raise ValueError, ('Invalid mode: %s.  Must be one of: '
+                           '`top`, `bottom`, `left`, or `right`.' % mode)
+
+    if mode in (None, 'right'):
+        main_index = 0
+        other_index = 1
+    elif mode in ('left', ):
+        main_index = 1
+        other_index = 0
+    elif mode in ('bottom', ):
+        main_index = 0
+        other_index = 1
+    else:
+        main_index = 1
+        other_index = 0
+    return root_grid, main_index, other_index
+
+
+def plot_stats_tables(figure, stats_tables_by_label, stats_types_by_label,
+                      figures_per_row=1, stat_boxplot_mode=None,
+                      figure_kwargs={}, **kwargs):
+    '''
+    Create a plot for each set of place-results stats-tables, showing the
+    trends of stats for each of the placement stats tables corresponding to
+    the label of each set of stats-tables.
 
     The `stat_boxplot_mode` _may_ be set to one of `top`, `bottom`, `left`, or
     `right` to plot a box-plot for each place-stat.  See below for positioning
@@ -145,69 +220,87 @@ def plot_h5fs(h5fs, net_file_namebase, title_format='[%(label)s]',
         |   trends  | S| T| A| T|
         |___________|__|__|__|__|
 
-    See also:  `plot_single_place_stats` and `plot_place_stats`.
+    See also:  `root_grid_spec_config`, and `plot_stats_tables_trends`.
     '''
-    import matplotlib.pyplot as plt
-
     figures_per_row = int(figures_per_row)
-    stats_tables = {}
-    stats_types = {}
-    figure = plt.figure(**figure_kwargs)
-    row_count = int(math.ceil(len(h5fs) / float(figures_per_row)))
+    stats_set_count = len(stats_types_by_label)
 
-    if stat_boxplot_mode in ('top', 'bottom'):
-        row_count *= 2
+    root_grid, trend_index, stat_index = (
+            root_grid_spec_config(stat_boxplot_mode))
 
-    axes = []
-    if stat_boxplot_mode in ('left', 'right'):
-        root_grid = GridSpec(1, 2)
-    elif stat_boxplot_mode in ('top', 'bottom'):
-        root_grid = GridSpec(2, 1)
-    elif stat_boxplot_mode is None:
-        root_grid = GridSpec(1, 1)
-    else:
-        raise ValueError, ('Invalid boxplot mode: %s.  Must be one of: '
-                           '`top`, `bottom`, `left`, or `right`.' %
-                           stat_boxplot_mode)
-
-    if stat_boxplot_mode in (None, 'right'):
-        trend_index = 0
-        stat_index = 1
-    elif stat_boxplot_mode in ('left', ):
-        trend_index = 1
-        stat_index = 0
-    elif stat_boxplot_mode in ('bottom', ):
-        trend_index = 0
-        stat_index = 1
-    else:
-        trend_index = 1
-        stat_index = 0
-    trend_grid = GridSpecFromSubplotSpec(len(h5fs), 1,
+    trend_grid = GridSpecFromSubplotSpec(stats_set_count, 1,
                                          subplot_spec=root_grid[trend_index])
-    stats_tables_by_label, stats_types_by_label = (
-            place_extract_stats_types_and_tables(h5fs, net_file_namebase))
+    plot_stats_tables_trends_by_label(figure, trend_grid,
+                                      stats_tables_by_label,
+                                      stats_types_by_label)
+    if stat_boxplot_mode is not None:
+        plot_stats_tables_boxplots_by_label(figure, root_grid[stat_index],
+                                            stats_tables_by_label,
+                                            stats_types_by_label)
+
+
+def plot_stats_tables_trends_by_label(figure, grid_spec, stats_tables_by_label,
+                                      stats_types_by_label, subplot_kwargs={},
+                                      title_format='[%(label)s]',
+                                      enable_legend=False, **kwargs):
+    '''
+    Given a figure, a `GridSpec`, a set of stats-tables and corresponding
+    stats-types, plot a trends-graph for each of the stats-tables.
+
+    __NB__ By using a `GridSpec`, we can plot here using only an index for each
+    set, without being concerned about the actual grid layout for the plots.
+    The grid layout can then be defined by the calling code, allowing for
+    better reuse of the plotting behaviour of this function.
+    '''
+    axes = []
     for i, ((label, stats_tables), (label2, stats_types)) in enumerate(izip(
             stats_tables_by_label.iteritems(),
             stats_types_by_label.iteritems())):
         assert(label == label2)
-        stat_count = len(stats_types)
-        trend_axis = figure.add_subplot(trend_grid[i], **subplot_kwargs)
+        trend_axis = figure.add_subplot(grid_spec[i], **subplot_kwargs)
         trend_axis.set_title(title_format % dict(label=label))
-        plot_stats_tables(trend_axis, stats_tables, stats=stats_types,
-                          **kwargs)
-        stat_boxplot_grid = GridSpecFromSubplotSpec(len(h5fs), stat_count,
-                                                    subplot_spec=
-                                                    root_grid[stat_index])
-        if stat_boxplot_mode is not None:
-            for j, stat_type in enumerate(stats_types):
-                stat_axis = figure.add_subplot(stat_boxplot_grid[i, j])
-                stat_axis.boxplot(stats_tables['mean'][stat_type])
-                stat_axis.set_xticklabels([stat_type])
+        plot_stats_tables_trends(trend_axis, stats_tables, stats=stats_types,
+                                 **kwargs)
         axes.append(trend_axis)
     for axis in axes:
         if enable_legend:
             axis.legend()
-    return figure
+
+
+def plot_stats_tables_boxplots_by_label(figure, subplot_spec,
+                                        stats_tables_by_label,
+                                        stats_types_by_label, **kwargs):
+    '''
+    Given a figure, a `SubplotSpec`, a set of stats-tables and corresponding
+    stats-types, draw a box-plot for each stat in each of the stats-tables.
+
+    __NB__ By using a `SubplotSpec`, we can plot here using only a combined
+    index, calculated using:
+
+      1) An index for each stats set.
+      2) An index for each stat within a set.
+
+    without being concerned about the actual grid layout for the plots. The
+    grid layout can then be defined by the calling code, allowing for better
+    reuse of the plotting behaviour of this function.
+    '''
+    stats_set_count = len(stats_types_by_label)
+    stat_count_offset = 0
+    for (label, stats_tables), (label2, stats_types) in izip(
+            stats_tables_by_label.iteritems(),
+            stats_types_by_label.iteritems()):
+        assert(label == label2)
+        stat_count = len(stats_types)
+        stat_boxplot_grid = GridSpecFromSubplotSpec(stats_set_count,
+                                                    stat_count,
+                                                    subplot_spec=subplot_spec)
+        for j, stat_type in enumerate(stats_types):
+            #stat_axis = figure.add_subplot(stat_boxplot_grid[i, j])
+            stat_axis = figure.add_subplot(stat_boxplot_grid[stat_count_offset
+                                                             + j])
+            stat_axis.boxplot(stats_tables['mean'][stat_type])
+            stat_axis.set_xticklabels([stat_type])
+        stat_count_offset += stat_count
 
 
 def main(args):
