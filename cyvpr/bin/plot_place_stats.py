@@ -6,6 +6,7 @@ import tables as ts
 from path import path
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from pyplot_helpers.arg_parsers import pdf_pages_params_args_parser
+from pyplot_helpers.plot import significance_boxplot
 
 from cyvpr.bin.place_results_summary import (
         get_placement_stats_frame, cyplace_placement_stats_tables,
@@ -232,11 +233,11 @@ def plot_stats_tables(figure, stats_tables_by_label, stats_types_by_label,
                                          subplot_spec=root_grid[trend_index])
     plot_stats_tables_trends_by_label(figure, trend_grid,
                                       stats_tables_by_label,
-                                      stats_types_by_label)
+                                      stats_types_by_label, **kwargs)
     if stat_boxplot_mode is not None:
-        plot_stats_tables_boxplots_by_label(figure, root_grid[stat_index],
-                                            stats_tables_by_label,
-                                            stats_types_by_label)
+        plot_stats_tables_significance_boxplots(figure, root_grid[stat_index],
+                                                stats_tables_by_label,
+                                                stats_types_by_label)
 
 
 def plot_stats_tables_trends_by_label(figure, grid_spec, stats_tables_by_label,
@@ -303,6 +304,44 @@ def plot_stats_tables_boxplots_by_label(figure, subplot_spec,
         stat_count_offset += stat_count
 
 
+def plot_stats_tables_significance_boxplots(figure, subplot_spec,
+                                            stats_tables_by_label,
+                                            stats_types_by_label, **kwargs):
+    '''
+    Given a figure, a `SubplotSpec`, a set of stats-tables and corresponding
+    stats-types, draw a box-plot for each stat, showing the statistical
+    comparison between values from each stats-set.
+
+    __NB__ By using a `SubplotSpec`, we can plot here using only a combined
+    index, calculated using:
+
+      1) An index for each stats set.
+      2) An index for each stat within a set.
+
+    without being concerned about the actual grid layout for the plots. The
+    grid layout can then be defined by the calling code, allowing for better
+    reuse of the plotting behaviour of this function.
+    '''
+    common_stats_types = set()
+    for stats_types in stats_types_by_label.itervalues():
+        if not common_stats_types:
+            common_stats_types.update(stats_types)
+        else:
+            common_stats_types.intersection_update(stats_types)
+
+    grid_spec = GridSpecFromSubplotSpec(len(common_stats_types) / 2, 2,
+                                        subplot_spec=subplot_spec)
+
+    for i, stats_type in enumerate(common_stats_types):
+        stat_axis = figure.add_subplot(grid_spec[i])
+        stat_axis.set_title(stats_type)
+        data_vectors = OrderedDict([(label, stats_tables['mean'][stats_type])
+                                    for label, stats_tables in
+                                    stats_tables_by_label.iteritems()])
+        significance_boxplot(stat_axis, OrderedDict(data_vectors.items()))
+        stat_axis.set_xticklabels(stats_tables_by_label.keys())
+
+
 def main(args):
     if args.figure_font_size is not None:
         import matplotlib
@@ -364,7 +403,8 @@ def main(args):
             figure = plot_h5fs(OrderedDict(h5fs.items()
                                            [i * figures_per_page:
                                             (i + 1) * figures_per_page]),
-                               args.net_file_namebase, args.figures_per_row,
+                               args.net_file_namebase,
+                               figures_per_row=args.figures_per_row,
                                stat_boxplot_mode=args.stat_boxplot_mode,
                                enable_legend=args.plot_legend,
                                figure_kwargs=figure_attrs,
