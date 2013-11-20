@@ -2,6 +2,8 @@ r'''
 Merge `Table` nodes from several input HDF files into a single, combined HDF
 output file.
 '''
+import sys
+
 from path import path
 import tables as ts
 
@@ -131,9 +133,13 @@ def merge_tables(args, assess_row=None):
     print 'Successfully wrote output to:', args.merged_output_path
 
 
-def parse_args():
+def parse_args(argv=None):
     """Parses arguments, returns (options, args)."""
     from argparse import ArgumentParser
+
+    if argv is None:
+        argv = sys.argv[1:]
+
     parser = ArgumentParser(description='Merge placement results HDF files.')
     mutex_args = parser.add_mutually_exclusive_group()
     mutex_args.add_argument('-a', '--append', action='store_true',
@@ -142,7 +148,7 @@ def parse_args():
                             default=False)
     parser.add_argument(dest='merged_output_path', type=path)
     parser.add_argument(nargs='+', dest='input_files', type=path)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     return args
 
 
