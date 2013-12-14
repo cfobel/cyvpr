@@ -14,6 +14,7 @@
 #include "path_delay.h"
 #include "net_delay.h"
 #include "timing_place.h"
+#include "timing.hpp"
 
 
 /******************* Subroutines local to this module ************************/
@@ -64,9 +65,22 @@ void place_and_route (enum e_operation operation,
  }
 
  else if (placer_opts.place_freq == PLACE_ONCE) {
+    timespec start;
+    timespec end;
+
+    // Start timer for placement
+    clock_gettime(CLOCK_REALTIME, &start);
+
     try_place (placer_opts, annealing_sched, chan_width_dist,
                router_opts, det_routing_arch, segment_inf,
                timing_inf, subblock_data_ptr);
+
+    // End timer for placement
+    clock_gettime(CLOCK_REALTIME, &end);
+
+    double runtime = (end.tv_sec - start.tv_sec) +
+                     (end.tv_nsec - start.tv_nsec) * 1e-9;
+    cout << "  Runtime: " << runtime << " seconds" << endl;
     print_place (place_file, net_file, arch_file);
  }
 
