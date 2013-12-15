@@ -394,6 +394,8 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
    inverse_prev_bb_cost = 0;
  }
 
+ float starting_bb_cost = bb_cost;
+
  move_lim = (int) (annealing_sched.inner_num * pow(num_blocks,1.3333));
 
  if (placer_opts.inner_loop_recompute_divider != 0)
@@ -794,8 +796,10 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
 
  sprintf(msg,"Placement. Cost: %g  bb_cost: %g td_cost: %g Channel Factor: %d d_max: %g",
 	 cost, bb_cost, timing_cost, width_fac, d_max);
- my_printf("Placement. Cost: %g  bb_cost: %g  td_cost: %g  delay_cost: %g.\n",
-	cost, bb_cost, timing_cost,delay_cost);
+ my_printf("Placement. Cost: %g  bb_cost: %g -> %g (%g%%)  td_cost: %g  delay_cost: %g.\n",
+           cost, starting_bb_cost, bb_cost, ((bb_cost - starting_bb_cost) * 100
+                                             / starting_bb_cost),
+           timing_cost,delay_cost);
  update_screen(MAJOR, msg, PLACEMENT, FALSE);
 
 #ifdef SPEC
