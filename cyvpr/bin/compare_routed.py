@@ -5,6 +5,7 @@ from pyplot_helpers.plot import significance_boxplot
 from pandas_helpers.stats import significance_comparison
 from path import path
 
+from cyvpr import get_netfile_info
 from cyvpr.result.routing_pandas import (get_max_min_channel_widths,
                                          get_routing_data_frames)
 
@@ -64,10 +65,20 @@ def significance_boxplot_route_state_frames(ax, data_frames, net_file_namebase,
         route_data_frames_extract_net_file_namebase_column(data_frames,
                                                            net_file_namebase,
                                                            column))
-    compare_results = significance_boxplot(ax, data_vectors_by_label)
+    width_fac = data_frames.values()[0][net_file_namebase][0]
+    try:
+        compare_results = significance_boxplot(ax, data_vectors_by_label)
+    except ValueError, e:
+        raise ValueError, '%s [width_fac=%d]' % (e, width_fac)
 
     pretty_column = column.replace('_', ' ')
-    ax.set_title('[%s] %s' % (net_file_namebase, pretty_column))
+    netfile_info = get_netfile_info(net_file_namebase)
+    ax.set_title('[%s (w:%d b:%d, r:%d)] %s' % (net_file_namebase,
+                                                width_fac,
+                                                sum(netfile_info['block_counts']
+                                                    .values()),
+                                                netfile_info['clb_to_io_ratio'],
+                                                pretty_column))
     ax.set_ylabel(pretty_column)
     ax.set_xticklabels(data_frames.keys())
 
