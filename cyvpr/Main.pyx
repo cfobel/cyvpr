@@ -1,7 +1,174 @@
 # cython: embedsignature=True
+from libc.stdint cimport uint32_t
+
 from collections import OrderedDict
-import numpy as np
+import sys
 import os.path
+
+import numpy as np
+
+
+cpdef bounding_box_cross_count(int net_block_count):
+    cdef float crossing
+
+    if net_block_count > 50:
+        crossing = 2.7933 + 0.02616 * (net_block_count - 50)
+    else:
+        crossing = cross_count[net_block_count - 1];
+
+    return crossing
+
+
+cdef uint32_t INFINITY = sys.maxint
+
+
+cdef class cStarPlusData:
+    cdef public float x_sum
+    cdef public float x_squared_sum
+    cdef public float y_sum
+    cdef public float y_squared_sum
+    cdef float alpha
+    cdef float beta
+
+    def __cinit__(self, float alpha=1.59, float beta=1.):
+        self.alpha = alpha
+        self.beta = beta
+        self.reset()
+
+    def update(self, x, y):
+        self.x_sum += x
+        self.x_squared_sum += x * x
+        self.y_sum += y
+        self.y_squared_sum += y * y
+
+    def reset(self):
+        self.x_sum = 0
+        self.x_squared_sum = 0
+        self.y_sum = 0
+        self.y_squared_sum = 0
+
+    def cost(self, uint32_t net_block_count):
+        return self.alpha * (np.sqrt(self.x_squared_sum - (self.x_sum *
+                                                           self.x_sum) /
+                                     net_block_count + self.beta) +
+                             np.sqrt(self.y_squared_sum - (self.y_sum *
+                                                           self.y_sum) /
+                                     net_block_count + self.beta))
+
+
+cdef class cBoundingBoxData:
+    cdef public uint32_t min_x
+    cdef public uint32_t max_x
+    cdef public uint32_t min_y
+    cdef public uint32_t max_y
+
+    def __cinit__(self):
+        self.reset()
+
+    def update(self, x, y):
+        self.min_x = min(x, self.min_x)
+        self.max_x = max(x, self.max_x)
+        self.min_y = min(y, self.min_y)
+        self.max_y = max(y, self.max_y)
+
+    def reset(self):
+        self.min_x = INFINITY
+        self.max_x = 0
+        self.min_y = INFINITY
+        self.min_y = 0
+
+    def cost(self, uint32_t net_block_count):
+        cdef float cross_count = bounding_box_cross_count(net_block_count)
+        return cross_count * (self.max_x - self.min_x + self.max_y - self.min_y)
+
+
+cpdef compute_bounding_box_cost(uint32_t [:] net_keys, uint32_t [:] block_keys,
+                                uint32_t [:] net_connection_counts,
+                                uint32_t [:, :] block_positions):
+    cdef double total_net_cost = 0.
+    cdef object bbox = cBoundingBoxData()
+
+    cdef int i
+    cdef int net_key
+    cdef int block_key
+
+    cdef int prev_net_key = -1
+
+    for i in xrange(len(net_keys)):
+        net_key = net_keys[i]
+        block_key = block_keys[i]
+
+        if net_key != prev_net_key:
+            if prev_net_key > 0:
+                # Compute bounding-box for `prev_net_key`.
+                net_block_count = net_connection_counts[prev_net_key]
+                total_net_cost += bbox.cost(net_block_count)
+            bbox.reset()
+            prev_net_key = net_key
+        x = block_positions[block_key][0]
+        y = block_positions[block_key][1]
+        bbox.update(x, y)
+    # Compute bounding-box for last net.
+    total_net_cost += bbox.cost(net_connection_counts[net_key])
+    return total_net_cost
+
+
+cpdef compute_star_plus_cost(uint32_t [:] net_keys, uint32_t [:] block_keys,
+                             uint32_t [:] net_connection_counts,
+                             uint32_t [:, :] block_positions):
+    cdef double total_net_cost = 0.
+    cdef object star_plus = cStarPlusData()
+
+    cdef int i
+    cdef int net_key
+    cdef int block_key
+
+    cdef int prev_net_key = -1
+
+    for i in xrange(len(net_keys)):
+        net_key = net_keys[i]
+        block_key = block_keys[i]
+
+        if net_key != prev_net_key:
+            if prev_net_key > 0:
+                # Compute bounding-box for `prev_net_key`.
+                net_block_count = net_connection_counts[prev_net_key]
+                total_net_cost += star_plus.cost(net_block_count)
+            star_plus.reset()
+            prev_net_key = net_key
+        x = block_positions[block_key][0]
+        y = block_positions[block_key][1]
+        star_plus.update(x, y)
+    # Compute bounding-box for last net.
+    total_net_cost += star_plus.cost(net_connection_counts[net_key])
+    return total_net_cost
+
+
+def bounding_box(block_positions):
+    '''
+    Return the bounding-box cost for the specified block-positions.
+
+    Notes
+    =====
+
+    `block_positions` must be a two-dimensional numpy array _(or provide the
+    same interface)_, where the dimensions of `block_positions` are indexed as
+    follows:
+
+        block-index, x=0/y=1/...
+
+    For example, consider two blocks, with the following positions:
+
+        - `(x=3, y=7)`
+        - `(x=5, y=2)`
+
+    The corresponding `block_positions` array would be:
+
+        np.array([[3, 7], [5, 2]])
+    '''
+    return (bounding_box_cross_count(len(block_positions)) *
+            ((block_positions[:, :2].max(axis=0) -
+              block_positions[:, :2].min(axis=0))).sum())
 
 
 cdef class cMain:

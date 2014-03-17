@@ -32,6 +32,7 @@ cdef extern from "globals.h":
     PlaceState g_place_state
     vector[RouteState] g_route_states
     int pins_per_clb
+    const float cross_count[50]
 
 
 cdef inline vpr(args):
@@ -63,3 +64,6 @@ cdef extern from "Main.h":
         bint route(int width_fac) except +
         size_t block_count()
         size_t net_count()
+
+
+cpdef bounding_box_cross_count(int net_block_count)

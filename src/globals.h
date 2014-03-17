@@ -37,6 +37,9 @@ extern struct s_net *net;
 extern struct s_block *block;
 extern boolean *is_global;
 
+/* Cross-count factors to use for bounding-box calculation. */
+extern const float cross_count[50];
+
 /* Physical FPGA architecture stuff */
 extern int nx, ny, io_rat, pins_per_clb;
 extern int **pinloc;
