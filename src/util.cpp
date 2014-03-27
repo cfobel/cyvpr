@@ -532,9 +532,14 @@ int my_irand (int imax) {
  ival = (int) ((float) ival * (float) (imax + 0.999) / (float) IM);
 
 #ifdef CHECK_RAND
- if ((ival < 0) || (ival > imax)) {
+ while ((ival < 0) || (ival > imax)) {
+#if 0
     throw std::runtime_error(Formatter() << "Bad value in my_irand, imax = "
                              << imax << "  ival = " << ival);
+#endif
+    current_random = current_random * IA + IC;  /* Use overflow to wrap */
+    ival = current_random & (IM - 1);  /* Modulus */
+    ival = (int) ((float) ival * (float) (imax + 0.999) / (float) IM);
  }
 #endif
 
