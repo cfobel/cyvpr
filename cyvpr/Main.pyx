@@ -19,7 +19,7 @@ cpdef bounding_box_cross_count(int net_block_count):
     return crossing
 
 
-cdef uint32_t INFINITY = sys.maxint
+cdef uint32_t INFINITY = (1 << 32) - 1
 
 
 cdef class cStarPlusData:
@@ -321,6 +321,10 @@ cdef class cMain:
         def __get__(self):
             return pins_per_clb
 
+    property shape:
+        def __get__(self):
+            return (nx, ny)
+
     def most_recent_args(self):
         return g_args
 
@@ -347,3 +351,35 @@ cdef class cMain:
             state.init(g_route_states[i])
             states.append(state)
         return states
+
+    def delta_inpad_to_clb(self, int delta_x, int delta_y):
+        if delta_x == 0 and delta_y == 0: return 0
+        if delta_x < 0 or delta_x > nx:
+            raise ValueError('`x`-delta out-of-range (%d)' % delta_x)
+        if delta_y < 0 or delta_y > ny:
+            raise ValueError('`y`-delta out-of-range (%d)' % delta_y)
+        return delta_inpad_to_clb_[delta_x][delta_y]
+
+    def delta_clb_to_outpad(self, int delta_x, int delta_y):
+        if delta_x == 0 and delta_y == 0: return 0
+        if delta_x < 0 or delta_x > nx:
+            raise ValueError('`x`-delta out-of-range (%d)' % delta_x)
+        if delta_y < 0 or delta_y > ny:
+            raise ValueError('`y`-delta out-of-range (%d)' % delta_y)
+        return delta_clb_to_outpad_[delta_x][delta_y]
+
+    def delta_clb_to_clb(self, int delta_x, int delta_y):
+        if delta_x == 0 and delta_y == 0: return 0
+        if delta_x < 0 or delta_x > nx - 1:
+            raise ValueError('`x`-delta out-of-range (%d)' % delta_x)
+        if delta_y < 0 or delta_y > ny - 1:
+            raise ValueError('`y`-delta out-of-range (%d)' % delta_y)
+        return delta_clb_to_clb_[delta_x][delta_y]
+
+    def delta_inpad_to_outpad(self, int delta_x, int delta_y):
+        if delta_x == 0 and delta_y == 0: return 0
+        if delta_x < 0 or delta_x > nx + 1:
+            raise ValueError('`x`-delta out-of-range (%d)' % delta_x)
+        if delta_y < 0 or delta_y > ny + 1:
+            raise ValueError('`y`-delta out-of-range (%d)' % delta_y)
+        return delta_inpad_to_outpad_[delta_x][delta_y]

@@ -26,6 +26,13 @@ cdef extern from "stats.h":
                                   vector[uint] segments) except +
 
 
+cdef extern from "timing_place_lookup.h":
+    float **delta_inpad_to_clb_ "delta_inpad_to_clb"
+    float **delta_clb_to_outpad_ "delta_clb_to_outpad"
+    float **delta_clb_to_clb_ "delta_clb_to_clb"
+    float **delta_inpad_to_outpad_ "delta_inpad_to_outpad"
+
+
 cdef extern from "globals.h":
     vector[string] g_args
     RouteResult g_route_result
@@ -33,6 +40,8 @@ cdef extern from "globals.h":
     vector[RouteState] g_route_states
     int pins_per_clb
     const float cross_count[50]
+    int nx
+    int ny
 
 
 cdef inline vpr(args):

@@ -4,7 +4,7 @@ import sys
 from distutils.core import setup, Extension
 
 from Cython.Build import cythonize
-from path import path
+from path_helpers import path
 
 include_dirs = [path('cyvpr').abspath(), path('src').abspath(), ]
 sys.path += include_dirs
