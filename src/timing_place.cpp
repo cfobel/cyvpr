@@ -81,32 +81,23 @@ void print_sink_delays(char *fname){
  fclose(fp);
 }
 /**************************************/
-void load_criticalities( struct s_placer_opts placer_opts,
-			 float **net_slack, float d_max,
-			 float crit_exponent){
-
-  /*set criticality values, returns the maximum criticality found*/
-  /*assumes that net_slack contains correct values, ie. assumes  *
-   *that load_net_slack has been called*/
-
+void load_criticalities(struct s_placer_opts placer_opts, float **net_slack,
+                        float d_max, float crit_exponent) {
+  /* Set criticality values, returns the maximum criticality found assumes that
+   * net_slack contains correct values, ie. assumes that load_net_slack has
+   * been called. */
   int inet, ipin;
   float pin_crit;
 
+  for (inet = 0; inet < num_nets; inet++) {
+    if (inet == OPEN) continue;
+    if (is_global[inet]) continue;
 
-
-  for (inet = 0; inet<num_nets; inet++){
-
-    if (inet == OPEN)
-      continue;
-    if (is_global[inet])
-      continue;
-
-    for (ipin=1; ipin<net[inet].num_pins; ipin++) {
-      /*clip the criticality to never go negative (could happen*/
-      /*for a constant generator since it's slack is huge)*/
-      pin_crit = my_max(1-net_slack[inet][ipin]/d_max, 0.);
-      timing_place_crit[inet][ipin] = pow(pin_crit,crit_exponent);
-
+    for (ipin = 1; ipin < net[inet].num_pins; ipin++) {
+      /* Clip the criticality to never go negative (could happen for a constant
+       * generator since it's slack is huge). */
+      pin_crit = my_max(1 - net_slack[inet][ipin] / d_max, 0.);
+      timing_place_crit[inet][ipin] = pow(pin_crit, crit_exponent);
     }
   }
 }
