@@ -1,6 +1,6 @@
 import cPickle as pickle
 from cyvpr.Main import vpr, vpr_place, vpr_route
-from path import path
+from path_helpers import path
 import re
 
 

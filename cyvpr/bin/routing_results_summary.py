@@ -1,7 +1,7 @@
 from pprint import pformat
 import cStringIO as StringIO
 
-from path import path
+from path_helpers import path
 import numpy as np
 import tables as ts
 import pandas as pd

@@ -1,6 +1,6 @@
 import tables as ts
 
-from path import path
+from path_helpers import path
 from vpr_netfile_parser.VprNetParser import cVprNetFileParser
 from cyvpr.Main import cMain
 

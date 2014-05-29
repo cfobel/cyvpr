@@ -59,7 +59,7 @@ import pandas as pd
 import numpy as np
 import tables as ts
 import scipy.stats
-from path import path
+from path_helpers import path
 
 from .routing_results_summary import prefix_lines
 

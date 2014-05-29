@@ -4,7 +4,7 @@ import hashlib
 from cyvpr.Main import cMain
 from cyvpr.Route import unix_time
 import tables as ts
-from path import path
+from path_helpers import path
 from cyvpr.manager.table_layouts import get_ROUTE_TABLE_LAYOUT
 
 

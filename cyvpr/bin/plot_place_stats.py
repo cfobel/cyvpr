@@ -3,7 +3,7 @@ from collections import OrderedDict
 from itertools import izip
 
 import tables as ts
-from path import path
+from path_helpers import path
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from pyplot_helpers.arg_parsers import pdf_pages_params_args_parser
 from pyplot_helpers.plot import significance_boxplot

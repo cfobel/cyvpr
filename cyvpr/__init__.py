@@ -42,7 +42,7 @@ def get_data_root():
 
 
 def get_net_filepath_by_namebase(namebase):
-    from path import path
+    from path_helpers import path
 
     filepath = path(get_data_root()[0]).joinpath('mcnc', '%s.net' %
                                                  namebase).realpath()

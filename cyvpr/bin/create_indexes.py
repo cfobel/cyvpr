@@ -1,7 +1,7 @@
 '''
 Create indexes for `block_positions_sha1` and `seed` columns.
 '''
-from path import path
+from path_helpers import path
 import tables as ts
 
 

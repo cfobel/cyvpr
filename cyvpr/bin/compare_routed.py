@@ -3,7 +3,7 @@ from collections import OrderedDict
 import tables as ts
 from pyplot_helpers.plot import significance_boxplot
 from pandas_helpers.stats import significance_comparison
-from path import path
+from path_helpers import path
 
 from cyvpr import get_netfile_info
 from cyvpr.result.routing_pandas import (get_max_min_channel_widths,

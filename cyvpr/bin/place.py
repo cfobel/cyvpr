@@ -31,7 +31,7 @@ __NB__ The program [`vitables`] [1] can be used to browse the output file.
 import sys
 import tempfile
 import hashlib
-from path import path
+from path_helpers import path
 from cyvpr.Main import cMain
 from cyvpr.manager.table_layouts import (get_PLACEMENT_TABLE_LAYOUT,
                                          get_VPR_PLACEMENT_STATS_TABLE_LAYOUT)

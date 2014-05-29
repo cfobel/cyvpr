@@ -4,7 +4,7 @@ output file.
 '''
 import sys
 
-from path import path
+from path_helpers import path
 import tables as ts
 
 

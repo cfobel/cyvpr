@@ -1,7 +1,7 @@
 import re
 import hashlib
 import tables as ts
-from path import path
+from path_helpers import path
 from cyvpr.Main import cMain
 
 

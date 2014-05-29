@@ -2,7 +2,7 @@ import os.path
 import re
 
 import tables as ts
-from path import path
+from path_helpers import path
 from cyvpr.Main import cMain
 from .table_layouts import NET_FILES_TABLE_LAYOUT, get_PLACEMENT_TABLE_LAYOUT
 

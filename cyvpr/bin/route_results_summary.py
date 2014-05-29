@@ -1,5 +1,5 @@
 from pprint import pprint
-from path import path
+from path_helpers import path
 
 
 def main():

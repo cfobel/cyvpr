@@ -5,7 +5,7 @@ Perform a run of the VPR router on a placement from a HDF placement result
 file, as produced by `cyvpr.bin.place.place` along with the SHA1 hash of a set
 of block-positions for a placement within the placement HDF file.
 '''
-from path import path
+from path_helpers import path
 import tables as ts
 from .place import create_placement_file
 from .do_route import route

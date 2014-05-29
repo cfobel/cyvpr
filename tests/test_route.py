@@ -1,4 +1,4 @@
-from path import path
+from path_helpers import path
 from cyvpr.Main import cMain
 import cyvpr
 
