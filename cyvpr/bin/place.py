@@ -79,7 +79,8 @@ def create_placement_file(vpr_net_path, block_positions, extents=None,
 
 
 def place(net_path, arch_path, output_path=None, output_dir=None,
-          place_algorithm='bounding_box', fast=True, seed=0):
+          place_algorithm='bounding_box', fast=True, seed=0,
+          full_stats=False, timing_analysis=False, timing_tradeoff=None):
     '''
     Perform VPR placement and write result to HDF file with the following
     structure:
@@ -96,7 +97,10 @@ def place(net_path, arch_path, output_path=None, output_dir=None,
     # `place` method.
     place_state, block_positions = vpr_main.place(net_path, arch_path,
                                                   'placed.out', seed=seed,
-                                                  fast=fast)
+                                                  fast=fast, full_stats=full_stats,
+                                                  timing_analysis=timing_analysis,
+                                                  place_algorithm=place_algorithm,
+                                                  timing_tradeoff=timing_tradeoff)
     # Use a hash of the block-positions to name the HDF file.
     block_positions_sha1 = hashlib.sha1(block_positions
                                         .astype('uint32').data).hexdigest()
@@ -115,7 +119,7 @@ def place(net_path, arch_path, output_path=None, output_dir=None,
         parent_dir.makedirs_p()
     print 'writing output to: %s' % output_path
 
-    h5f = ts.openFile(output_file_name, mode='w', filters=filters)
+    h5f = ts.openFile(output_path, mode='w', filters=filters)
 
     net_file_results = h5f.createGroup(h5f.root, net_path.namebase,
                                        title='Placement results for %s VPR '
@@ -214,6 +218,9 @@ def parse_args():
     parser.add_argument('-s', '--seed', default=0, type=int)
     parser.add_argument('-p', '--place_algorithm', choices=place_algorithms,
                         default='bounding_box')
+    parser.add_argument('--full_stats', action='store_true')
+    parser.add_argument('--timing_analysis', action='store_true')
+    parser.add_argument('--timing_tradeoff', type=float)
     parser.add_argument(dest='vpr_net_file', type=path)
     parser.add_argument(dest='architecture_file', type=path)
 
@@ -228,4 +235,7 @@ if __name__ == '__main__':
     arch_path = args.architecture_file
     place_state = place(net_path, arch_path, output_path=args.output_path,
                         output_dir=args.output_dir, fast=args.fast,
-                        place_algorithm=args.place_algorithm, seed=args.seed)
+                        place_algorithm=args.place_algorithm, seed=args.seed,
+                        full_stats=args.full_stats,
+                        timing_analysis=args.timing_analysis,
+                        timing_tradeoff=args.timing_tradeoff)

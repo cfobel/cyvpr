@@ -19,7 +19,7 @@ cpdef bounding_box_cross_count(int net_block_count):
     return crossing
 
 
-cdef uint32_t INFINITY = (1 << 32) - 1
+cdef uint32_t INFINITY = (0x0FFFF) & sys.maxint
 
 
 cdef class cStarPlusData:
@@ -227,13 +227,21 @@ cdef class cMain:
         self._initialized = True
 
     def place(self, net_path, arch_file, output_path,
-              place_algorithm='bounding_box', fast=True, seed=0):
+              place_algorithm='bounding_box', fast=True, seed=0,
+              full_stats=False, timing_analysis=False,
+              timing_tradeoff=None):
         args = [net_path, arch_file, output_path, 'routed.out', '-place_only',
                 '-place_algorithm', place_algorithm, '-nodisp', '-seed',
                 str(seed)]
 
         if fast:
             args += ['-fast']
+        if full_stats:
+            args += ['-full_stats']
+        if timing_analysis:
+            args += ['-timing_analysis', 'on']
+        if timing_tradeoff is not None:
+            args += ['-timing_tradeoff', '%.5f' % timing_tradeoff]
 
         self.init(args)
         self.thisptr.do_place_and_route()
