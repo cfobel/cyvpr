@@ -327,13 +327,21 @@ static void setup_chan_width (struct s_router_opts router_opts,
   /*lookup table generation */
 
   int width_fac;
+  int multiplier = 1;
 
-  if (router_opts.fixed_channel_width == NO_FIXED_CHANNEL_WIDTH)
-    width_fac = 4 * pins_per_clb; /*this is 2x the value that binary search starts*/
-                                  /*this should be enough to allow most pins to   */
+  if (router_opts.fixed_channel_width == NO_FIXED_CHANNEL_WIDTH) {
+    if (nx > 100 || ny > 100) {
+      /* Increase default width_fac for large placements. */
+      multiplier = 3;
+    }
+    width_fac = multiplier * 4 * pins_per_clb; /*this is 2x the value that
+                                                 binary search starts*/
+                                  /*this should be enough to allow most pins to
+                                   * */
                                   /*connect to tracks in the architecture */
-  else
+  } else {
     width_fac = router_opts.fixed_channel_width;
+  }
 
   init_chan(width_fac, chan_width_dist);
 }

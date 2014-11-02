@@ -224,7 +224,13 @@ static int binary_search_place_and_route (struct s_placer_opts
  free_subblock_data (subblock_data_ptr);
 
 
- current = 2 * pins_per_clb;     /* Binary search part */
+ int multiplier = 1;
+ if (nx > 100 || ny > 100) {
+   /* Increase default width_fac for large placements. */
+   multiplier = 3;
+ }
+
+ current = multiplier * 2 * pins_per_clb;     /* Binary search part */
  low = high = -1;
  final = -1;
 
