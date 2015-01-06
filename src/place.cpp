@@ -657,6 +657,7 @@ void try_place (struct s_placer_opts placer_opts,struct s_annealing_sched
   dump_clbs();
 #endif
   }
+  std::cout << "EXIT: " << cost << ", " << (0.005 * cost / num_nets) << ", " << t << std::endl;
 
   t = 0;   /* freeze out */
   av_cost = 0.;

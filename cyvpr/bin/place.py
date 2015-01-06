@@ -51,7 +51,7 @@ Array size: %(extent_x)d x %(extent_y)d logic blocks
     clb_positions = block_positions[parser.block_ids_by_type()['.clb']]
     if extents is None:
         extents = tuple(clb_positions[:, :2].max(axis=0) -
-                        clb_positions[:, :2].min(axis=0))
+                        clb_positions[:, :2].min(axis=0) - 1)
     else:
         extents = tuple(extents)
     yield header % {'vpr_net_path': vpr_net_path, 'extent_x': extents[0],
@@ -75,6 +75,28 @@ def create_placement_file(vpr_net_path, block_positions, extents=None,
     with open(output_path, 'wb') as output_file:
         write_vpr_placed_output(vpr_net_path, block_positions, output_file,
                                 extents)
+    return output_path
+
+
+def create_placement_file_from_frame(vpr_net_path, placement_frame,
+                                     extents=None, suffix='', prefix='tmp',
+                                     dir=None):
+    output_dir = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
+    output_path = path(output_dir).joinpath('placed.out')
+    with open(output_path, 'wb') as output_file:
+        header = '''\
+Netlist file: %(vpr_net_path)s   Architecture file: /var/benchmarks/4lut_sanitized.arch
+Array size: %(extent_x)d x %(extent_y)d logic blocks
+
+#block name	x	y	subblk	block number
+#----------	--	--	------	------------'''
+        print >> output_file, header % {'vpr_net_path': vpr_net_path,
+                                        'extent_x': extents[0],
+                                        'extent_y': extents[1]}
+        placement = placement_frame.sort('original_block_key')[['block_label',
+                                                                'x', 'y', 'z']]
+        for k, v in placement.iterrows():
+            print >> output_file, '%s\t%d\t%d\t%d\t' % tuple(v)
     return output_path
 
 

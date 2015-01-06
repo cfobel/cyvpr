@@ -7,8 +7,54 @@ of block-positions for a placement within the placement HDF file.
 '''
 from path_helpers import path
 import tables as ts
-from .place import create_placement_file
+from .place import create_placement_file, create_placement_file_from_frame
 from .do_route import route
+
+
+def vpr_placed_from_h5f(net_file_paths, arch_path, h5f, block_positions_sha1,
+                        **kwargs):
+    if '/positions' in h5f:
+        placement_version = 2
+        placement_frame = h5f['/positions'][h5f['/positions']['placement_sha1']
+                                            == block_positions_sha1]
+        dims = placement_frame[['x', 'y']].max()
+        placed_file = create_placement_file_from_frame(net_file_path,
+                                                       placement_frame,
+                                                       prefix="placed-",
+                                                       extents=tuple(dims))
+        net_file_namebase = placement_frame.first()['net_file_namebase']
+    else:
+        placement_version = 1
+
+        matches = []
+
+        # Look for a table of placements containing an entry matching the specified
+        # `block_positions_sha1` value.
+        for table in h5f.walkNodes(h5f.root, 'Table'):
+            if table._v_name == 'placements':
+                matches = [m for m in table.readWhere('block_positions_sha1 == '
+                                                    '"%s"' %
+                                                    block_positions_sha1)]
+                if matches:
+                    break
+
+        if not matches:
+            raise KeyError, ('No placement found with block_positions_sha1="%s"' %
+                            block_positions_sha1)
+
+        placement = matches[0]
+
+        # Infer the corresponding net-file namebase from the placement table's
+        # parent group-name.
+        net_file_namebase = table._v_parent._v_name
+
+        # Write a VPR-compatible placement output file based on the block-positions
+        # read from the HDF placements table.  This file is needed to pass into the
+        # VPR routing call.
+        placed_file = create_placement_file(net_file_path,
+                                            placement['block_positions'],
+                                            prefix="placed-")
+    return net_file_namebase, placed_file
 
 
 def route_from_hdf(net_file_paths, arch_path, h5f, block_positions_sha1,
